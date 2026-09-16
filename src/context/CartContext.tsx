@@ -8,10 +8,17 @@ import {
   type ReactNode,
 } from "react";
 import type { Product } from "../data/types";
-import { findCoupon, type Coupon } from "../lib/coupons";
+import { api } from "../lib/api";
+
+export interface CartCoupon {
+  code: string;
+  description: string;
+  percentOff: number;
+}
 
 export interface CartItem {
   key: string;
+  variantId: string;
   productId: string;
   slug: string;
   name: string;
@@ -24,10 +31,10 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[];
-  coupon: Coupon | null;
+  coupon: CartCoupon | null;
 }
 
-const STORAGE_KEY = "inovacaostore.cart.v1";
+const STORAGE_KEY = "inovacaostore.cart.v2";
 
 function loadState(): CartState {
   try {
@@ -50,18 +57,18 @@ function saveState(state: CartState) {
 
 interface CartContextValue {
   items: CartItem[];
-  coupon: Coupon | null;
+  coupon: CartCoupon | null;
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
   addItem: (
     product: Product,
-    options: { color: string; size: string; quantity?: number },
+    options: { variantId: string; color: string; size: string; quantity?: number },
   ) => void;
   removeItem: (key: string) => void;
   updateQuantity: (key: string, quantity: number) => void;
   clearCart: () => void;
-  applyCoupon: (code: string) => boolean;
+  applyCoupon: (code: string) => Promise<{ ok: boolean; error?: string }>;
   removeCoupon: () => void;
   subtotal: number;
   discount: number;
@@ -80,20 +87,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const addItem: CartContextValue["addItem"] = useCallback(
-    (product, { color, size, quantity = 1 }) => {
-      const key = `${product.id}-${color}-${size}`;
+    (product, { variantId, color, size, quantity = 1 }) => {
       setState((prev) => {
-        const existing = prev.items.find((i) => i.key === key);
+        const existing = prev.items.find((i) => i.key === variantId);
         if (existing) {
           return {
             ...prev,
             items: prev.items.map((i) =>
-              i.key === key ? { ...i, quantity: i.quantity + quantity } : i,
+              i.key === variantId ? { ...i, quantity: i.quantity + quantity } : i,
             ),
           };
         }
         const newItem: CartItem = {
-          key,
+          key: variantId,
+          variantId,
           productId: product.id,
           slug: product.slug,
           name: product.name,
@@ -130,11 +137,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setState({ items: [], coupon: null });
   }, []);
 
-  const applyCoupon = useCallback((code: string) => {
-    const found = findCoupon(code);
-    if (!found) return false;
-    setState((prev) => ({ ...prev, coupon: found }));
-    return true;
+  const applyCoupon = useCallback(async (code: string) => {
+    try {
+      const found = await api.post<CartCoupon>("/api/coupons/validate", { code });
+      setState((prev) => ({ ...prev, coupon: found }));
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : "Cupom inválido." };
+    }
   }, []);
 
   const removeCoupon = useCallback(() => {

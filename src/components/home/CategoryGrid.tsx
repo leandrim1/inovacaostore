@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
-import { CATEGORIES } from "../../data/categories";
-import { getProductsByCategory } from "../../data/products";
+import { useCategories } from "../../hooks/useCategories";
+import { useProducts } from "../../hooks/useProducts";
 import { PlaceholderImage } from "../ui/PlaceholderImage";
 import { Reveal } from "../ui/Reveal";
 
 export function CategoryGrid() {
+  const { data: categories = [] } = useCategories();
+  const { data: products = [] } = useProducts();
+
   return (
     <section className="container-page py-16 sm:py-24">
       <Reveal>
@@ -16,9 +19,8 @@ export function CategoryGrid() {
       </Reveal>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
-        {CATEGORIES.map((cat, i) => {
-          const image = getProductsByCategory(cat.slug).find((p) => p.images[0])
-            ?.images[0];
+        {categories.map((cat, i) => {
+          const image = products.find((p) => p.category === cat.slug && p.images[0])?.images[0];
           return (
             <Reveal key={cat.slug} delay={i * 0.05}>
               <Link

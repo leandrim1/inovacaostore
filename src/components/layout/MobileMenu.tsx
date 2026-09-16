@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { X, MessageCircle, User } from "lucide-react";
-import { CATEGORIES } from "../../data/categories";
 import { STORE, buildWhatsAppLink } from "../../data/store";
 import { useAuth } from "../../context/AuthContext";
+import { useCategories } from "../../hooks/useCategories";
 import { InstagramIcon } from "../ui/InstagramIcon";
 
 export function MobileMenu({
@@ -14,6 +14,7 @@ export function MobileMenu({
   onClose: () => void;
 }) {
   const { customer, openAccount } = useAuth();
+  const { data: categories = [] } = useCategories();
 
   return (
     <AnimatePresence>
@@ -53,7 +54,7 @@ export function MobileMenu({
               >
                 Início
               </Link>
-              {CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <Link
                   key={cat.slug}
                   to={`/categoria/${cat.slug}`}

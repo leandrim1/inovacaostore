@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../../data/categories";
+import { useCategories } from "../../hooks/useCategories";
 import { formatBRL } from "../../lib/format";
 import type { useProductFilters } from "../../hooks/useProductFilters";
 
@@ -25,6 +25,8 @@ export function FiltersPanel({
   clearFilters,
   activeFilterCount,
 }: FiltersPanelProps) {
+  const { data: allCategories = [] } = useCategories();
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
@@ -46,7 +48,7 @@ export function FiltersPanel({
             Categoria
           </legend>
           <div className="flex flex-col gap-2">
-            {CATEGORIES.map((cat) => (
+            {allCategories.map((cat) => (
               <label key={cat.slug} className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"

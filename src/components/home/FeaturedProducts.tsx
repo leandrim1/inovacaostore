@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { getFeaturedProducts } from "../../data/products";
+import { useProducts } from "../../hooks/useProducts";
 import { ProductCard } from "../product/ProductCard";
 import { Reveal } from "../ui/Reveal";
 
 export function FeaturedProducts() {
-  const products = getFeaturedProducts(8);
+  const { data: products = [] } = useProducts({ featured: true, limit: 8 });
+
+  if (products.length === 0) return null;
 
   return (
     <section className="bg-white py-16 sm:py-24">

@@ -2,10 +2,12 @@ import { Link } from "react-router-dom";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { InstagramIcon } from "../ui/InstagramIcon";
-import { CATEGORIES } from "../../data/categories";
 import { STORE, buildWhatsAppLink } from "../../data/store";
+import { useCategories } from "../../hooks/useCategories";
 
 export function Footer() {
+  const { data: categories = [] } = useCategories();
+
   return (
     <footer className="mt-20 bg-brand-ink text-white">
       <div className="container-page grid grid-cols-1 gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
@@ -39,7 +41,7 @@ export function Footer() {
             Categorias
           </h3>
           <ul className="flex flex-col gap-2.5 text-sm">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <li key={cat.slug}>
                 <Link to={`/categoria/${cat.slug}`} className="text-white/80 hover:text-brand-yellow">
                   {cat.name}

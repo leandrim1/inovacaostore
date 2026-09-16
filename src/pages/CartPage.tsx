@@ -5,7 +5,8 @@ import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
 import { formatBRL } from "../lib/format";
-import { formatCep, isValidCep, quoteShipping, type ShippingQuote } from "../lib/shipping";
+import { formatCep, isValidCep, type ShippingQuote } from "../lib/shipping";
+import { api } from "../lib/api";
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, subtotal, discount, coupon, applyCoupon, removeCoupon } =
@@ -23,25 +24,30 @@ export default function CartPage() {
     shippingQuote?.options.find((o) => o.id === selectedShipping)?.price ?? 0;
   const total = Math.max(0, subtotal - discount) + shippingPrice;
 
-  function handleApplyCoupon(e: React.FormEvent) {
+  async function handleApplyCoupon(e: React.FormEvent) {
     e.preventDefault();
     if (!couponInput.trim()) return;
-    const ok = applyCoupon(couponInput);
-    setCouponError(ok ? null : "Cupom inválido ou expirado.");
-    if (ok) setCouponInput("");
+    const result = await applyCoupon(couponInput);
+    setCouponError(result.ok ? null : (result.error ?? "Cupom inválido ou expirado."));
+    if (result.ok) setCouponInput("");
   }
 
-  function handleCalculateShipping(e: React.FormEvent) {
+  async function handleCalculateShipping(e: React.FormEvent) {
     e.preventDefault();
     if (!isValidCep(cep)) {
       setCepError("Informe um CEP válido (ex: 38700-000).");
       setShippingQuote(null);
       return;
     }
-    const quote = quoteShipping(cep);
-    setShippingQuote(quote);
-    setSelectedShipping(quote?.options[0]?.id ?? null);
-    setCepError(null);
+    try {
+      const quote = await api.get<ShippingQuote>(`/api/shipping/quote?cep=${encodeURIComponent(cep)}`);
+      setShippingQuote(quote);
+      setSelectedShipping(quote?.options[0]?.id ?? null);
+      setCepError(null);
+    } catch {
+      setCepError("Não foi possível calcular o frete para esse CEP.");
+      setShippingQuote(null);
+    }
   }
 
   function handleCheckout() {

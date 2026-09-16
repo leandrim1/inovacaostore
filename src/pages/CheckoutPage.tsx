@@ -4,7 +4,8 @@ import { CheckCircle2, Copy, CreditCard, MessageCircle, QrCode, Receipt } from "
 import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
 import { formatBRL } from "../lib/format";
-import { formatCep, isValidCep, quoteShipping, type ShippingQuote } from "../lib/shipping";
+import { formatCep, isValidCep, type ShippingQuote } from "../lib/shipping";
+import { api } from "../lib/api";
 import { buildWhatsAppLink, STORE } from "../data/store";
 
 type PaymentMethod = "pix" | "cartao" | "boleto";
@@ -60,6 +61,8 @@ export default function CheckoutPage() {
   const [orderNumber, setOrderNumber] = useState("");
   const [pixCode] = useState(generatePixCode);
   const [boletoNumber] = useState(generateBoletoNumber);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const shippingPrice = shippingQuote?.options.find((o) => o.id === selectedShipping)?.price ?? 0;
   const total = Math.max(0, subtotal - discount) + shippingPrice;
@@ -82,28 +85,56 @@ export default function CheckoutPage() {
       .join("\n");
   }, [items, shippingQuote, shippingPrice, total, address]);
 
-  function handleCepBlur() {
+  async function handleCepBlur() {
     if (!isValidCep(address.cep)) {
       setCepError("CEP inválido");
       setShippingQuote(null);
       return;
     }
-    setCepError(null);
-    const quote = quoteShipping(address.cep);
-    setShippingQuote(quote);
-    setSelectedShipping(quote?.options[0]?.id ?? null);
+    try {
+      const quote = await api.get<ShippingQuote>(`/api/shipping/quote?cep=${encodeURIComponent(address.cep)}`);
+      setShippingQuote(quote);
+      setSelectedShipping(quote?.options[0]?.id ?? null);
+      setCepError(null);
+    } catch {
+      setCepError("Não foi possível calcular o frete para esse CEP.");
+      setShippingQuote(null);
+    }
   }
 
-  function handleConfirm(e: React.FormEvent) {
+  async function handleConfirm(e: React.FormEvent) {
     e.preventDefault();
-    if (!shippingQuote) {
-      handleCepBlur();
+    if (!shippingQuote || !selectedShipping) {
+      await handleCepBlur();
       return;
     }
-    const number = `IS${Date.now().toString().slice(-8)}`;
-    setOrderNumber(number);
-    setOrderConfirmed(true);
-    clearCart();
+    setSubmitError(null);
+    setIsSubmitting(true);
+    try {
+      const result = await api.post<{ orderNumber: string }>("/api/orders", {
+        customer: { name: address.name, email: address.email, phone: address.phone },
+        address: {
+          cep: address.cep,
+          street: address.street,
+          number: address.number,
+          complement: address.complement,
+          neighborhood: address.neighborhood,
+          city: address.city,
+          state: address.state,
+        },
+        items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+        paymentMethod: payment,
+        couponCode: coupon?.code,
+        shippingLabel: selectedShipping,
+      });
+      setOrderNumber(result.orderNumber);
+      setOrderConfirmed(true);
+      clearCart();
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Não foi possível finalizar o pedido.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (items.length === 0 && !orderConfirmed) {
@@ -405,8 +436,15 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            <button type="submit" className="btn-primary mt-6 w-full">
-              Confirmar pedido
+            {submitError && (
+              <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{submitError}</p>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting ? "Enviando pedido…" : "Confirmar pedido"}
             </button>
 
             <a

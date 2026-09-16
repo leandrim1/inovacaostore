@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Menu, Search, User, ShoppingBag } from "lucide-react";
 import { Logo } from "../ui/Logo";
-import { CATEGORIES } from "../../data/categories";
+import { useCategories } from "../../hooks/useCategories";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { MobileMenu } from "./MobileMenu";
@@ -14,6 +14,7 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { itemCount, openCart } = useCart();
   const { customer, openAccount } = useAuth();
+  const { data: categories = [] } = useCategories();
 
   useEffect(() => {
     function onScroll() {
@@ -44,7 +45,7 @@ export function Header() {
           <Logo />
 
           <nav className="hidden items-center gap-7 lg:flex">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <NavLink
                 key={cat.slug}
                 to={`/categoria/${cat.slug}`}

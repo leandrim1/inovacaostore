@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronRight, MessageCircle, ShieldCheck, Truck, RefreshCw } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
-import { getProductBySlug, getRelatedProducts } from "../data/products";
-import { getCategory } from "../data/categories";
+import { useProduct } from "../hooks/useProduct";
+import { useProducts } from "../hooks/useProducts";
+import { useCategories } from "../hooks/useCategories";
 import { PriceTag } from "../components/ui/PriceTag";
 import { StarRating } from "../components/ui/StarRating";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
@@ -17,14 +18,25 @@ import NotFoundPage from "./NotFoundPage";
 
 export default function ProductPage() {
   const { slug = "" } = useParams();
-  const product = getProductBySlug(slug);
+  const { data: product, isLoading, isError } = useProduct(slug);
   const { addItem } = useCart();
+  const { data: categories } = useCategories();
+  const { data: sameCategoryProducts = [] } = useProducts({ category: product?.category });
 
   const [activeImage, setActiveImage] = useState(0);
-  const [color, setColor] = useState(product?.colors[0]?.name ?? "");
-  const [size, setSize] = useState(product?.sizes[0] ?? "");
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    if (!product) return;
+    const firstInStock = product.variants.find((v) => v.stock > 0);
+    setColor(firstInStock?.color ?? product.colors[0]?.name ?? "");
+    setSize(firstInStock?.size ?? product.sizes[0] ?? "");
+    setActiveImage(0);
+    setQuantity(1);
+  }, [product]);
 
   const jsonLd = useMemo(() => {
     if (!product) return undefined;
@@ -50,14 +62,23 @@ export default function ProductPage() {
     };
   }, [product]);
 
-  if (!product) return <NotFoundPage />;
+  if (isLoading) {
+    return <div className="container-page py-32 text-center text-neutral-400">Carregando produto…</div>;
+  }
 
-  const category = getCategory(product.category);
-  const related = getRelatedProducts(product);
-  const lowStock = product.stock > 0 && product.stock <= 5;
+  if (isError || !product) return <NotFoundPage />;
+
+  const category = categories?.find((c) => c.slug === product.category);
+  const related = sameCategoryProducts.filter((p) => p.id !== product.id).slice(0, 4);
+
+  const selectedVariant = product.variants.find((v) => v.color === color && v.size === size);
+  const variantStock = selectedVariant?.stock ?? 0;
+  const hasAnyStock = product.variants.some((v) => v.stock > 0);
+  const lowStock = variantStock > 0 && variantStock <= 3;
 
   const handleAddToCart = () => {
-    addItem(product, { color, size, quantity });
+    if (!selectedVariant || selectedVariant.stock <= 0) return;
+    addItem(product, { variantId: selectedVariant.id, color, size, quantity });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -162,28 +183,38 @@ export default function ProductPage() {
                 <div className="mt-6">
                   <p className="mb-2.5 text-sm font-medium text-brand-ink">Tamanho</p>
                   <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSize(s)}
-                        aria-pressed={size === s}
-                        className={`flex h-11 min-w-11 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors ${
-                          size === s
-                            ? "border-brand-ink bg-brand-ink text-white"
-                            : "border-black/15 text-neutral-600 hover:border-brand-ink"
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                    {product.sizes.map((s) => {
+                      const sizeStock = product.variants.find((v) => v.color === color && v.size === s)?.stock ?? 0;
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setSize(s)}
+                          aria-pressed={size === s}
+                          disabled={sizeStock <= 0}
+                          className={`flex h-11 min-w-11 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors ${
+                            size === s
+                              ? "border-brand-ink bg-brand-ink text-white"
+                              : sizeStock <= 0
+                                ? "border-black/10 text-neutral-300 line-through"
+                                : "border-black/15 text-neutral-600 hover:border-brand-ink"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <p className="mt-4 text-sm">
-                  {lowStock ? (
+                  {variantStock <= 0 ? (
                     <span className="font-medium text-red-600">
-                      Apenas {product.stock} unidades em estoque
+                      {hasAnyStock ? "Sem estoque para essa combinação" : "Sem estoque"}
+                    </span>
+                  ) : lowStock ? (
+                    <span className="font-medium text-red-600">
+                      Apenas {variantStock} unidades em estoque
                     </span>
                   ) : (
                     <span className="text-green-700">Em estoque</span>
@@ -191,11 +222,12 @@ export default function ProductPage() {
                 </p>
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <QuantityStepper quantity={quantity} onChange={setQuantity} max={product.stock} />
+                  <QuantityStepper quantity={quantity} onChange={setQuantity} max={Math.max(1, variantStock)} />
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="btn-primary flex-1 sm:flex-none sm:px-10"
+                    disabled={variantStock <= 0}
+                    className="btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none sm:px-10"
                   >
                     {added ? "Adicionado!" : "Adicionar ao carrinho"}
                   </button>

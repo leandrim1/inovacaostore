@@ -19,6 +19,7 @@ interface ProductListingLayoutProps {
   baseProducts: Product[];
   showCategoryFilter?: boolean;
   emptyMessage?: string;
+  isLoading?: boolean;
 }
 
 export function ProductListingLayout({
@@ -27,6 +28,7 @@ export function ProductListingLayout({
   baseProducts,
   showCategoryFilter = false,
   emptyMessage = "Nenhum produto encontrado com esses filtros.",
+  isLoading = false,
 }: ProductListingLayoutProps) {
   const filters = useProductFilters(baseProducts);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -81,7 +83,11 @@ export function ProductListingLayout({
             {filters.filtered.length} produto(s)
           </p>
 
-          {filters.filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-neutral-50 py-20 text-center text-neutral-500">
+              <p>Carregando produtos…</p>
+            </div>
+          ) : filters.filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-neutral-50 py-20 text-center text-neutral-500">
               <p>{emptyMessage}</p>
               {filters.activeFilterCount > 0 && (

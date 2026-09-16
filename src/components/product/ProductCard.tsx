@@ -10,13 +10,15 @@ import { useCart } from "../../context/CartContext";
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const image = product.images[0];
+  const availableVariant = product.variants.find((v) => v.stock > 0);
 
   function handleQuickAdd(e: React.MouseEvent) {
     e.preventDefault();
-    if (product.comingSoon) return;
+    if (!availableVariant) return;
     addItem(product, {
-      color: product.colors[0]?.name ?? "Único",
-      size: product.sizes[0] ?? "Único",
+      variantId: availableVariant.id,
+      color: availableVariant.color,
+      size: availableVariant.size,
     });
   }
 
@@ -45,7 +47,7 @@ export function ProductCard({ product }: { product: Product }) {
           {product.tags?.map((tag) => <Badge key={tag} tag={tag} />)}
         </div>
 
-        {!product.comingSoon && (
+        {availableVariant && (
           <button
             type="button"
             onClick={handleQuickAdd}

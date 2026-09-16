@@ -1,13 +1,6 @@
-export type CategorySlug =
-  | "camisetas"
-  | "camisas"
-  | "calcas"
-  | "bermudas"
-  | "jaquetas"
-  | "acessorios";
-
 export interface Category {
-  slug: CategorySlug;
+  id: string;
+  slug: string;
   name: string;
   description: string;
   image?: string;
@@ -18,11 +11,20 @@ export interface ColorOption {
   hex: string;
 }
 
+export interface ProductVariant {
+  id: string;
+  color: string;
+  colorHex: string;
+  size: string;
+  stock: number;
+  sku?: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
   name: string;
-  category: CategorySlug;
+  category: string;
   price: number;
   compareAtPrice?: number;
   images: string[];
@@ -37,4 +39,5 @@ export interface Product {
   installmentsMax: number;
   sku: string;
   comingSoon?: boolean;
+  variants: ProductVariant[];
 }
