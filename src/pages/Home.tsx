@@ -1,5 +1,6 @@
 import { Seo } from "../components/seo/Seo";
 import { Hero } from "../components/home/Hero";
+import { PromotionsBanner } from "../components/home/PromotionsBanner";
 import { CategoryGrid } from "../components/home/CategoryGrid";
 import { FeaturedProducts } from "../components/home/FeaturedProducts";
 import { Benefits } from "../components/home/Benefits";
@@ -28,6 +29,7 @@ export default function Home() {
         }}
       />
       <Hero />
+      <PromotionsBanner />
       <CategoryGrid />
       <FeaturedProducts />
       <Benefits />

@@ -12,7 +12,7 @@ export function Footer() {
     <footer className="mt-20 bg-brand-ink text-white">
       <div className="container-page grid grid-cols-1 gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-4">
-          <Logo variant="light" />
+          <Logo />
           <p className="max-w-xs text-sm text-white/60">{STORE.description}</p>
           <div className="flex gap-3 pt-1">
             <a

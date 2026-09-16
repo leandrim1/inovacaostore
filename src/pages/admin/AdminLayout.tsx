@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone } from "lucide-react";
 import { Logo } from "../../components/ui/Logo";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/produtos", label: "Produtos", icon: Package },
   { to: "/admin/categorias", label: "Categorias", icon: Tags },
+  { to: "/admin/promocoes", label: "Promoções", icon: Megaphone },
   { to: "/admin/pedidos", label: "Pedidos", icon: ShoppingCart },
 ];
 
@@ -32,7 +33,7 @@ export default function AdminLayout() {
     <div className="flex min-h-dvh bg-neutral-50">
       <aside className="hidden w-64 shrink-0 flex-col bg-brand-ink text-white lg:flex">
         <div className="border-b border-white/10 p-5">
-          <Logo variant="light" />
+          <Logo />
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-4">
           {NAV_ITEMS.map((item) => (

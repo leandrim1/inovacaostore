@@ -25,6 +25,8 @@ const AdminProductFormPage = lazy(() => import("./pages/admin/AdminProductFormPa
 const AdminCategoriesPage = lazy(() => import("./pages/admin/AdminCategoriesPage"));
 const AdminOrdersPage = lazy(() => import("./pages/admin/AdminOrdersPage"));
 const AdminOrderDetailPage = lazy(() => import("./pages/admin/AdminOrderDetailPage"));
+const AdminPromotionsPage = lazy(() => import("./pages/admin/AdminPromotionsPage"));
+const AdminPromotionFormPage = lazy(() => import("./pages/admin/AdminPromotionFormPage"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -70,6 +72,9 @@ function AdminApp() {
           <Route path="produtos/novo" element={<AdminProductFormPage />} />
           <Route path="produtos/:id" element={<AdminProductFormPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
+          <Route path="promocoes" element={<AdminPromotionsPage />} />
+          <Route path="promocoes/novo" element={<AdminPromotionFormPage />} />
+          <Route path="promocoes/:id" element={<AdminPromotionFormPage />} />
           <Route path="pedidos" element={<AdminOrdersPage />} />
           <Route path="pedidos/:id" element={<AdminOrderDetailPage />} />
         </Route>

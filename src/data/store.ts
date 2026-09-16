@@ -11,9 +11,9 @@ export const STORE = {
     zip: "38700-000",
   },
   contact: {
-    whatsapp: "5534900000000",
-    whatsappDisplay: "(34) 90000-0000",
-    email: "contato@inovacaostore.com.br",
+    whatsapp: "5534996576357",
+    whatsappDisplay: "(34) 99657-6357",
+    email: "inovacaostoretiktok@gmail.com",
   },
   hours: [
     { label: "Segunda a Sexta", value: "09h às 18h" },

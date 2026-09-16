@@ -119,3 +119,18 @@ model OrderItem {
   price       Float
   quantity    Int
 }
+
+model Promotion {
+  id          String    @id @default(cuid())
+  title       String
+  highlight   String // ex.: "20% OFF"
+  description String    @default("")
+  ctaLabel    String    @default("Compre agora")
+  ctaUrl      String    @default("/")
+  imageUrl    String?
+  endsAt      DateTime?
+  active      Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
