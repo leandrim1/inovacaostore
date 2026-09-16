@@ -1,17 +1,11 @@
 import { Router } from "express";
-import fs from "node:fs";
-import path from "node:path";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
 import { serializeProduct } from "../../utils/serialize.js";
 import { uniqueSlug } from "../../utils/slug.js";
-import { upload, UPLOADS_DIR } from "../../upload.js";
-
-function deleteUploadedFile(url: string) {
-  const filePath = path.join(UPLOADS_DIR, path.basename(url));
-  fs.unlink(filePath, () => {});
-}
+import { upload, randomUploadName } from "../../upload.js";
+import { saveUpload, deleteUpload } from "../../storage.js";
 
 export const adminProductsRouter = Router();
 
@@ -209,9 +203,7 @@ adminProductsRouter.delete("/:id", async (req, res) => {
       where: { id: req.params.id },
       include: { images: true },
     });
-    for (const image of product.images) {
-      deleteUploadedFile(image.url);
-    }
+    await Promise.all(product.images.map((image) => deleteUpload(image.url)));
     res.status(204).end();
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
@@ -231,7 +223,8 @@ adminProductsRouter.post("/:id/images", upload.array("images", 8), async (req, r
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) {
-    for (const file of files) deleteUploadedFile(file.filename);
+    // Com multer em memória, nada é gravado em disco/Blob até chamarmos
+    // saveUpload abaixo — então não há arquivo órfão a limpar aqui.
     res.status(404).json({ error: "Produto não encontrado." });
     return;
   }
@@ -242,10 +235,14 @@ adminProductsRouter.post("/:id/images", upload.array("images", 8), async (req, r
   }
 
   const currentCount = await prisma.productImage.count({ where: { productId } });
+  const urls = await Promise.all(
+    files.map((file) => saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype)),
+  );
+
   await prisma.productImage.createMany({
-    data: files.map((file, i) => ({
+    data: urls.map((url, i) => ({
       productId,
-      url: `/uploads/${file.filename}`,
+      url,
       order: currentCount + i,
     })),
   });
@@ -263,9 +260,7 @@ adminProductsRouter.delete("/:id/images/:imageId", async (req, res) => {
   }
 
   await prisma.productImage.delete({ where: { id: imageId } });
-
-  const filePath = path.join(UPLOADS_DIR, path.basename(image.url));
-  fs.unlink(filePath, () => {});
+  await deleteUpload(image.url);
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
   res.json(serializeProduct(updated));

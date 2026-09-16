@@ -163,7 +163,7 @@ ordersRouter.post("/", async (req, res) => {
       res.status(err.status).json({ error: err.message });
       return;
     }
-    // SQLite permite apenas um gravador por vez: sob concorrência alta o
+    // Sob pico de concorrência (ex.: pool de conexões do banco esgotado), o
     // Prisma pode não conseguir iniciar/concluir a transação a tempo. Isso
     // não é um erro do pedido em si, então respondemos de forma clara e
     // "tentável de novo" em vez de um erro genérico de servidor.

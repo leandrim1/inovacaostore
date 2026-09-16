@@ -1,11 +1,6 @@
 import multer from "multer";
 import crypto from "node:crypto";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { HttpError } from "./errors.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 
 const ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -14,19 +9,20 @@ const ALLOWED_TYPES: Record<string, string> = {
   "image/avif": ".avif",
 };
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    // A extensão é derivada do mimetype já validado pelo fileFilter, nunca do
-    // nome de arquivo enviado pelo cliente (evita gravar arquivos com
-    // extensão arbitrária, ex.: "foto.jpg.html").
-    const ext = ALLOWED_TYPES[file.mimetype] ?? ".jpg";
-    cb(null, `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`);
-  },
-});
+export function extensionFor(mimetype: string) {
+  return ALLOWED_TYPES[mimetype] ?? ".jpg";
+}
 
+export function randomUploadName(mimetype: string) {
+  return `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${extensionFor(mimetype)}`;
+}
+
+// Guarda o arquivo em memória em vez de gravar direto no disco: o disco de
+// funções serverless (Vercel) é efêmero, então o upload real (para o disco
+// local em dev, ou para o Vercel Blob em produção) acontece depois, na rota,
+// através de server/src/storage.ts.
 export const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 6 * 1024 * 1024, files: 8 },
   fileFilter: (_req, file, cb) => {
     if (!ALLOWED_TYPES[file.mimetype]) {

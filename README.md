@@ -1,6 +1,6 @@
 # Inovação Store
 
-E-commerce completo para loja de roupas masculinas: frontend em **React + TypeScript + Vite** (mobile-first) integrado a um **backend real** (Express + Prisma + SQLite) com autenticação de administrador, painel administrativo e banco de dados — sem produtos fixos no código.
+E-commerce completo para loja de roupas masculinas: frontend em **React + TypeScript + Vite** (mobile-first) integrado a um **backend real** (Express + Prisma + Postgres) com autenticação de administrador, painel administrativo e banco de dados — sem produtos fixos no código. Preparado para publicar **100% na Vercel** (frontend + API serverless + Postgres + upload de imagens), mas também roda como processo único em qualquer outro host (VPS, Railway, Render).
 
 ## Stack
 
@@ -13,17 +13,22 @@ E-commerce completo para loja de roupas masculinas: frontend em **React + TypeSc
 - Lucide React (ícones)
 
 **Backend**
-- Node.js + Express + TypeScript (executado com `tsx`)
-- Prisma ORM + SQLite (arquivo local, fácil de trocar por Postgres/MySQL no `schema.prisma`)
+- Node.js + Express + TypeScript (executado com `tsx` em dev; roda como função serverless na Vercel via `api/index.ts`)
+- Prisma ORM + PostgreSQL
 - Autenticação de administrador via JWT em cookie `httpOnly` + bcrypt
-- Upload de imagens de produto (multer), servidas em `/uploads`
+- Upload de imagens de produto (multer): vai para o **Vercel Blob** quando configurado, ou para `server/uploads/` em desenvolvimento local sem Blob (ver `server/src/storage.ts`)
 
-## Rodando o projeto
+## Rodando o projeto localmente
+
+Precisa de um Postgres para desenvolvimento (local via Docker/instalação nativa, ou um banco na nuvem — inclusive o mesmo que você for usar na Vercel).
 
 ```bash
 npm install
-cp .env.example .env        # ajuste os valores se quiser (JWT_SECRET, admin, etc.)
-npm run db:migrate          # cria o banco SQLite e aplica as migrations
+cp .env.example .env
+# edite o .env: DATABASE_URL e DIRECT_URL apontando para o seu Postgres
+# (para dev local sem Vercel, deixe as duas iguais)
+
+npm run db:migrate          # aplica as migrations no Postgres
 npm run db:seed             # popula categorias, catálogo inicial e usuário admin
 
 npm run dev                 # roda frontend (Vite) + backend (Express) juntos
@@ -32,25 +37,55 @@ npm run dev                 # roda frontend (Vite) + backend (Express) juntos
 - Loja: http://localhost:5173
 - Painel admin: http://localhost:5173/admin (login criado pelo seed — veja `.env`)
 - API: http://localhost:4000 (o Vite faz proxy de `/api` e `/uploads` para o backend em desenvolvimento)
+- Sem `BLOB_READ_WRITE_TOKEN` no `.env`, upload de imagem cai automaticamente para `server/uploads/` local — não precisa de conta na Vercel só para desenvolver.
 
 Outros scripts úteis:
 
 ```bash
-npm run dev:client   # só o frontend (Vite)
-npm run dev:server   # só o backend (Express, com watch)
-npm run db:studio    # abre o Prisma Studio para inspecionar o banco visualmente
-npm run build        # build de produção do frontend (gera dist/)
-npm run preview      # pré-visualiza o build do frontend isoladamente
+npm run dev:client        # só o frontend (Vite)
+npm run dev:server        # só o backend (Express, com watch)
+npm run db:studio         # abre o Prisma Studio para inspecionar o banco visualmente
+npm run db:migrate:deploy # aplica migrations já existentes sem criar uma nova (usado em produção)
+npm run build             # build de produção do frontend (gera dist/)
+npm run preview           # pré-visualiza o build do frontend isoladamente
 ```
 
-### Rodando em "produção" (um único processo)
+## Publicando na Vercel
 
-Com `NODE_ENV=production`, o servidor Express também serve os arquivos estáticos do frontend (pasta `dist/`) e faz o fallback de rotas para o `index.html`, então um único processo atende loja + painel + API:
+1. **Suba o código para um repositório Git** (GitHub/GitLab/Bitbucket) e importe-o em [vercel.com/new](https://vercel.com/new). A Vercel detecta o Vite automaticamente.
+2. **Crie o banco**: na aba **Storage** do projeto na Vercel, clique em **Create Database → Postgres**. Isso já injeta as variáveis de conexão no projeto (não precisa copiar/colar nada).
+3. **Crie o storage de imagens**: ainda em **Storage**, **Create → Blob**. Isso injeta `BLOB_READ_WRITE_TOKEN` automaticamente.
+4. **Configure as variáveis de ambiente** do projeto (aba **Settings → Environment Variables**):
+   - `DATABASE_URL` → cole o valor de `POSTGRES_PRISMA_URL` (conexão *pooled*, gerado pela Vercel no passo 2).
+   - `DIRECT_URL` → cole o valor de `POSTGRES_URL_NON_POOLING` (conexão direta, usada só para migrations).
+   - `JWT_SECRET` → uma string longa e aleatória (ex.: `openssl rand -hex 32`).
+   - `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` → usadas pelo `db:seed` para criar o primeiro admin.
+   - `NODE_ENV=production` (a Vercel já define isso automaticamente em produção, não precisa adicionar).
+5. **Rode as migrations e o seed uma vez**, apontando para o banco de produção. O jeito mais simples é puxar as variáveis para a sua máquina:
+   ```bash
+   npx vercel link          # conecta esta pasta ao projeto criado na Vercel
+   npx vercel env pull .env.production.local
+   npx dotenv -e .env.production.local -- npm run db:migrate:deploy
+   npx dotenv -e .env.production.local -- npm run db:seed
+   ```
+6. **Deploy**: `npx vercel --prod`, ou simplesmente faça push no branch conectado — a Vercel builda e publica sozinha a cada push.
+
+Depois disso a loja, o painel admin e a API inteira funcionam no domínio da Vercel, sem servidor separado. Detalhes técnicos de como isso funciona:
+
+- `api/index.ts` exporta o mesmo app Express usado em desenvolvimento como uma função serverless; `vercel.json` redireciona `/api/*` para essa função e todo o resto para o app React (SPA).
+- `server/src/db.ts` reaproveita a conexão do Prisma entre invocações da função (evita esgotar o limite de conexões do Postgres); por isso o uso da *pooled connection* (`DATABASE_URL`/`POSTGRES_PRISMA_URL`) é importante.
+- `server/src/storage.ts` decide sozinho entre Vercel Blob (produção) e disco local (dev) com base na presença de `BLOB_READ_WRITE_TOKEN` — nenhum código de rota precisa saber a diferença.
+
+### Rodando fora da Vercel (VPS, Railway, Render — processo único)
+
+Com `NODE_ENV=production` e sem a variável `VERCEL` definida, o próprio servidor Express também serve os arquivos estáticos do frontend (pasta `dist/`) e faz o fallback de rotas para o `index.html`, então um único processo atende loja + painel + API:
 
 ```bash
 npm run build
 NODE_ENV=production npx tsx server/src/index.ts
 ```
+
+Nesse cenário, se não configurar `BLOB_READ_WRITE_TOKEN`, o upload de imagens usa o disco do próprio servidor — funciona desde que o host tenha disco persistente (é o caso de uma VPS/Railway/Render, mas não da Vercel).
 
 ## Credenciais do administrador (seed)
 
@@ -59,14 +94,22 @@ Definidas em `.env` (`ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`) e criadas pe
 ## Estrutura
 
 ```
+api/
+  index.ts               # entrada da função serverless da Vercel (reexporta o app Express)
+
+vercel.json               # rewrites de /api/* para a função serverless e fallback de SPA
+
 server/
   prisma/schema.prisma   # modelos: Category, Product, ProductImage, ProductVariant,
                           # Customer, Order, OrderItem, AdminUser
   prisma/seed.ts         # popula categorias, catálogo inicial e o usuário admin
+  src/app.ts             # monta o app Express (rotas, middlewares) sem chamar listen()
+  src/index.ts           # entrada de desenvolvimento local: importa app.ts e chama listen()
+  src/storage.ts         # upload/remoção de imagem: Vercel Blob ou disco local, conforme o ambiente
   src/routes/            # rotas públicas (produtos, categorias, pedidos, frete, cupons)
   src/routes/admin/      # rotas protegidas (CRUD de produtos/categorias, pedidos, dashboard)
   src/middleware/        # requireAdmin (valida o cookie JWT)
-  uploads/                # imagens de produto enviadas pelo painel (servidas em /uploads)
+  uploads/                # imagens de produto em disco local (dev sem Vercel Blob configurado)
 
 src/
   lib/api.ts              # cliente fetch (credentials: "include" para o cookie de admin)

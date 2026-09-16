@@ -4,19 +4,29 @@ import { PrismaClient } from "@prisma/client";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { saveUpload } from "../src/storage.js";
 
 const prisma = new PrismaClient();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SEED_IMAGES_DIR = path.join(__dirname, "seed-images");
-const UPLOADS_DIR = path.join(__dirname, "..", "uploads");
 
-function ensureSeedImageCopied(filename: string) {
-  const dest = path.join(UPLOADS_DIR, filename);
-  if (fs.existsSync(dest)) return;
-  const src = path.join(SEED_IMAGES_DIR, filename);
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  fs.copyFileSync(src, dest);
+const SEED_IMAGE_MIME: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+};
+
+// Envia a imagem de catálogo inicial para o storage configurado — Vercel
+// Blob se BLOB_READ_WRITE_TOKEN estiver definido, senão `server/uploads/`
+// local (ver server/src/storage.ts). Só é chamada ao criar o registro da
+// imagem pela primeira vez, então rodar o seed de novo não reenvia à toa.
+async function seedImageUrl(filename: string): Promise<string> {
+  const buffer = fs.readFileSync(path.join(SEED_IMAGES_DIR, filename));
+  const contentType = SEED_IMAGE_MIME[path.extname(filename).toLowerCase()] ?? "image/jpeg";
+  return saveUpload(buffer, filename, contentType);
 }
 
 const CATEGORIES = [
@@ -358,11 +368,11 @@ async function main() {
     });
 
     if (p.image) {
-      ensureSeedImageCopied(p.image);
       const existingImages = await prisma.productImage.findMany({ where: { productId: product.id } });
       if (existingImages.length === 0) {
+        const url = await seedImageUrl(p.image);
         await prisma.productImage.create({
-          data: { productId: product.id, url: `/uploads/${p.image}`, order: 0 },
+          data: { productId: product.id, url, order: 0 },
         });
       }
     }

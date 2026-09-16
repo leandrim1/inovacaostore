@@ -11,11 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+.vercel
 
 # Backend / database
 .env
-server/prisma/*.db
-server/prisma/*.db-journal
 server/uploads/*
 !server/uploads/.gitkeep
 
