@@ -8,6 +8,11 @@ import { serializeProduct } from "../../utils/serialize.js";
 import { uniqueSlug } from "../../utils/slug.js";
 import { upload, UPLOADS_DIR } from "../../upload.js";
 
+function deleteUploadedFile(url: string) {
+  const filePath = path.join(UPLOADS_DIR, path.basename(url));
+  fs.unlink(filePath, () => {});
+}
+
 export const adminProductsRouter = Router();
 
 const variantSchema = z.object({
@@ -21,7 +26,7 @@ const variantSchema = z.object({
 
 const productSchema = z.object({
   name: z.string().min(1),
-  slug: z.string().optional(),
+  slug: z.string().min(1).optional(),
   description: z.string().default(""),
   features: z.array(z.string()).default([]),
   tags: z.array(z.enum(["novo", "mais-vendido", "importado", "ultimas-unidades"])).default([]),
@@ -31,7 +36,7 @@ const productSchema = z.object({
   featured: z.boolean().default(false),
   active: z.boolean().default(true),
   categoryId: z.string().min(1),
-  variants: z.array(variantSchema).default([]),
+  variants: z.array(variantSchema).min(1, "Informe ao menos uma variação (cor, tamanho e estoque)."),
 });
 
 const updateProductSchema = productSchema.partial();
@@ -146,10 +151,26 @@ adminProductsRouter.patch("/:id", async (req, res) => {
 
       if (data.variants) {
         const currentVariants = await tx.productVariant.findMany({ where: { productId } });
-        const submittedKeys = new Set(data.variants.map((v) => `${v.color}::${v.size}`));
+        const currentById = new Map(currentVariants.map((v) => [v.id, v]));
+        const keptIds = new Set<string>();
 
         for (const v of data.variants) {
-          await tx.productVariant.upsert({
+          // Variações existentes são casadas pelo `id` (estável mesmo se
+          // cor/tamanho forem renomeados); só variações realmente novas
+          // (sem `id`, ou com um `id` que não pertence a este produto) usam
+          // a chave natural cor+tamanho como fallback para evitar duplicatas.
+          const existingById = v.id ? currentById.get(v.id) : undefined;
+
+          if (existingById) {
+            await tx.productVariant.update({
+              where: { id: existingById.id },
+              data: { color: v.color, colorHex: v.colorHex, size: v.size, stock: v.stock, sku: v.sku },
+            });
+            keptIds.add(existingById.id);
+            continue;
+          }
+
+          const upserted = await tx.productVariant.upsert({
             where: { productId_color_size: { productId, color: v.color, size: v.size } },
             update: { colorHex: v.colorHex, stock: v.stock, sku: v.sku },
             create: {
@@ -161,11 +182,11 @@ adminProductsRouter.patch("/:id", async (req, res) => {
               sku: v.sku,
             },
           });
+          keptIds.add(upserted.id);
         }
 
         for (const existingVariant of currentVariants) {
-          const key = `${existingVariant.color}::${existingVariant.size}`;
-          if (!submittedKeys.has(key)) {
+          if (!keptIds.has(existingVariant.id)) {
             await tx.productVariant.update({
               where: { id: existingVariant.id },
               data: { stock: 0 },
@@ -184,7 +205,13 @@ adminProductsRouter.patch("/:id", async (req, res) => {
 
 adminProductsRouter.delete("/:id", async (req, res) => {
   try {
-    await prisma.product.delete({ where: { id: req.params.id } });
+    const product = await prisma.product.delete({
+      where: { id: req.params.id },
+      include: { images: true },
+    });
+    for (const image of product.images) {
+      deleteUploadedFile(image.url);
+    }
     res.status(204).end();
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
@@ -200,13 +227,15 @@ adminProductsRouter.delete("/:id", async (req, res) => {
 
 adminProductsRouter.post("/:id/images", upload.array("images", 8), async (req, res) => {
   const productId = req.params.id;
+  const files = (req.files as Express.Multer.File[]) ?? [];
+
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) {
+    for (const file of files) deleteUploadedFile(file.filename);
     res.status(404).json({ error: "Produto não encontrado." });
     return;
   }
 
-  const files = (req.files as Express.Multer.File[]) ?? [];
   if (files.length === 0) {
     res.status(400).json({ error: "Nenhuma imagem enviada." });
     return;

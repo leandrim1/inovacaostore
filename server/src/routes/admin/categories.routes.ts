@@ -8,7 +8,7 @@ export const adminCategoriesRouter = Router();
 
 const categorySchema = z.object({
   name: z.string().min(1),
-  slug: z.string().optional(),
+  slug: z.string().min(1).optional(),
   description: z.string().default(""),
   order: z.number().int().default(0),
 });

@@ -6,6 +6,7 @@ export interface ProductQuery {
   category?: string;
   featured?: boolean;
   limit?: number;
+  q?: string;
 }
 
 export function useProducts(query: ProductQuery = {}) {
@@ -13,6 +14,7 @@ export function useProducts(query: ProductQuery = {}) {
     category: query.category,
     featured: query.featured,
     limit: query.limit,
+    q: query.q,
   });
 
   return useQuery({

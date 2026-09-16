@@ -1,5 +1,7 @@
 import "dotenv/config";
+import "express-async-errors";
 import express from "express";
+import { MulterError } from "multer";
 import cookieParser from "cookie-parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,6 +17,7 @@ import { adminOrdersRouter } from "./routes/admin/orders.routes.js";
 import { adminDashboardRouter } from "./routes/admin/dashboard.routes.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
 import { UPLOADS_DIR } from "./upload.js";
+import { HttpError } from "./errors.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -37,9 +40,30 @@ app.use("/api/admin/dashboard", requireAdmin, adminDashboardRouter);
 
 app.use(
   (err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    if (err instanceof Error) {
-      res.status(400).json({ error: err.message });
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ error: err.message });
       return;
+    }
+    if (err instanceof MulterError) {
+      const messages: Record<string, string> = {
+        LIMIT_FILE_SIZE: "Cada imagem deve ter no máximo 6MB.",
+        LIMIT_FILE_COUNT: "Envie no máximo 8 imagens por vez.",
+        LIMIT_UNEXPECTED_FILE: "Campo de upload inesperado.",
+      };
+      res.status(400).json({ error: messages[err.code] ?? "Não foi possível enviar o arquivo." });
+      return;
+    }
+    // Erros "esperados" e seguros de expor (ex.: JSON malformado no corpo da
+    // requisição, limites do multer) chegam com um `status`/`statusCode` 4xx
+    // já atribuído pelo próprio middleware que os gerou.
+    if (err && typeof err === "object") {
+      const status = (err as { status?: unknown; statusCode?: unknown }).status ??
+        (err as { statusCode?: unknown }).statusCode;
+      if (typeof status === "number" && status >= 400 && status < 500) {
+        const message = err instanceof Error ? err.message : "Requisição inválida.";
+        res.status(status).json({ error: message });
+        return;
+      }
     }
     console.error(err);
     res.status(500).json({ error: "Erro interno do servidor." });

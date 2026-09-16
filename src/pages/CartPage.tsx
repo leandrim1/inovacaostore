@@ -90,6 +90,13 @@ export default function CartPage() {
                           <p className="mt-0.5 text-sm text-neutral-500">
                             {item.color} · {item.size}
                           </p>
+                          {item.stock <= 0 ? (
+                            <p className="mt-0.5 text-xs font-medium text-red-600">Sem estoque disponível</p>
+                          ) : item.quantity >= item.stock ? (
+                            <p className="mt-0.5 text-xs text-neutral-400">
+                              Apenas {item.stock} unidade(s) em estoque
+                            </p>
+                          ) : null}
                         </div>
                         <button
                           type="button"
@@ -104,6 +111,7 @@ export default function CartPage() {
                         <QuantityStepper
                           quantity={item.quantity}
                           onChange={(q) => updateQuantity(item.key, q)}
+                          max={Math.max(1, item.stock)}
                         />
                         <span className="font-display text-base">
                           {formatBRL(item.price * item.quantity)}

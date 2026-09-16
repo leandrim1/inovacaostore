@@ -112,6 +112,18 @@ export default function AdminProductFormPage() {
     setError(null);
 
     const validVariants = variants.filter((v) => v.color.trim() && v.size.trim());
+    const partiallyFilled = variants.some(
+      (v) => (v.color.trim() || v.size.trim()) && !(v.color.trim() && v.size.trim()),
+    );
+
+    if (partiallyFilled) {
+      setError("Uma ou mais variações estão incompletas: informe cor e tamanho, ou remova a linha.");
+      return;
+    }
+    if (validVariants.length === 0) {
+      setError("Adicione pelo menos uma variação (cor, tamanho e estoque) antes de salvar.");
+      return;
+    }
 
     const payload: AdminProductInput = {
       name,

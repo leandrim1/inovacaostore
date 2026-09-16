@@ -27,6 +27,8 @@ export interface CartItem {
   color: string;
   size: string;
   quantity: number;
+  /** Estoque da variação no momento em que foi adicionada ao carrinho (usado para limitar o stepper de quantidade). */
+  stock: number;
 }
 
 interface CartState {
@@ -41,7 +43,8 @@ function loadState(): CartState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { items: [], coupon: null };
     const parsed = JSON.parse(raw) as CartState;
-    return { items: parsed.items ?? [], coupon: parsed.coupon ?? null };
+    const items = (parsed.items ?? []).map((i) => ({ ...i, stock: i.stock ?? 99 }));
+    return { items, coupon: parsed.coupon ?? null };
   } catch {
     return { items: [], coupon: null };
   }
@@ -88,13 +91,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem: CartContextValue["addItem"] = useCallback(
     (product, { variantId, color, size, quantity = 1 }) => {
+      const stock = product.variants.find((v) => v.id === variantId)?.stock ?? 0;
       setState((prev) => {
         const existing = prev.items.find((i) => i.key === variantId);
         if (existing) {
           return {
             ...prev,
             items: prev.items.map((i) =>
-              i.key === variantId ? { ...i, quantity: i.quantity + quantity } : i,
+              i.key === variantId
+                ? { ...i, stock, quantity: Math.min(i.quantity + quantity, Math.max(1, stock)) }
+                : i,
             ),
           };
         }
@@ -108,7 +114,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           price: product.price,
           color,
           size,
-          quantity,
+          quantity: Math.min(quantity, Math.max(1, stock)),
+          stock,
         };
         return { ...prev, items: [...prev.items, newItem] };
       });
@@ -128,7 +135,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({
       ...prev,
       items: prev.items
-        .map((i) => (i.key === key ? { ...i, quantity } : i))
+        .map((i) => (i.key === key ? { ...i, quantity: Math.min(quantity, Math.max(1, i.stock)) } : i))
         .filter((i) => i.quantity > 0),
     }));
   }, []);

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { serializeProduct } from "../utils/serialize.js";
@@ -11,8 +12,36 @@ function toArray(value: unknown): string[] {
   return [];
 }
 
+const numericParam = z
+  .string()
+  .refine((v) => v.trim() !== "" && Number.isFinite(Number(v)), "Deve ser numérico.")
+  .transform(Number)
+  .optional();
+
+const querySchema = z.object({
+  category: z.unknown().optional(),
+  size: z.unknown().optional(),
+  color: z.unknown().optional(),
+  minPrice: numericParam,
+  maxPrice: numericParam,
+  sort: z.enum(["relevancia", "menor-preco", "maior-preco", "avaliacao"]).optional(),
+  q: z.string().optional(),
+  featured: z.string().optional(),
+  limit: z
+    .string()
+    .refine((v) => Number.isInteger(Number(v)) && Number(v) > 0, "Deve ser um inteiro positivo.")
+    .transform(Number)
+    .pipe(z.number().max(100))
+    .optional(),
+});
+
 productsRouter.get("/", async (req, res) => {
-  const { category, size, color, minPrice, maxPrice, sort, q, featured, limit } = req.query;
+  const parsed = querySchema.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Parâmetros de busca inválidos.", details: parsed.error.flatten() });
+    return;
+  }
+  const { category, size, color, minPrice, maxPrice, sort, q, featured, limit } = parsed.data;
 
   const categories = toArray(category);
   const sizes = toArray(size);
@@ -32,10 +61,10 @@ productsRouter.get("/", async (req, res) => {
       { variants: { some: { color: { in: colors } } } },
     ];
   }
-  if (minPrice) where.price = { ...(where.price as object), gte: Number(minPrice) };
-  if (maxPrice) where.price = { ...(where.price as object), lte: Number(maxPrice) };
+  if (minPrice !== undefined) where.price = { ...(where.price as object), gte: minPrice };
+  if (maxPrice !== undefined) where.price = { ...(where.price as object), lte: maxPrice };
   if (featured === "true") where.featured = true;
-  if (q && typeof q === "string" && q.trim()) {
+  if (q && q.trim()) {
     where.OR = [
       { name: { contains: q } },
       { description: { contains: q } },
@@ -50,7 +79,7 @@ productsRouter.get("/", async (req, res) => {
   const products = await prisma.product.findMany({
     where,
     orderBy,
-    take: limit ? Number(limit) : undefined,
+    take: limit,
     include: { images: { orderBy: { order: "asc" } }, variants: true, category: true },
   });
 

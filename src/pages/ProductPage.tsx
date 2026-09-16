@@ -75,10 +75,11 @@ export default function ProductPage() {
   const variantStock = selectedVariant?.stock ?? 0;
   const hasAnyStock = product.variants.some((v) => v.stock > 0);
   const lowStock = variantStock > 0 && variantStock <= 3;
+  const clampedQuantity = Math.min(quantity, Math.max(1, variantStock));
 
   const handleAddToCart = () => {
     if (!selectedVariant || selectedVariant.stock <= 0) return;
-    addItem(product, { variantId: selectedVariant.id, color, size, quantity });
+    addItem(product, { variantId: selectedVariant.id, color, size, quantity: clampedQuantity });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -222,7 +223,7 @@ export default function ProductPage() {
                 </p>
 
                 <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <QuantityStepper quantity={quantity} onChange={setQuantity} max={Math.max(1, variantStock)} />
+                  <QuantityStepper quantity={clampedQuantity} onChange={setQuantity} max={Math.max(1, variantStock)} />
                   <button
                     type="button"
                     onClick={handleAddToCart}

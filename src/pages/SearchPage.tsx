@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Seo } from "../components/seo/Seo";
 import { ProductListingLayout } from "../components/product/ProductListingLayout";
@@ -7,18 +6,10 @@ import { useProducts } from "../hooks/useProducts";
 export default function SearchPage() {
   const [params] = useSearchParams();
   const query = params.get("q")?.trim() ?? "";
-  const { data: products = [], isLoading } = useProducts();
-
-  const results = useMemo(() => {
-    if (!query) return products;
-    const normalized = query.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(normalized) ||
-        p.category.toLowerCase().includes(normalized) ||
-        p.description.toLowerCase().includes(normalized),
-    );
-  }, [products, query]);
+  // A busca por texto é feita no servidor (nome/descrição) para não precisar
+  // baixar o catálogo inteiro a cada busca; os filtros de tamanho/cor/preço
+  // continuam sendo aplicados no cliente sobre esse resultado já reduzido.
+  const { data: results = [], isLoading } = useProducts(query ? { q: query } : {});
 
   return (
     <>

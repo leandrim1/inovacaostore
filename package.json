@@ -26,6 +26,8 @@
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^4.22.3",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^8.7.0",
     "framer-motion": "^13.3.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.46.0",

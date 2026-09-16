@@ -13,7 +13,12 @@ export default function AdminProductsPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function toggleActive(id: string, current: boolean) {
-    await updateProduct.mutateAsync({ id, data: { active: !current } });
+    setError(null);
+    try {
+      await updateProduct.mutateAsync({ id, data: { active: !current } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível atualizar o produto.");
+    }
   }
 
   async function handleDelete(id: string, name: string) {

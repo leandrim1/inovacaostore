@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { isValidCep, quoteShipping } from "../shipping.js";
 import { findCoupon } from "../coupons.js";
@@ -149,7 +150,7 @@ ordersRouter.post("/", async (req, res) => {
         },
         include: { items: true },
       });
-    });
+    }, { maxWait: 15000, timeout: 15000 });
 
     res.status(201).json({
       id: order.id,
@@ -160,6 +161,17 @@ ordersRouter.post("/", async (req, res) => {
   } catch (err) {
     if (err instanceof OrderError) {
       res.status(err.status).json({ error: err.message });
+      return;
+    }
+    // SQLite permite apenas um gravador por vez: sob concorrência alta o
+    // Prisma pode não conseguir iniciar/concluir a transação a tempo. Isso
+    // não é um erro do pedido em si, então respondemos de forma clara e
+    // "tentável de novo" em vez de um erro genérico de servidor.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && (err.code === "P1008" || err.code === "P2028")) {
+      console.error(err);
+      res.status(503).json({
+        error: "O sistema está processando muitos pedidos ao mesmo tempo. Tente novamente em alguns segundos.",
+      });
       return;
     }
     console.error(err);
