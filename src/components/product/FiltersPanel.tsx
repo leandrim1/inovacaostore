@@ -1,0 +1,151 @@
+import { CATEGORIES } from "../../data/categories";
+import { formatBRL } from "../../lib/format";
+import type { useProductFilters } from "../../hooks/useProductFilters";
+
+type Filters = ReturnType<typeof useProductFilters>;
+
+interface FiltersPanelProps extends Filters {
+  showCategoryFilter?: boolean;
+}
+
+export function FiltersPanel({
+  showCategoryFilter,
+  categories,
+  toggleCategory,
+  availableSizes,
+  sizes,
+  toggleSize,
+  availableColors,
+  colors,
+  toggleColor,
+  priceBounds,
+  minPrice,
+  maxPrice,
+  setPriceRange,
+  clearFilters,
+  activeFilterCount,
+}: FiltersPanelProps) {
+  return (
+    <div className="flex flex-col gap-8">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display text-lg tracking-wide">Filtros</h3>
+        {activeFilterCount > 0 && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-xs font-medium text-neutral-400 underline hover:text-brand-ink"
+          >
+            Limpar tudo
+          </button>
+        )}
+      </div>
+
+      {showCategoryFilter && (
+        <fieldset>
+          <legend className="mb-3 font-display text-sm tracking-widest text-neutral-500">
+            Categoria
+          </legend>
+          <div className="flex flex-col gap-2">
+            {CATEGORIES.map((cat) => (
+              <label key={cat.slug} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={categories.includes(cat.slug)}
+                  onChange={() => toggleCategory(cat.slug)}
+                  className="h-4 w-4 accent-brand-ink"
+                />
+                {cat.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      <fieldset>
+        <legend className="mb-3 font-display text-sm tracking-widest text-neutral-500">
+          Tamanho
+        </legend>
+        <div className="flex flex-wrap gap-2">
+          {availableSizes.map((size) => {
+            const active = sizes.includes(size);
+            return (
+              <button
+                key={size}
+                type="button"
+                onClick={() => toggleSize(size)}
+                className={`flex h-9 min-w-9 items-center justify-center rounded-md border px-2 text-xs font-semibold transition-colors ${
+                  active
+                    ? "border-brand-ink bg-brand-ink text-white"
+                    : "border-black/15 text-neutral-600 hover:border-brand-ink"
+                }`}
+              >
+                {size}
+              </button>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="mb-3 font-display text-sm tracking-widest text-neutral-500">
+          Cor
+        </legend>
+        <div className="flex flex-wrap gap-3">
+          {availableColors.map((color) => {
+            const active = colors.includes(color.name);
+            return (
+              <button
+                key={color.name}
+                type="button"
+                onClick={() => toggleColor(color.name)}
+                title={color.name}
+                aria-pressed={active}
+                aria-label={color.name}
+                className={`h-8 w-8 rounded-full ring-2 ring-offset-2 transition-all ${
+                  active ? "ring-brand-ink" : "ring-transparent hover:ring-black/20"
+                }`}
+                style={{ backgroundColor: color.hex }}
+              />
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="mb-3 font-display text-sm tracking-widest text-neutral-500">
+          Preço
+        </legend>
+        <div className="flex items-center gap-2 text-sm">
+          <input
+            type="number"
+            placeholder={String(priceBounds.min)}
+            value={minPrice ?? ""}
+            onChange={(e) =>
+              setPriceRange(
+                e.target.value ? Number(e.target.value) : undefined,
+                maxPrice,
+              )
+            }
+            className="w-full rounded-md border border-black/15 px-2 py-1.5 outline-none focus:border-brand-ink"
+          />
+          <span className="text-neutral-400">—</span>
+          <input
+            type="number"
+            placeholder={String(priceBounds.max)}
+            value={maxPrice ?? ""}
+            onChange={(e) =>
+              setPriceRange(
+                minPrice,
+                e.target.value ? Number(e.target.value) : undefined,
+              )
+            }
+            className="w-full rounded-md border border-black/15 px-2 py-1.5 outline-none focus:border-brand-ink"
+          />
+        </div>
+        <p className="mt-1.5 text-xs text-neutral-400">
+          Faixa disponível: {formatBRL(priceBounds.min)} — {formatBRL(priceBounds.max)}
+        </p>
+      </fieldset>
+    </div>
+  );
+}

@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Bebas Neue", "Inter", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --color-brand-yellow: #f5c400;
+  --color-brand-yellow-dark: #d6a900;
+  --color-brand-yellow-light: #ffe066;
+  --color-brand-black: #121212;
+  --color-brand-ink: #0a0a0a;
+  --color-brand-cream: #faf9f5;
+
+  --color-neutral-25: #fbfbfa;
+
+  --animate-marquee: marquee 28s linear infinite;
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-brand-cream);
+    color: var(--color-brand-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-yellow);
+    color: var(--color-brand-ink);
+  }
+}
+
+@layer utilities {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-ink px-6 py-3 font-display text-sm tracking-widest text-white transition-transform duration-200 hover:-translate-y-0.5 hover:bg-black active:translate-y-0;
+  }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-yellow px-6 py-3 font-display text-sm tracking-widest text-brand-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-brand-yellow-dark active:translate-y-0;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-ink/20 bg-transparent px-6 py-3 font-display text-sm tracking-widest text-brand-ink transition-colors duration-200 hover:border-brand-ink hover:bg-brand-ink hover:text-white;
+  }
+
+  .section-title {
+    @apply font-display text-3xl tracking-wide text-brand-ink sm:text-4xl;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
