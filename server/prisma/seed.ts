@@ -334,9 +334,12 @@ async function main() {
   console.log("Seeding categories...");
   const categoryMap = new Map<string, string>();
   for (const cat of CATEGORIES) {
+    // update vazio de propósito: o seed só cria a categoria na primeira vez.
+    // Rodar de novo (ex.: a cada deploy) nunca deve sobrescrever uma edição
+    // feita depois pelo painel administrativo.
     const created = await prisma.category.upsert({
       where: { slug: cat.slug },
-      update: { name: cat.name, description: cat.description, order: cat.order },
+      update: {},
       create: cat,
     });
     categoryMap.set(cat.slug, created.id);
