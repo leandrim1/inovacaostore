@@ -13,8 +13,8 @@ function CountdownBadge({ endsAt }: { endsAt: string | null }) {
   const label = parts.days > 0 ? `${parts.days}d ${pad(parts.hours)}:${pad(parts.minutes)}:${pad(parts.seconds)}` : `${pad(parts.hours)}:${pad(parts.minutes)}:${pad(parts.seconds)}`;
 
   return (
-    <div className="flex w-fit items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-ink shadow-lg">
-      <Clock size={16} />
+    <div className="flex w-fit items-center gap-2 border border-white/20 bg-black/50 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md">
+      <Clock size={16} className="text-brand-yellow" />
       <span className="tabular-nums">{label}</span>
     </div>
   );
@@ -24,7 +24,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   const isExternal = /^https?:\/\//.test(promotion.ctaUrl);
 
   return (
-    <div className="relative flex min-h-[420px] items-center overflow-hidden rounded-3xl sm:min-h-[480px]">
+    <div className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px]">
       {promotion.imageUrl ? (
         <img
           src={promotion.imageUrl}
@@ -32,7 +32,9 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-yellow via-brand-yellow-dark to-brand-ink" />
+        <div className="absolute inset-0 bg-brand-ink">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_0%,rgba(245,196,0,0.35),transparent_65%)]" />
+        </div>
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
 
@@ -43,6 +45,10 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
           </div>
         )}
 
+        <div className="flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-yellow" aria-hidden />
+          <span className="font-display text-xs tracking-[0.4em] text-brand-yellow">Oferta</span>
+        </div>
         <p className="font-display text-2xl tracking-wide text-white sm:text-3xl">
           {promotion.title}
         </p>
@@ -118,17 +124,24 @@ export function PromotionsBanner() {
                 <ChevronLeft size={18} />
               </button>
 
-              <div className="flex gap-2">
+              <div className="flex w-28 items-center gap-1.5">
                 {promotions.map((p, i) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => setIndex(i)}
                     aria-label={`Ver promoção ${i + 1}`}
-                    className={`h-2 rounded-full transition-all ${
-                      i === safeIndex ? "w-6 bg-brand-yellow" : "w-2 bg-white/50"
-                    }`}
-                  />
+                    className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
+                  >
+                    {i === safeIndex ? (
+                      <span
+                        key={safeIndex}
+                        className="block h-full w-full origin-left animate-[fill-bar_7s_linear] bg-brand-yellow motion-reduce:animate-none"
+                      />
+                    ) : i < safeIndex ? (
+                      <span className="block h-full w-full bg-brand-yellow/70" />
+                    ) : null}
+                  </button>
                 ))}
               </div>
 

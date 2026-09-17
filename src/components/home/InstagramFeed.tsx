@@ -1,5 +1,6 @@
 import { STORE } from "../../data/store";
 import { Reveal } from "../ui/Reveal";
+import { SectionHeading } from "../ui/SectionHeading";
 import { InstagramIcon } from "../ui/InstagramIcon";
 
 import insta01 from "../../assets/images/insta-01.jpg";
@@ -26,22 +27,22 @@ export function InstagramFeed() {
   return (
     <section className="bg-brand-cream py-16 sm:py-24">
       <div className="container-page">
-        <Reveal>
-          <div className="mb-10 flex flex-col items-center gap-2 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-ink text-white">
-              <InstagramIcon size={20} />
-            </span>
-            <h2 className="section-title">Siga no Instagram</h2>
+        <SectionHeading
+          index="04"
+          eyebrow="Comunidade"
+          title="Siga no Instagram"
+          description={
             <a
               href={STORE.social.instagram}
               target="_blank"
               rel="noreferrer"
-              className="font-display text-sm tracking-widest text-brand-yellow-dark hover:underline"
+              className="inline-flex items-center gap-2 font-display text-sm tracking-widest text-brand-yellow-dark hover:underline"
             >
+              <InstagramIcon size={16} />
               {STORE.social.instagramHandle}
             </a>
-          </div>
-        </Reveal>
+          }
+        />
 
         <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-4 lg:grid-cols-8">
           {IMAGES.map((src, i) => (
@@ -50,17 +51,17 @@ export function InstagramFeed() {
                 href={STORE.social.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="group relative block aspect-square overflow-hidden rounded-lg"
+                className="group relative block aspect-square overflow-hidden"
               >
                 <img
                   src={src}
                   alt="Publicação da Inovação Store no Instagram"
                   loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/50">
                   <InstagramIcon
-                    size={22}
+                    size={20}
                     className="text-white opacity-0 transition-opacity group-hover:opacity-100"
                   />
                 </div>

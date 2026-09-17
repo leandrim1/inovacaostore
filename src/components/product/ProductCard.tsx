@@ -24,9 +24,9 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <motion.article
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5"
+      whileHover={{ y: -6 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="group relative flex flex-col overflow-hidden border border-brand-ink/10 bg-white transition-colors duration-300 hover:border-brand-ink/25 hover:shadow-[0_24px_48px_-28px_rgba(0,0,0,0.35)]"
     >
       <Link
         to={`/produto/${product.slug}`}
@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={image}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
           <PlaceholderImage label="Em breve" />
@@ -51,15 +51,15 @@ export function ProductCard({ product }: { product: Product }) {
           <button
             type="button"
             onClick={handleQuickAdd}
-            aria-label={`Adicionar ${product.name} ao carrinho`}
-            className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-ink text-white opacity-0 shadow-lg transition-all duration-300 hover:bg-brand-yellow hover:text-brand-ink group-hover:opacity-100"
+            className="absolute inset-x-0 bottom-0 flex translate-y-full items-center justify-center gap-2 bg-brand-ink py-3 font-display text-xs tracking-[0.2em] text-white transition-transform duration-300 ease-out hover:bg-black group-hover:translate-y-0"
           >
-            <ShoppingBag size={16} />
+            <ShoppingBag size={14} />
+            Adicionar ao carrinho
           </button>
         )}
       </Link>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
+      <div className="flex flex-1 flex-col gap-1.5 border-t border-brand-ink/10 p-4">
         <span className="text-[11px] uppercase tracking-wide text-neutral-400">
           {product.category}
         </span>

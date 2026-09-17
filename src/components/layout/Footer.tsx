@@ -14,7 +14,7 @@ export function Footer() {
     <footer className="mt-20 bg-brand-ink text-white">
       <div className="container-page grid grid-cols-1 gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-4">
-          <Logo />
+          <Logo tone="dark" />
           <p className="max-w-xs text-sm text-white/60">{STORE.description}</p>
           <div className="flex gap-3 pt-1">
             <a
@@ -39,7 +39,8 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="font-display mb-4 text-sm tracking-widest text-white/50">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-white/50">
+            <span className="h-px w-4 bg-brand-yellow-dark" aria-hidden />
             Categorias
           </h3>
           <ul className="flex flex-col gap-2.5 text-sm">
@@ -54,7 +55,8 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="font-display mb-4 text-sm tracking-widest text-white/50">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-white/50">
+            <span className="h-px w-4 bg-brand-yellow-dark" aria-hidden />
             Institucional
           </h3>
           <ul className="flex flex-col gap-2.5 text-sm">
@@ -82,7 +84,8 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="font-display mb-4 text-sm tracking-widest text-white/50">
+          <h3 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-white/50">
+            <span className="h-px w-4 bg-brand-yellow-dark" aria-hidden />
             Contato
           </h3>
           <ul className="flex flex-col gap-3 text-sm text-white/80">
@@ -111,6 +114,15 @@ export function Footer() {
             ))}
           </ul>
         </div>
+      </div>
+
+      <div className="overflow-hidden border-t border-white/10 py-6 text-center">
+        <p
+          aria-hidden
+          className="select-none whitespace-nowrap font-display text-[clamp(2.5rem,11vw,6rem)] leading-none tracking-wide text-white/[0.06]"
+        >
+          INOVAÇÃO STORE
+        </p>
       </div>
 
       <div className="border-t border-white/10 py-5">

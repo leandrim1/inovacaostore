@@ -53,8 +53,8 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur transition-shadow ${
-          isScrolled ? "border-black/10 shadow-sm" : "border-transparent"
+        className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur-md transition-shadow duration-300 ${
+          isScrolled ? "border-brand-ink/10 shadow-[0_1px_0_rgba(0,0,0,0.04),0_12px_24px_-20px_rgba(0,0,0,0.35)]" : "border-transparent"
         }`}
       >
         <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20">
@@ -67,7 +67,7 @@ export function Header() {
             <Menu size={22} />
           </button>
 
-          <Logo />
+          <Logo size={40} />
 
           <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center overflow-hidden lg:flex">
             <AnimatePresence mode="wait">
@@ -77,15 +77,17 @@ export function Header() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="flex items-center gap-5 xl:gap-7"
+                className="flex items-center gap-6 xl:gap-9"
               >
                 {visibleCategories.map((cat) => (
                   <NavLink
                     key={cat.slug}
                     to={`/categoria/${cat.slug}`}
                     className={({ isActive }) =>
-                      `shrink-0 whitespace-nowrap font-display text-sm tracking-widest transition-colors hover:text-brand-yellow-dark ${
-                        isActive ? "text-brand-yellow-dark" : "text-brand-ink"
+                      `relative shrink-0 whitespace-nowrap py-2 font-display text-sm tracking-widest transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-brand-yellow-dark after:transition-all after:duration-300 ${
+                        isActive
+                          ? "text-brand-ink after:w-full"
+                          : "text-brand-ink/60 after:w-0 hover:text-brand-ink hover:after:w-full"
                       }`
                     }
                   >
@@ -152,17 +154,18 @@ export function Header() {
               </div>
             ) : (
               <div className="hidden items-center gap-1 sm:flex">
-                <Link to="/login" className="rounded-full px-3 py-2 text-sm font-medium hover:bg-neutral-100">
+                <Link
+                  to="/login"
+                  className="rounded-full px-3.5 py-2 font-display text-xs tracking-widest text-brand-ink/70 transition-colors hover:bg-neutral-100 hover:text-brand-ink"
+                >
                   Entrar
                 </Link>
-                <Link
-                  to="/cadastro"
-                  className="rounded-full bg-brand-ink px-3 py-2 text-sm font-medium text-white hover:bg-black"
-                >
+                <Link to="/cadastro" className="btn-primary !px-4 !py-2 !text-xs">
                   Criar conta
                 </Link>
               </div>
             )}
+            <span className="mx-1 hidden h-6 w-px bg-brand-ink/10 sm:block" aria-hidden />
             <button
               type="button"
               onClick={openCart}

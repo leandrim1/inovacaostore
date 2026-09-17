@@ -40,3 +40,6 @@ export const TESTIMONIALS: Testimonial[] = [
       "Loja de confiança, embalagem caprichada e troca facilitada quando precisei mudar o tamanho. Nota 10!",
   },
 ];
+
+export const AVERAGE_RATING =
+  Math.round((TESTIMONIALS.reduce((sum, t) => sum + t.rating, 0) / TESTIMONIALS.length) * 10) / 10;

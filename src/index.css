@@ -9,6 +9,7 @@
   --color-brand-yellow-light: #ffe066;
   --color-brand-black: #121212;
   --color-brand-ink: #0a0a0a;
+  --color-brand-void: #000000;
   --color-brand-cream: #faf9f5;
 
   --color-neutral-25: #fbfbfa;
@@ -17,6 +18,7 @@
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
   --animate-bounce-slow: bounce-slow 2.2s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 5s ease-in-out infinite;
 }
 
 @keyframes marquee {
@@ -61,6 +63,25 @@
   }
 }
 
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fill-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -85,10 +106,24 @@
   }
 
   body {
+    position: relative;
     background-color: var(--color-brand-cream);
     color: var(--color-brand-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Textura sutil de grão em toda a página — dá profundidade tátil sem custo
+     de performance (SVG estático, sem animação, blend por cima do conteúdo). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   h1,
@@ -113,19 +148,27 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-ink px-6 py-3 font-display text-sm tracking-widest text-white transition-transform duration-200 hover:-translate-y-0.5 hover:bg-black active:translate-y-0;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-ink px-7 py-3.5 font-display text-sm tracking-[0.15em] text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-black hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.5)] active:translate-y-0;
   }
 
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-yellow px-6 py-3 font-display text-sm tracking-widest text-brand-ink transition-transform duration-200 hover:-translate-y-0.5 hover:bg-brand-yellow-dark active:translate-y-0;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-yellow px-7 py-3.5 font-display text-sm tracking-[0.15em] text-brand-ink transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-yellow-light hover:shadow-[0_8px_24px_-8px_rgba(245,196,0,0.6)] active:translate-y-0;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-ink/20 bg-transparent px-6 py-3 font-display text-sm tracking-widest text-brand-ink transition-colors duration-200 hover:border-brand-ink hover:bg-brand-ink hover:text-white;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-brand-ink/20 bg-transparent px-7 py-3.5 font-display text-sm tracking-[0.15em] text-brand-ink transition-all duration-300 hover:border-brand-ink hover:bg-brand-ink hover:text-white;
   }
 
   .section-title {
-    @apply font-display text-3xl tracking-wide text-brand-ink sm:text-4xl;
+    @apply font-display text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.92] tracking-wide text-brand-ink;
+  }
+
+  .section-eyebrow {
+    @apply flex items-center gap-2.5 font-display text-xs tracking-[0.35em];
+  }
+
+  .hairline {
+    @apply border-brand-ink/10;
   }
 
   .no-scrollbar::-webkit-scrollbar {

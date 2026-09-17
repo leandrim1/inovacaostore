@@ -36,8 +36,12 @@ export function ProductListingLayout({
   return (
     <div className="container-page py-10 sm:py-14">
       <div className="mb-8">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Catálogo</span>
+        </div>
         <h1 className="section-title">{title}</h1>
-        {subtitle && <p className="mt-2 max-w-xl text-neutral-500">{subtitle}</p>}
+        {subtitle && <p className="mt-3 max-w-xl text-neutral-500">{subtitle}</p>}
       </div>
 
       <div className="flex flex-col gap-8 lg:flex-row">

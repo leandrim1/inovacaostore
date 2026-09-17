@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useProducts } from "../../hooks/useProducts";
 import { ProductCard } from "../product/ProductCard";
 import { Reveal } from "../ui/Reveal";
+import { SectionHeading } from "../ui/SectionHeading";
 
 export function FeaturedProducts() {
   const { data: products = [] } = useProducts({ featured: true, limit: 8 });
@@ -12,22 +13,21 @@ export function FeaturedProducts() {
   return (
     <section className="bg-white py-16 sm:py-24">
       <div className="container-page">
-        <Reveal>
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h2 className="section-title mb-2">Produtos em destaque</h2>
-              <p className="max-w-lg text-neutral-500">
-                Selecionamos as peças mais desejadas da temporada para você.
-              </p>
-            </div>
+        <SectionHeading
+          index="02"
+          eyebrow="Selecionados"
+          title="Em destaque"
+          description="As peças mais desejadas da temporada, escolhidas a dedo para você."
+          action={
             <Link
               to="/categoria/camisetas"
-              className="flex items-center gap-1.5 font-display text-sm tracking-widest text-brand-ink hover:text-brand-yellow-dark"
+              className="group flex items-center gap-1.5 font-display text-sm tracking-widest text-brand-ink hover:text-brand-yellow-dark"
             >
-              Ver tudo <ArrowRight size={14} />
+              Ver tudo
+              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
-          </div>
-        </Reveal>
+          }
+        />
 
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
           {products.map((product, i) => (
