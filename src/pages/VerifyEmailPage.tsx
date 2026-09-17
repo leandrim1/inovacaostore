@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/seo/Seo";
+import { AuthLayout } from "../components/layout/AuthLayout";
 import { useAuth } from "../context/AuthContext";
 
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -72,55 +73,54 @@ export default function VerifyEmailPage() {
   return (
     <>
       <Seo title="Confirme seu e-mail" description="Confirme seu e-mail para continuar." />
-      <div className="container-page flex min-h-[70vh] items-center justify-center py-14">
-        <div className="w-full max-w-sm rounded-2xl bg-white p-7 shadow-sm ring-1 ring-black/5">
-          <h1 className="section-title mb-1 text-2xl">Confirme seu e-mail</h1>
-          <p className="mb-6 text-sm text-neutral-500">
-            Enviamos um código de verificação para <strong className="text-brand-ink">{user?.email}</strong>.
-          </p>
+      <AuthLayout
+        eyebrow="Última etapa"
+        title="Confirme seu e-mail"
+        subtitle={
+          <>Enviamos um código de verificação para <strong className="text-brand-ink">{user?.email}</strong>.</>
+        }
+      >
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="Código de 6 dígitos"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            maxLength={6}
+            autoFocus
+            className="input-field text-center text-lg tracking-[0.3em]"
+          />
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-            <input
-              type="text"
-              inputMode="numeric"
-              placeholder="Código de 6 dígitos"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              maxLength={6}
-              autoFocus
-              className="rounded-lg border border-black/10 px-4 py-2.5 text-center text-lg tracking-[0.3em] outline-none focus:border-brand-ink"
-            />
-
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            {info && <p className="text-sm text-green-700">{info}</p>}
-
-            <button
-              type="submit"
-              disabled={isSubmitting || code.length !== 6}
-              className="btn-primary mt-2 w-full disabled:opacity-60"
-            >
-              {isSubmitting ? "Confirmando…" : "Confirmar código"}
-            </button>
-          </form>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          {info && <p className="text-sm text-green-700">{info}</p>}
 
           <button
-            type="button"
-            onClick={handleResend}
-            disabled={isResending || cooldown > 0}
-            className="mt-4 block w-full text-center text-sm text-neutral-500 hover:text-brand-ink disabled:cursor-not-allowed disabled:opacity-60"
+            type="submit"
+            disabled={isSubmitting || code.length !== 6}
+            className="btn-primary mt-2 w-full disabled:opacity-60"
           >
-            {cooldown > 0 ? `Reenviar código (${cooldown}s)` : isResending ? "Reenviando…" : "Reenviar código"}
+            {isSubmitting ? "Confirmando…" : "Confirmar código"}
           </button>
+        </form>
 
-          <button
-            type="button"
-            onClick={() => logout().then(() => navigate("/login"))}
-            className="mt-2 block w-full text-center text-xs text-neutral-400 hover:text-brand-ink"
-          >
-            Sair e entrar com outra conta
-          </button>
-        </div>
-      </div>
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={isResending || cooldown > 0}
+          className="mt-4 block w-full text-center text-sm text-neutral-500 hover:text-brand-ink disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {cooldown > 0 ? `Reenviar código (${cooldown}s)` : isResending ? "Reenviando…" : "Reenviar código"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => logout().then(() => navigate("/login"))}
+          className="mt-2 block w-full text-center text-xs text-neutral-400 hover:text-brand-ink"
+        >
+          Sair e entrar com outra conta
+        </button>
+      </AuthLayout>
     </>
   );
 }

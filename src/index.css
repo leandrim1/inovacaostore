@@ -171,6 +171,10 @@
     @apply border-brand-ink/10;
   }
 
+  .input-field {
+    @apply w-full rounded-lg border border-brand-ink/15 bg-white px-4 py-3 text-sm text-brand-ink outline-none transition-colors placeholder:text-neutral-400 focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5;
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

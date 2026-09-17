@@ -179,6 +179,10 @@ export default function CheckoutPage() {
     <>
       <Seo title="Finalizar compra" />
       <div className="container-page py-10 sm:py-14">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Última etapa</span>
+        </div>
         <h1 className="section-title mb-8">Finalizar compra</h1>
 
         <form onSubmit={handleConfirm} className="grid grid-cols-1 gap-10 lg:grid-cols-3">
@@ -201,7 +205,7 @@ export default function CheckoutPage() {
                   placeholder="Telefone / WhatsApp"
                   value={address.phone}
                   onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   required
@@ -209,7 +213,7 @@ export default function CheckoutPage() {
                   value={address.cep}
                   onChange={(e) => setAddress({ ...address, cep: formatCep(e.target.value) })}
                   onBlur={handleCepBlur}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 {cepError && <p className="col-span-full -mt-2 text-xs text-red-600">{cepError}</p>}
                 <input
@@ -217,34 +221,34 @@ export default function CheckoutPage() {
                   placeholder="Endereço"
                   value={address.street}
                   onChange={(e) => setAddress({ ...address, street: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink sm:col-span-1"
+                  className="input-field sm:col-span-1"
                 />
                 <input
                   required
                   placeholder="Número"
                   value={address.number}
                   onChange={(e) => setAddress({ ...address, number: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   placeholder="Complemento (opcional)"
                   value={address.complement}
                   onChange={(e) => setAddress({ ...address, complement: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   required
                   placeholder="Bairro"
                   value={address.neighborhood}
                   onChange={(e) => setAddress({ ...address, neighborhood: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   required
                   placeholder="Cidade"
                   value={address.city}
                   onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   required
@@ -252,7 +256,7 @@ export default function CheckoutPage() {
                   maxLength={2}
                   value={address.state}
                   onChange={(e) => setAddress({ ...address, state: e.target.value.toUpperCase() })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm uppercase outline-none focus:border-brand-ink"
+                  className="input-field uppercase"
                 />
               </div>
             </section>
@@ -343,33 +347,33 @@ export default function CheckoutPage() {
                     placeholder="Número do cartão"
                     value={card.number}
                     onChange={(e) => setCard({ ...card, number: e.target.value })}
-                    className="col-span-full rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                    className="col-span-full input-field"
                   />
                   <input
                     required
                     placeholder="Nome impresso no cartão"
                     value={card.name}
                     onChange={(e) => setCard({ ...card, name: e.target.value })}
-                    className="col-span-full rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                    className="col-span-full input-field"
                   />
                   <input
                     required
                     placeholder="Validade (MM/AA)"
                     value={card.expiry}
                     onChange={(e) => setCard({ ...card, expiry: e.target.value })}
-                    className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                    className="input-field"
                   />
                   <input
                     required
                     placeholder="CVV"
                     value={card.cvv}
                     onChange={(e) => setCard({ ...card, cvv: e.target.value })}
-                    className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                    className="input-field"
                   />
                   <select
                     value={installments}
                     onChange={(e) => setInstallments(Number(e.target.value))}
-                    className="col-span-full rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                    className="col-span-full input-field"
                   >
                     {Array.from({ length: 12 }).map((_, i) => {
                       const n = i + 1;
@@ -394,7 +398,7 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          <div className="h-fit rounded-2xl bg-brand-cream p-6 lg:sticky lg:top-24">
+          <div className="h-fit border border-brand-ink/10 bg-brand-cream p-6 lg:sticky lg:top-24">
             <h2 className="mb-5 font-display text-lg tracking-wide">Resumo do pedido</h2>
             <ul className="mb-4 flex flex-col gap-3">
               {items.map((item) => (

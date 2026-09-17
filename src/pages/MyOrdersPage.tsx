@@ -26,12 +26,16 @@ export default function MyOrdersPage() {
     <>
       <Seo title="Meus pedidos" description="Acompanhe seus pedidos na Inovação Store." />
       <div className="container-page py-10 sm:py-14">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Área do cliente</span>
+        </div>
         <h1 className="section-title mb-8">Meus pedidos</h1>
 
         {isLoading ? (
           <p className="text-neutral-400">Carregando…</p>
         ) : orders.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl bg-neutral-50 py-24 text-center text-neutral-500">
+          <div className="flex flex-col items-center gap-4 border border-brand-ink/10 bg-neutral-50 py-24 text-center text-neutral-500">
             <PackageSearch size={44} strokeWidth={1.25} />
             <p>Você ainda não fez nenhum pedido.</p>
             <Link to="/categoria/camisetas" className="btn-primary">
@@ -41,7 +45,7 @@ export default function MyOrdersPage() {
         ) : (
           <ul className="flex flex-col gap-5">
             {orders.map((order) => (
-              <li key={order.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <li key={order.id} className="border border-brand-ink/10 bg-white p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 pb-3">
                   <div>
                     <p className="font-display text-base tracking-wide">Pedido #{order.orderNumber}</p>

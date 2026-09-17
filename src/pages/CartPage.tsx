@@ -60,10 +60,14 @@ export default function CartPage() {
     <>
       <Seo title="Carrinho" description="Revise os itens do seu carrinho na Inovação Store." />
       <div className="container-page py-10 sm:py-14">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Sua sacola</span>
+        </div>
         <h1 className="section-title mb-8">Meu carrinho</h1>
 
         {items.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 rounded-2xl bg-neutral-50 py-24 text-center text-neutral-500">
+          <div className="flex flex-col items-center gap-4 border border-brand-ink/10 bg-neutral-50 py-24 text-center text-neutral-500">
             <ShoppingBag size={44} strokeWidth={1.25} />
             <p>Seu carrinho está vazio.</p>
             <Link to="/categoria/camisetas" className="btn-primary">
@@ -122,7 +126,7 @@ export default function CartPage() {
                 ))}
               </ul>
 
-              <div className="mt-8 rounded-2xl border border-black/10 p-5">
+              <div className="mt-8 border border-brand-ink/10 p-5 sm:p-6">
                 <h2 className="mb-3 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
                   <Truck size={16} /> Calcular frete
                 </h2>
@@ -133,7 +137,7 @@ export default function CartPage() {
                     placeholder="Seu CEP"
                     value={cep}
                     onChange={(e) => setCep(formatCep(e.target.value))}
-                    className="w-full max-w-[180px] rounded-lg border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                    className="input-field max-w-[180px]"
                   />
                   <button type="submit" className="btn-outline">
                     Calcular
@@ -172,7 +176,7 @@ export default function CartPage() {
               </div>
             </div>
 
-            <div className="h-fit rounded-2xl bg-brand-cream p-6">
+            <div className="h-fit border border-brand-ink/10 bg-brand-cream p-6">
               <h2 className="mb-5 font-display text-lg tracking-wide">Resumo do pedido</h2>
 
               <form onSubmit={handleApplyCoupon} className="mb-5 flex gap-2">
@@ -183,7 +187,7 @@ export default function CartPage() {
                     placeholder="Cupom de desconto"
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value)}
-                    className="w-full rounded-lg border border-black/15 py-2 pl-9 pr-3 text-sm outline-none focus:border-brand-ink"
+                    className="input-field pl-9"
                   />
                 </div>
                 <button type="submit" className="btn-outline px-4 text-xs">

@@ -50,11 +50,15 @@ export default function MyAccountPage() {
     <>
       <Seo title="Minha conta" description="Gerencie os dados da sua conta na Inovação Store." />
       <div className="container-page py-10 sm:py-14">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Área do cliente</span>
+        </div>
         <h1 className="section-title mb-8">Minha conta</h1>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="flex flex-col gap-6 lg:col-span-2">
-            <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <section className="border border-brand-ink/10 bg-white p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
                 <User size={16} /> DADOS DA CONTA
               </h2>
@@ -81,7 +85,7 @@ export default function MyAccountPage() {
               </div>
             </section>
 
-            <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <section className="border border-brand-ink/10 bg-white p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
                 <KeyRound size={16} /> ALTERAR SENHA
               </h2>
@@ -93,7 +97,7 @@ export default function MyAccountPage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoComplete="current-password"
                   required
-                  className="rounded-lg border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   type="password"
@@ -102,7 +106,7 @@ export default function MyAccountPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
                   required
-                  className="rounded-lg border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 <input
                   type="password"
@@ -111,7 +115,7 @@ export default function MyAccountPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   required
-                  className="rounded-lg border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+                  className="input-field"
                 />
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 {success && <p className="text-sm text-green-700">Senha alterada com sucesso.</p>}
@@ -125,14 +129,14 @@ export default function MyAccountPage() {
           <div className="flex flex-col gap-3">
             <Link
               to="/meus-pedidos"
-              className="flex items-center gap-3 rounded-2xl bg-white p-5 text-sm font-medium text-brand-ink shadow-sm ring-1 ring-black/5 hover:ring-brand-ink/20"
+              className="flex items-center gap-3 border border-brand-ink/10 bg-white p-5 text-sm font-medium text-brand-ink transition-colors hover:border-brand-ink/30"
             >
               <PackageSearch size={18} /> Meus pedidos
             </Link>
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-3 rounded-2xl bg-white p-5 text-left text-sm font-medium text-red-600 shadow-sm ring-1 ring-black/5 hover:ring-red-200"
+              className="flex items-center gap-3 border border-brand-ink/10 bg-white p-5 text-left text-sm font-medium text-red-600 transition-colors hover:border-red-300 hover:bg-red-50"
             >
               <LogOut size={18} /> Sair da conta
             </button>
