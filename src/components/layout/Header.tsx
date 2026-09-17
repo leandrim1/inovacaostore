@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Menu, Search, User, ShoppingBag, ChevronDown, PackageSearch, LogOut } from "lucide-react";
 import { Logo } from "../ui/Logo";
@@ -8,15 +9,31 @@ import { useAuth } from "../../context/AuthContext";
 import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
 
+const CATEGORIES_PER_PAGE = 5;
+
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [categoryPage, setCategoryPage] = useState(0);
   const { itemCount, openCart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const { data: categories = [] } = useCategories();
   const navigate = useNavigate();
+
+  const categoryPageCount = Math.ceil(categories.length / CATEGORIES_PER_PAGE);
+  const safeCategoryPage = categoryPageCount > 0 ? categoryPage % categoryPageCount : 0;
+  const visibleCategories = categories.slice(
+    safeCategoryPage * CATEGORIES_PER_PAGE,
+    safeCategoryPage * CATEGORIES_PER_PAGE + CATEGORIES_PER_PAGE,
+  );
+
+  useEffect(() => {
+    if (categoryPageCount <= 1) return;
+    const timer = setInterval(() => setCategoryPage((p) => p + 1), 4000);
+    return () => clearInterval(timer);
+  }, [categoryPageCount]);
 
   async function handleLogout() {
     setIsAccountMenuOpen(false);
@@ -52,20 +69,31 @@ export function Header() {
 
           <Logo />
 
-          <nav className="no-scrollbar hidden min-w-0 flex-1 items-center gap-5 overflow-x-auto lg:flex xl:gap-7">
-            {categories.map((cat) => (
-              <NavLink
-                key={cat.slug}
-                to={`/categoria/${cat.slug}`}
-                className={({ isActive }) =>
-                  `shrink-0 whitespace-nowrap font-display text-sm tracking-widest transition-colors hover:text-brand-yellow-dark ${
-                    isActive ? "text-brand-yellow-dark" : "text-brand-ink"
-                  }`
-                }
+          <nav className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={safeCategoryPage}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="flex items-center gap-5 xl:gap-7"
               >
-                {cat.name}
-              </NavLink>
-            ))}
+                {visibleCategories.map((cat) => (
+                  <NavLink
+                    key={cat.slug}
+                    to={`/categoria/${cat.slug}`}
+                    className={({ isActive }) =>
+                      `shrink-0 whitespace-nowrap font-display text-sm tracking-widest transition-colors hover:text-brand-yellow-dark ${
+                        isActive ? "text-brand-yellow-dark" : "text-brand-ink"
+                      }`
+                    }
+                  >
+                    {cat.name}
+                  </NavLink>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
