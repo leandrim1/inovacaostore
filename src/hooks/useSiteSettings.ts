@@ -14,6 +14,7 @@ export interface SiteSettings {
   heroCtaLabel: string;
   heroCtaUrl: string;
   heroImages: HeroImage[];
+  galleryImages: HeroImage[];
   whatsappNumber: string;
   whatsappMessage: string;
   contactEmail: string;
@@ -34,6 +35,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroCtaLabel: "Comprar agora",
   heroCtaUrl: "/categoria/camisetas",
   heroImages: [],
+  galleryImages: [],
   whatsappNumber: "5534996576357",
   whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
   contactEmail: "inovacaostoretiktok@gmail.com",

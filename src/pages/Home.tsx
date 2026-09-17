@@ -5,6 +5,7 @@ import { CategoryGrid } from "../components/home/CategoryGrid";
 import { FeaturedProducts } from "../components/home/FeaturedProducts";
 import { Benefits } from "../components/home/Benefits";
 import { Testimonials } from "../components/home/Testimonials";
+import { Gallery } from "../components/home/Gallery";
 import { InstagramFeed } from "../components/home/InstagramFeed";
 import { Newsletter } from "../components/home/Newsletter";
 import { STORE } from "../data/store";
@@ -34,6 +35,7 @@ export default function Home() {
       <FeaturedProducts />
       <Benefits />
       <Testimonials />
+      <Gallery />
       <InstagramFeed />
       <Newsletter />
     </>

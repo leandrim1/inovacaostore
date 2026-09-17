@@ -83,3 +83,41 @@ adminSettingsRouter.delete("/hero-images/:id", async (req, res) => {
   const heroImages = await prisma.heroImage.findMany({ orderBy: { order: "asc" } });
   res.json({ items: heroImages });
 });
+
+adminSettingsRouter.get("/gallery-images", async (_req, res) => {
+  const galleryImages = await prisma.galleryImage.findMany({ orderBy: { order: "asc" } });
+  res.json({ items: galleryImages });
+});
+
+adminSettingsRouter.post("/gallery-images", upload.array("images", 20), async (req, res) => {
+  const files = (req.files as Express.Multer.File[]) ?? [];
+  if (files.length === 0) {
+    res.status(400).json({ error: "Nenhuma imagem enviada." });
+    return;
+  }
+
+  const currentCount = await prisma.galleryImage.count();
+  const urls = await Promise.all(
+    files.map((file) => saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype)),
+  );
+  await prisma.galleryImage.createMany({
+    data: urls.map((url, i) => ({ url, order: currentCount + i })),
+  });
+
+  const galleryImages = await prisma.galleryImage.findMany({ orderBy: { order: "asc" } });
+  res.status(201).json({ items: galleryImages });
+});
+
+adminSettingsRouter.delete("/gallery-images/:id", async (req, res) => {
+  const image = await prisma.galleryImage.findUnique({ where: { id: req.params.id } });
+  if (!image) {
+    res.status(404).json({ error: "Imagem não encontrada." });
+    return;
+  }
+
+  await prisma.galleryImage.delete({ where: { id: image.id } });
+  await deleteUpload(image.url);
+
+  const galleryImages = await prisma.galleryImage.findMany({ orderBy: { order: "asc" } });
+  res.json({ items: galleryImages });
+});
