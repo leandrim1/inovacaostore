@@ -31,7 +31,7 @@ export function Header() {
 
   useEffect(() => {
     if (categoryPageCount <= 1) return;
-    const timer = setInterval(() => setCategoryPage((p) => p + 1), 4000);
+    const timer = setInterval(() => setCategoryPage((p) => p + 1), 10000);
     return () => clearInterval(timer);
   }, [categoryPageCount]);
 
@@ -57,7 +57,7 @@ export function Header() {
           isScrolled ? "border-black/10 shadow-sm" : "border-transparent"
         }`}
       >
-        <div className="container-page flex h-16 items-center justify-between gap-4 sm:h-20">
+        <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
@@ -69,7 +69,7 @@ export function Header() {
 
           <Logo />
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex">
+          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center overflow-hidden lg:flex">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
