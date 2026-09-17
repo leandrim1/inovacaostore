@@ -7,6 +7,7 @@ import { formatBRL } from "../lib/format";
 import { formatCep, isValidCep, type ShippingQuote } from "../lib/shipping";
 import { api } from "../lib/api";
 import { buildWhatsAppLink, STORE } from "../data/store";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 
 type PaymentMethod = "pix" | "cartao" | "boleto";
 
@@ -49,6 +50,7 @@ function generateBoletoNumber() {
 
 export default function CheckoutPage() {
   const { items, subtotal, discount, coupon, clearCart } = useCart();
+  const { data: settings } = useSiteSettings();
 
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null);
@@ -157,6 +159,7 @@ export default function CheckoutPage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
               href={buildWhatsAppLink(
+                settings.whatsappNumber,
                 `Olá! Acabei de finalizar o pedido #${orderNumber} no site e gostaria de confirmar o pagamento.`,
               )}
               target="_blank"
@@ -448,7 +451,7 @@ export default function CheckoutPage() {
             </button>
 
             <a
-              href={buildWhatsAppLink(whatsappSummary)}
+              href={buildWhatsAppLink(settings.whatsappNumber, whatsappSummary)}
               target="_blank"
               rel="noreferrer"
               className="mt-3 flex w-full items-center justify-center gap-2 text-sm font-medium text-green-700 hover:underline"

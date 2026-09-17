@@ -4,6 +4,7 @@ import { X, MessageCircle, User } from "lucide-react";
 import { STORE, buildWhatsAppLink } from "../../data/store";
 import { useAuth } from "../../context/AuthContext";
 import { useCategories } from "../../hooks/useCategories";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
 import { InstagramIcon } from "../ui/InstagramIcon";
 
 export function MobileMenu({
@@ -15,6 +16,7 @@ export function MobileMenu({
 }) {
   const { customer, openAccount } = useAuth();
   const { data: categories = [] } = useCategories();
+  const { data: settings } = useSiteSettings();
 
   return (
     <AnimatePresence>
@@ -79,7 +81,7 @@ export function MobileMenu({
                 {customer ? customer.name : "Entrar / Cadastrar"}
               </button>
               <a
-                href={buildWhatsAppLink("Olá! Vim pelo site e gostaria de tirar uma dúvida.")}
+                href={buildWhatsAppLink(settings.whatsappNumber, "Olá! Vim pelo site e gostaria de tirar uma dúvida.")}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center gap-2 text-sm font-medium text-green-700"

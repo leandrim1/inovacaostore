@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { InstagramIcon } from "../ui/InstagramIcon";
-import { STORE, buildWhatsAppLink } from "../../data/store";
+import { STORE, buildWhatsAppLink, formatWhatsAppDisplay } from "../../data/store";
 import { useCategories } from "../../hooks/useCategories";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
 
 export function Footer() {
   const { data: categories = [] } = useCategories();
+  const { data: settings } = useSiteSettings();
 
   return (
     <footer className="mt-20 bg-brand-ink text-white">
@@ -25,7 +27,7 @@ export function Footer() {
               <InstagramIcon size={18} />
             </a>
             <a
-              href={buildWhatsAppLink("Olá! Vim pelo site e quero falar com a loja.")}
+              href={buildWhatsAppLink(settings.whatsappNumber, "Olá! Vim pelo site e quero falar com a loja.")}
               target="_blank"
               rel="noreferrer"
               aria-label="WhatsApp"
@@ -94,11 +96,11 @@ export function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <MessageCircle size={16} className="shrink-0 text-brand-yellow" />
-              <span>{STORE.contact.whatsappDisplay}</span>
+              <span>{formatWhatsAppDisplay(settings.whatsappNumber)}</span>
             </li>
             <li className="flex items-center gap-2">
               <Mail size={16} className="shrink-0 text-brand-yellow" />
-              <span>{STORE.contact.email}</span>
+              <span>{settings.contactEmail}</span>
             </li>
           </ul>
           <ul className="mt-4 flex flex-col gap-1 text-xs text-white/50">

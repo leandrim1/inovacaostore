@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Seo } from "../components/seo/Seo";
 import { STORE, buildWhatsAppLink } from "../data/store";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 import NotFoundPage from "./NotFoundPage";
 
 const POLICIES: Record<string, { title: string; sections: { heading: string; text: string }[] }> = {
@@ -63,6 +64,7 @@ const POLICIES: Record<string, { title: string; sections: { heading: string; tex
 
 export default function PolicyPage() {
   const { slug = "" } = useParams();
+  const { data: settings } = useSiteSettings();
   const policy = POLICIES[slug];
 
   if (!policy) return <NotFoundPage />;
@@ -83,7 +85,7 @@ export default function PolicyPage() {
         <p className="mt-10 text-sm text-neutral-500">
           Ficou com alguma dúvida?{" "}
           <a
-            href={buildWhatsAppLink("Olá! Tenho uma dúvida sobre as políticas da loja.")}
+            href={buildWhatsAppLink(settings.whatsappNumber, "Olá! Tenho uma dúvida sobre as políticas da loja.")}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-green-700 hover:underline"

@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Settings } from "lucide-react";
 import { Logo } from "../../components/ui/Logo";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: "/admin/categorias", label: "Categorias", icon: Tags },
   { to: "/admin/promocoes", label: "Promoções", icon: Megaphone },
   { to: "/admin/pedidos", label: "Pedidos", icon: ShoppingCart },
+  { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export default function AdminLayout() {

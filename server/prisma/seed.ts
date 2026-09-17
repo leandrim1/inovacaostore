@@ -399,6 +399,31 @@ async function main() {
     }
   }
 
+  console.log("Seeding site settings...");
+  // update vazio de propósito: assim como as categorias, os valores default só
+  // são criados na primeira vez. Rodar o seed de novo (a cada deploy) nunca
+  // deve sobrescrever uma edição feita depois pelo painel administrativo.
+  await prisma.siteSettings.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: {
+      id: "singleton",
+      heroEyebrow: "NACIONAIS & IMPORTADOS",
+      heroTitle: "Estilo que\nfala por você",
+      heroDescription:
+        "Peças selecionadas para o homem moderno. Até 30% OFF em itens selecionados por tempo limitado.",
+      heroCtaLabel: "Comprar agora",
+      heroCtaUrl: "/categoria/camisetas",
+      whatsappNumber: "5534996576357",
+      whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
+      contactEmail: "inovacaostoretiktok@gmail.com",
+      announcementItem1: "Frete grátis acima de R$ 299",
+      announcementItem2: "Troca fácil em até 30 dias",
+      announcementItem3: "Pagamento 100% seguro",
+      announcementItem4: "Atendimento rápido pelo WhatsApp",
+    },
+  });
+
   console.log("Seeding admin user...");
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;

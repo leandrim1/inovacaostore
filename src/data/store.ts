@@ -28,7 +28,16 @@ export const STORE = {
     "Inovação Store — moda masculina em Patos de Minas. Camisetas, camisas, calças, bermudas, jaquetas e acessórios nacionais e importados. Compre online com frete para todo o Brasil.",
 } as const;
 
-export function buildWhatsAppLink(message: string) {
+export function buildWhatsAppLink(phone: string, message: string) {
   const encoded = encodeURIComponent(message);
-  return `https://wa.me/${STORE.contact.whatsapp}?text=${encoded}`;
+  return `https://wa.me/${phone}?text=${encoded}`;
+}
+
+/** Formata um número tipo "5534996576357" como "(34) 99657-6357". */
+export function formatWhatsAppDisplay(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  const local = digits.startsWith("55") ? digits.slice(2) : digits;
+  const match = local.match(/^(\d{2})(\d{4,5})(\d{4})$/);
+  if (!match) return phone;
+  return `(${match[1]}) ${match[2]}-${match[3]}`;
 }

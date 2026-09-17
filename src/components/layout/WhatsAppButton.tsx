@@ -1,11 +1,14 @@
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
 import { buildWhatsAppLink } from "../../data/store";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
 
 export function WhatsAppButton() {
+  const { data: settings } = useSiteSettings();
+
   return (
     <motion.a
-      href={buildWhatsAppLink("Olá! Vim pelo site da Inovação Store e gostaria de mais informações.")}
+      href={buildWhatsAppLink(settings.whatsappNumber, settings.whatsappMessage)}
       target="_blank"
       rel="noreferrer"
       aria-label="Falar no WhatsApp"

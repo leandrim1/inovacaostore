@@ -1,14 +1,18 @@
 import { Truck, RefreshCw, ShieldCheck, Headset } from "lucide-react";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
 
-const ITEMS = [
-  { icon: Truck, label: "Frete grátis acima de R$ 299" },
-  { icon: RefreshCw, label: "Troca fácil em até 30 dias" },
-  { icon: ShieldCheck, label: "Pagamento 100% seguro" },
-  { icon: Headset, label: "Atendimento rápido pelo WhatsApp" },
-];
+const ICONS = [Truck, RefreshCw, ShieldCheck, Headset];
 
 export function AnnouncementBar() {
-  const track = [...ITEMS, ...ITEMS];
+  const { data: settings } = useSiteSettings();
+
+  const items = [
+    settings.announcementItem1,
+    settings.announcementItem2,
+    settings.announcementItem3,
+    settings.announcementItem4,
+  ].map((label, i) => ({ icon: ICONS[i], label }));
+  const track = [...items, ...items];
 
   return (
     <div className="overflow-hidden bg-brand-ink py-2.5">

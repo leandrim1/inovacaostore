@@ -14,6 +14,7 @@ import { Reveal } from "../components/ui/Reveal";
 import { useCart } from "../context/CartContext";
 import { formatInstallments } from "../lib/format";
 import { buildWhatsAppLink, STORE } from "../data/store";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 import NotFoundPage from "./NotFoundPage";
 
 export default function ProductPage() {
@@ -21,6 +22,7 @@ export default function ProductPage() {
   const { data: product, isLoading, isError } = useProduct(slug);
   const { addItem } = useCart();
   const { data: categories } = useCategories();
+  const { data: settings } = useSiteSettings();
   const { data: sameCategoryProducts = [] } = useProducts({ category: product?.category });
 
   const [activeImage, setActiveImage] = useState(0);
@@ -238,6 +240,7 @@ export default function ProductPage() {
 
             <a
               href={buildWhatsAppLink(
+                settings.whatsappNumber,
                 `Olá! Tenho uma dúvida sobre o produto "${product.name}" (${STORE.name}).`,
               )}
               target="_blank"

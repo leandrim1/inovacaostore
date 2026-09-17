@@ -120,6 +120,24 @@ model OrderItem {
   quantity    Int
 }
 
+model SiteSettings {
+  id                String   @id @default("singleton")
+  heroEyebrow       String
+  heroTitle         String
+  heroDescription   String
+  heroCtaLabel      String
+  heroCtaUrl        String
+  heroImageUrl      String?
+  whatsappNumber    String
+  whatsappMessage   String
+  contactEmail      String
+  announcementItem1 String
+  announcementItem2 String
+  announcementItem3 String
+  announcementItem4 String
+  updatedAt         DateTime @updatedAt
+}
+
 model Promotion {
   id          String    @id @default(cuid())
   title       String

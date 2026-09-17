@@ -1,10 +1,12 @@
 import { MapPin, MessageCircle, Clock } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
-import { STORE, buildWhatsAppLink } from "../data/store";
+import { STORE, buildWhatsAppLink, formatWhatsAppDisplay } from "../data/store";
 import { InstagramIcon } from "../components/ui/InstagramIcon";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 import heroImage from "../assets/images/hero-friends.jpg";
 
 export default function AboutPage() {
+  const { data: settings } = useSiteSettings();
   const mapQuery = encodeURIComponent(
     `${STORE.address.street}, ${STORE.address.city} - ${STORE.address.state}`,
   );
@@ -68,12 +70,12 @@ export default function AboutPage() {
             </div>
           </div>
           <a
-            href={buildWhatsAppLink("Olá! Vim pelo site e quero saber mais sobre a loja.")}
+            href={buildWhatsAppLink(settings.whatsappNumber, "Olá! Vim pelo site e quero saber mais sobre a loja.")}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-3 text-sm font-medium text-green-700"
           >
-            <MessageCircle size={20} /> {STORE.contact.whatsappDisplay}
+            <MessageCircle size={20} /> {formatWhatsAppDisplay(settings.whatsappNumber)}
           </a>
           <a
             href={STORE.social.instagram}
