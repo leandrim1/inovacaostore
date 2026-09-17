@@ -18,7 +18,7 @@ export function Hero() {
         <img
           src={heroImage}
           alt="Amigos vestindo peças da Inovação Store"
-          className="h-[120%] w-full scale-110 object-cover object-top opacity-90"
+          className="h-[120%] w-full scale-110 object-cover object-[center_65%] opacity-90"
           style={{ transform: `translateY(${offset}px) scale(1.1)` }}
           fetchPriority="high"
         />

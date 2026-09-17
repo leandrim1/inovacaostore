@@ -52,13 +52,13 @@ export function Header() {
 
           <Logo />
 
-          <nav className="hidden items-center gap-7 lg:flex">
+          <nav className="no-scrollbar hidden min-w-0 flex-1 items-center gap-5 overflow-x-auto lg:flex xl:gap-7">
             {categories.map((cat) => (
               <NavLink
                 key={cat.slug}
                 to={`/categoria/${cat.slug}`}
                 className={({ isActive }) =>
-                  `font-display text-sm tracking-widest transition-colors hover:text-brand-yellow-dark ${
+                  `shrink-0 whitespace-nowrap font-display text-sm tracking-widest transition-colors hover:text-brand-yellow-dark ${
                     isActive ? "text-brand-yellow-dark" : "text-brand-ink"
                   }`
                 }
