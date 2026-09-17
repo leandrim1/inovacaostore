@@ -15,6 +15,9 @@ export function Hero() {
   const { ref, offset } = useParallax(0.15);
   const { data: settings } = useSiteSettings();
   const [index, setIndex] = useState(0);
+  const [prefersReducedMotion] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   const slides = settings.heroImages.length > 0 ? settings.heroImages : FALLBACK_SLIDE;
   const count = slides.length;
@@ -36,12 +39,15 @@ export function Hero() {
             key={slides[safeIndex].id}
             src={slides[safeIndex].url}
             alt="Amigos vestindo peças da Inovação Store"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.95 }}
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 0.95, scale: prefersReducedMotion ? 1.1 : 1.18 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.9, ease: "easeInOut" }}
-            className="absolute inset-0 h-[120%] w-full scale-110 object-cover object-[center_65%]"
-            style={{ transform: `translateY(${offset}px) scale(1.1)` }}
+            transition={{
+              opacity: { duration: 0.9, ease: "easeInOut" },
+              scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
+            }}
+            className="absolute inset-0 h-[120%] w-full object-cover object-[center_65%]"
+            style={{ y: offset }}
             fetchPriority={safeIndex === 0 ? "high" : undefined}
           />
         </AnimatePresence>
