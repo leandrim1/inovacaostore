@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
-import type { SiteSettings } from "../useSiteSettings";
+import type { HeroImage, SiteSettings } from "../useSiteSettings";
 
-export type { SiteSettings };
+export type { HeroImage };
 
-export type SiteSettingsInput = Omit<SiteSettings, "id" | "heroImageUrl">;
+export type SiteSettingsInput = Omit<SiteSettings, "id" | "heroImages">;
+export type AdminSiteSettings = Omit<SiteSettings, "heroImages">;
 
 export function useAdminSettings() {
   return useQuery({
     queryKey: ["admin-settings"],
-    queryFn: () => api.get<SiteSettings>("/api/admin/settings"),
+    queryFn: () => api.get<AdminSiteSettings>("/api/admin/settings"),
   });
 }
 
@@ -24,27 +25,42 @@ function useInvalidateSettings() {
 export function useUpdateSettings() {
   const invalidate = useInvalidateSettings();
   return useMutation({
-    mutationFn: (data: SiteSettingsInput) => api.put<SiteSettings>("/api/admin/settings", data),
+    mutationFn: (data: SiteSettingsInput) => api.put<AdminSiteSettings>("/api/admin/settings", data),
     onSuccess: invalidate,
   });
 }
 
-export function useUploadHeroImage() {
-  const invalidate = useInvalidateSettings();
+export function useAdminHeroImages() {
+  return useQuery({
+    queryKey: ["admin-hero-images"],
+    queryFn: () => api.get<{ items: HeroImage[] }>("/api/admin/settings/hero-images").then((r) => r.items),
+  });
+}
+
+function useInvalidateHeroImages() {
+  const qc = useQueryClient();
+  return () => {
+    qc.invalidateQueries({ queryKey: ["admin-hero-images"] });
+    qc.invalidateQueries({ queryKey: ["settings"] });
+  };
+}
+
+export function useUploadHeroImages() {
+  const invalidate = useInvalidateHeroImages();
   return useMutation({
-    mutationFn: (file: File) => {
+    mutationFn: (files: File[]) => {
       const form = new FormData();
-      form.append("image", file);
-      return api.upload<SiteSettings>("/api/admin/settings/hero-image", form);
+      files.forEach((file) => form.append("images", file));
+      return api.upload<{ items: HeroImage[] }>("/api/admin/settings/hero-images", form);
     },
     onSuccess: invalidate,
   });
 }
 
 export function useDeleteHeroImage() {
-  const invalidate = useInvalidateSettings();
+  const invalidate = useInvalidateHeroImages();
   return useMutation({
-    mutationFn: () => api.delete<SiteSettings>("/api/admin/settings/hero-image"),
+    mutationFn: (id: string) => api.delete<{ items: HeroImage[] }>(`/api/admin/settings/hero-images/${id}`),
     onSuccess: invalidate,
   });
 }

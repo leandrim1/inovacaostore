@@ -46,31 +46,40 @@ adminSettingsRouter.put("/", async (req, res) => {
   res.json(settings);
 });
 
-adminSettingsRouter.post("/hero-image", upload.single("image"), async (req, res) => {
-  const file = req.file;
-  if (!file) {
+adminSettingsRouter.get("/hero-images", async (_req, res) => {
+  const heroImages = await prisma.heroImage.findMany({ orderBy: { order: "asc" } });
+  res.json({ items: heroImages });
+});
+
+adminSettingsRouter.post("/hero-images", upload.array("images", 8), async (req, res) => {
+  const files = (req.files as Express.Multer.File[]) ?? [];
+  if (files.length === 0) {
     res.status(400).json({ error: "Nenhuma imagem enviada." });
     return;
   }
 
-  const current = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
-  if (current?.heroImageUrl) await deleteUpload(current.heroImageUrl);
-
-  const url = await saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype);
-  const settings = await prisma.siteSettings.update({
-    where: { id: "singleton" },
-    data: { heroImageUrl: url },
+  const currentCount = await prisma.heroImage.count();
+  const urls = await Promise.all(
+    files.map((file) => saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype)),
+  );
+  await prisma.heroImage.createMany({
+    data: urls.map((url, i) => ({ url, order: currentCount + i })),
   });
-  res.status(201).json(settings);
+
+  const heroImages = await prisma.heroImage.findMany({ orderBy: { order: "asc" } });
+  res.status(201).json({ items: heroImages });
 });
 
-adminSettingsRouter.delete("/hero-image", async (_req, res) => {
-  const current = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
-  if (current?.heroImageUrl) await deleteUpload(current.heroImageUrl);
+adminSettingsRouter.delete("/hero-images/:id", async (req, res) => {
+  const image = await prisma.heroImage.findUnique({ where: { id: req.params.id } });
+  if (!image) {
+    res.status(404).json({ error: "Imagem não encontrada." });
+    return;
+  }
 
-  const settings = await prisma.siteSettings.update({
-    where: { id: "singleton" },
-    data: { heroImageUrl: null },
-  });
-  res.json(settings);
+  await prisma.heroImage.delete({ where: { id: image.id } });
+  await deleteUpload(image.url);
+
+  const heroImages = await prisma.heroImage.findMany({ orderBy: { order: "asc" } });
+  res.json({ items: heroImages });
 });

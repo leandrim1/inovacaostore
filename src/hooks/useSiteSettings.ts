@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 
+export interface HeroImage {
+  id: string;
+  url: string;
+}
+
 export interface SiteSettings {
   id: string;
   heroEyebrow: string;
@@ -8,7 +13,7 @@ export interface SiteSettings {
   heroDescription: string;
   heroCtaLabel: string;
   heroCtaUrl: string;
-  heroImageUrl: string | null;
+  heroImages: HeroImage[];
   whatsappNumber: string;
   whatsappMessage: string;
   contactEmail: string;
@@ -28,7 +33,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     "Peças selecionadas para o homem moderno. Até 30% OFF em itens selecionados por tempo limitado.",
   heroCtaLabel: "Comprar agora",
   heroCtaUrl: "/categoria/camisetas",
-  heroImageUrl: null,
+  heroImages: [],
   whatsappNumber: "5534996576357",
   whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
   contactEmail: "inovacaostoretiktok@gmail.com",

@@ -11,7 +11,6 @@ const DEFAULT_SETTINGS = {
     "Peças selecionadas para o homem moderno. Até 30% OFF em itens selecionados por tempo limitado.",
   heroCtaLabel: "Comprar agora",
   heroCtaUrl: "/categoria/camisetas",
-  heroImageUrl: null as string | null,
   whatsappNumber: "5534996576357",
   whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
   contactEmail: "inovacaostoretiktok@gmail.com",
@@ -22,6 +21,9 @@ const DEFAULT_SETTINGS = {
 };
 
 settingsRouter.get("/", async (_req, res) => {
-  const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
-  res.json(settings ?? DEFAULT_SETTINGS);
+  const [settings, heroImages] = await Promise.all([
+    prisma.siteSettings.findUnique({ where: { id: "singleton" } }),
+    prisma.heroImage.findMany({ orderBy: { order: "asc" } }),
+  ]);
+  res.json({ ...(settings ?? DEFAULT_SETTINGS), heroImages });
 });

@@ -157,7 +157,6 @@ model SiteSettings {
   heroDescription   String
   heroCtaLabel      String
   heroCtaUrl        String
-  heroImageUrl      String?
   whatsappNumber    String
   whatsappMessage   String
   contactEmail      String
@@ -166,6 +165,13 @@ model SiteSettings {
   announcementItem3 String
   announcementItem4 String
   updatedAt         DateTime @updatedAt
+}
+
+model HeroImage {
+  id        String   @id @default(cuid())
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
 }
 
 model Promotion {

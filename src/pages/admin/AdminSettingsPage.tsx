@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { Upload, X } from "lucide-react";
 import {
+  useAdminHeroImages,
   useAdminSettings,
   useDeleteHeroImage,
   useUpdateSettings,
-  useUploadHeroImage,
+  useUploadHeroImages,
   type SiteSettingsInput,
 } from "../../hooks/admin/useAdminSettings";
 
 export default function AdminSettingsPage() {
   const { data: settings, isLoading } = useAdminSettings();
+  const { data: heroImages = [] } = useAdminHeroImages();
   const updateSettings = useUpdateSettings();
-  const uploadHeroImage = useUploadHeroImage();
+  const uploadHeroImages = useUploadHeroImages();
   const deleteHeroImage = useDeleteHeroImage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,15 +79,23 @@ export default function AdminSettingsPage() {
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    if (!e.target.files?.length) return;
     setImageError(null);
     try {
-      await uploadHeroImage.mutateAsync(file);
+      await uploadHeroImages.mutateAsync(Array.from(e.target.files));
     } catch (err) {
-      setImageError(err instanceof Error ? err.message : "Não foi possível enviar a imagem.");
+      setImageError(err instanceof Error ? err.message : "Não foi possível enviar as imagens.");
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDeleteImage(id: string) {
+    setImageError(null);
+    try {
+      await deleteHeroImage.mutateAsync(id);
+    } catch (err) {
+      setImageError(err instanceof Error ? err.message : "Não foi possível remover a imagem.");
     }
   }
 
@@ -163,30 +173,35 @@ export default function AdminSettingsPage() {
           </section>
 
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-            <h2 className="mb-4 font-display text-sm tracking-widest text-neutral-500">
-              IMAGEM DE FUNDO DO BANNER
+            <h2 className="mb-1 font-display text-sm tracking-widest text-neutral-500">
+              CARROSSEL DE IMAGENS DO BANNER
             </h2>
+            <p className="mb-4 text-xs text-neutral-400">
+              Envie quantas fotos quiser — elas aparecem em rotação automática no banner principal.
+              Sem nenhuma foto enviada, o site usa a imagem padrão da loja.
+            </p>
             {imageError && <p className="mb-3 text-sm text-red-600">{imageError}</p>}
-            {settings?.heroImageUrl ? (
-              <div className="group relative mb-4 aspect-[16/7] overflow-hidden rounded-lg bg-neutral-100">
-                <img src={settings.heroImageUrl} alt="" className="h-full w-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => deleteHeroImage.mutate()}
-                  className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <X size={14} />
-                </button>
+            {heroImages.length > 0 && (
+              <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {heroImages.map((img) => (
+                  <div key={img.id} className="group relative aspect-[16/10] overflow-hidden rounded-lg bg-neutral-100">
+                    <img src={img.url} alt="" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(img.id)}
+                      className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <p className="mb-4 text-xs text-neutral-400">
-                Sem imagem própria enviada, o site usa a foto padrão da loja.
-              </p>
             )}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               onChange={handleFileChange}
               className="hidden"
               id="hero-image-input"
@@ -196,7 +211,7 @@ export default function AdminSettingsPage() {
               className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 px-4 py-3 text-sm text-neutral-500 hover:border-brand-ink hover:text-brand-ink"
             >
               <Upload size={16} />
-              {uploadHeroImage.isPending ? "Enviando…" : settings?.heroImageUrl ? "Trocar imagem" : "Enviar imagem"}
+              {uploadHeroImages.isPending ? "Enviando…" : "Enviar imagens"}
             </label>
           </section>
 
