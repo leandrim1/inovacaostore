@@ -8,12 +8,11 @@ import { formatCep, isValidCep, type ShippingQuote } from "../lib/shipping";
 import { api } from "../lib/api";
 import { buildWhatsAppLink, STORE } from "../data/store";
 import { useSiteSettings } from "../hooks/useSiteSettings";
+import { useAuth } from "../context/AuthContext";
 
 type PaymentMethod = "pix" | "cartao" | "boleto";
 
 interface Address {
-  name: string;
-  email: string;
   phone: string;
   cep: string;
   street: string;
@@ -25,8 +24,6 @@ interface Address {
 }
 
 const EMPTY_ADDRESS: Address = {
-  name: "",
-  email: "",
   phone: "",
   cep: "",
   street: "",
@@ -51,6 +48,7 @@ function generateBoletoNumber() {
 export default function CheckoutPage() {
   const { items, subtotal, discount, coupon, clearCart } = useCart();
   const { data: settings } = useSiteSettings();
+  const { user } = useAuth();
 
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null);
@@ -80,12 +78,12 @@ export default function CheckoutPage() {
       ...lines,
       `Frete: ${shippingQuote ? formatBRL(shippingPrice) : "a calcular"}`,
       `Total: ${formatBRL(total)}`,
-      address.name ? `Nome: ${address.name}` : "",
+      user ? `Nome: ${user.name}` : "",
       address.cep ? `Endereço: ${address.street}, ${address.number} - ${address.city}/${address.state} - CEP ${address.cep}` : "",
     ]
       .filter(Boolean)
       .join("\n");
-  }, [items, shippingQuote, shippingPrice, total, address]);
+  }, [items, shippingQuote, shippingPrice, total, address, user]);
 
   async function handleCepBlur() {
     if (!isValidCep(address.cep)) {
@@ -114,7 +112,7 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     try {
       const result = await api.post<{ orderNumber: string }>("/api/orders", {
-        customer: { name: address.name, email: address.email, phone: address.phone },
+        customer: { phone: address.phone },
         address: {
           cep: address.cep,
           street: address.street,
@@ -187,22 +185,17 @@ export default function CheckoutPage() {
           <div className="flex flex-col gap-8 lg:col-span-2">
             <section>
               <h2 className="mb-4 font-display text-lg tracking-wide">1. Dados de entrega</h2>
+              <div className="mb-3 flex items-center justify-between rounded-lg bg-neutral-100 px-4 py-3 text-sm">
+                <div>
+                  <span className="text-neutral-500">Comprando como </span>
+                  <span className="font-medium text-brand-ink">{user?.name}</span>
+                  <span className="text-neutral-500"> · {user?.email}</span>
+                </div>
+                <Link to="/minha-conta" className="text-xs font-medium text-brand-ink hover:underline">
+                  Não é você?
+                </Link>
+              </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <input
-                  required
-                  placeholder="Nome completo"
-                  value={address.name}
-                  onChange={(e) => setAddress({ ...address, name: e.target.value })}
-                  className="col-span-full rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
-                />
-                <input
-                  required
-                  type="email"
-                  placeholder="E-mail"
-                  value={address.email}
-                  onChange={(e) => setAddress({ ...address, email: e.target.value })}
-                  className="rounded-lg border border-black/15 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
-                />
                 <input
                   required
                   placeholder="Telefone / WhatsApp"

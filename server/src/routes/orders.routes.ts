@@ -4,13 +4,12 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { isValidCep, quoteShipping } from "../shipping.js";
 import { findCoupon } from "../coupons.js";
+import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
 
 export const ordersRouter = Router();
 
 const orderSchema = z.object({
   customer: z.object({
-    name: z.string().min(1),
-    email: z.string().email(),
     phone: z.string().min(1),
   }),
   address: z.object({
@@ -40,7 +39,7 @@ function generateOrderNumber() {
   return `IS${Date.now().toString().slice(-9)}`;
 }
 
-ordersRouter.post("/", async (req, res) => {
+ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
   const parsed = orderSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Dados do pedido inválidos.", details: parsed.error.flatten() });
@@ -117,16 +116,13 @@ ordersRouter.post("/", async (req, res) => {
       const discount = coupon ? Math.round(subtotal * (coupon.percentOff / 100) * 100) / 100 : 0;
       const total = Math.max(0, subtotal - discount) + shippingOption.price;
 
-      let customer = await tx.customer.findFirst({ where: { email: data.customer.email.toLowerCase() } });
-      if (!customer) {
-        customer = await tx.customer.create({
-          data: {
-            name: data.customer.name,
-            email: data.customer.email.toLowerCase(),
-            phone: data.customer.phone,
-          },
-        });
-      }
+      // A identidade do cliente vem exclusivamente da sessão autenticada
+      // (nunca do corpo da requisição) — já validada e carregada pelo
+      // middleware requireVerifiedCustomer.
+      const customer = await tx.customer.update({
+        where: { id: req.customerRecord!.id },
+        data: { phone: data.customer.phone },
+      });
 
       return tx.order.create({
         data: {

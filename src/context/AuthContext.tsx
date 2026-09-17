@@ -2,134 +2,154 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
+import { api } from "../lib/api";
 
-export interface Customer {
+export interface User {
+  id: string;
   name: string;
   email: string;
+  emailVerified: boolean;
 }
 
-interface StoredUser extends Customer {
-  password: string;
-}
-
-const USERS_KEY = "inovacaostore.users.v1";
-const SESSION_KEY = "inovacaostore.session.v1";
-
-function readUsers(): StoredUser[] {
-  try {
-    const raw = localStorage.getItem(USERS_KEY);
-    return raw ? (JSON.parse(raw) as StoredUser[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeUsers(users: StoredUser[]) {
-  try {
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  } catch {
-    // ignora se localStorage não estiver disponível
-  }
-}
-
-function readSession(): Customer | null {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as Customer) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeSession(customer: Customer | null) {
-  try {
-    if (customer) localStorage.setItem(SESSION_KEY, JSON.stringify(customer));
-    else localStorage.removeItem(SESSION_KEY);
-  } catch {
-    // ignora se localStorage não estiver disponível
-  }
-}
+type AuthResult = { ok: true } | { ok: false; error: string };
+type AuthUserResult = { ok: true; user: User } | { ok: false; error: string };
 
 interface AuthContextValue {
-  customer: Customer | null;
-  isAccountOpen: boolean;
-  openAccount: () => void;
-  closeAccount: () => void;
-  login: (email: string, password: string) => { ok: boolean; error?: string };
-  register: (
-    name: string,
-    email: string,
-    password: string,
-  ) => { ok: boolean; error?: string };
-  logout: () => void;
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<AuthUserResult>;
+  register: (name: string, email: string, password: string) => Promise<AuthUserResult>;
+  logout: () => Promise<void>;
+  verifyEmail: (code: string) => Promise<AuthUserResult>;
+  resendCode: () => Promise<AuthResult>;
+  forgotPassword: (email: string) => Promise<AuthResult>;
+  resetPassword: (token: string, password: string) => Promise<AuthResult>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [customer, setCustomer] = useState<Customer | null>(() => readSession());
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
+function errorMessage(err: unknown, fallback: string) {
+  return err instanceof Error ? err.message : fallback;
+}
 
-  const login = useCallback((email: string, password: string) => {
-    const normalized = email.trim().toLowerCase();
-    if (!normalized || !password) {
-      return { ok: false, error: "Informe e-mail e senha." };
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    try {
+      const { user: me } = await api.get<{ user: User }>("/api/account/me");
+      setUser(me);
+    } catch {
+      setUser(null);
     }
-    const users = readUsers();
-    const user = users.find((u) => u.email.toLowerCase() === normalized);
-    if (!user) {
-      return { ok: false, error: "Não encontramos uma conta com esse e-mail." };
+  }, []);
+
+  useEffect(() => {
+    refresh().finally(() => setIsLoading(false));
+  }, [refresh]);
+
+  const login = useCallback(async (email: string, password: string): Promise<AuthUserResult> => {
+    try {
+      const { user: logged } = await api.post<{ user: User }>("/api/account/login", { email, password });
+      setUser(logged);
+      return { ok: true, user: logged };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível entrar.") };
     }
-    if (user.password !== password) {
-      return { ok: false, error: "Senha incorreta." };
-    }
-    const session = { name: user.name, email: user.email };
-    setCustomer(session);
-    writeSession(session);
-    setIsAccountOpen(false);
-    return { ok: true };
   }, []);
 
   const register = useCallback(
-    (name: string, email: string, password: string) => {
-      const normalized = email.trim().toLowerCase();
-      if (!name.trim() || !normalized || password.length < 4) {
-        return {
-          ok: false,
-          error: "Preencha nome, e-mail e uma senha com ao menos 4 caracteres.",
-        };
+    async (name: string, email: string, password: string): Promise<AuthUserResult> => {
+      try {
+        const { user: created } = await api.post<{ user: User }>("/api/account/register", {
+          name,
+          email,
+          password,
+        });
+        setUser(created);
+        return { ok: true, user: created };
+      } catch (err) {
+        return { ok: false, error: errorMessage(err, "Não foi possível criar sua conta.") };
       }
-      const users = readUsers();
-      if (users.some((u) => u.email.toLowerCase() === normalized)) {
-        return { ok: false, error: "Já existe uma conta com esse e-mail." };
-      }
-      const newUser: StoredUser = { name: name.trim(), email: normalized, password };
-      writeUsers([...users, newUser]);
-      const session = { name: newUser.name, email: newUser.email };
-      setCustomer(session);
-      writeSession(session);
-      setIsAccountOpen(false);
-      return { ok: true };
     },
     [],
   );
 
-  const logout = useCallback(() => {
-    setCustomer(null);
-    writeSession(null);
+  const logout = useCallback(async () => {
+    await api.post("/api/account/logout").catch(() => {});
+    setUser(null);
   }, []);
 
+  const verifyEmail = useCallback(async (code: string): Promise<AuthUserResult> => {
+    try {
+      const { user: verified } = await api.post<{ user: User }>("/api/account/verify-email", { code });
+      setUser(verified);
+      return { ok: true, user: verified };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível confirmar o código.") };
+    }
+  }, []);
+
+  const resendCode = useCallback(async (): Promise<AuthResult> => {
+    try {
+      await api.post("/api/account/resend-code");
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível reenviar o código.") };
+    }
+  }, []);
+
+  const forgotPassword = useCallback(async (email: string): Promise<AuthResult> => {
+    try {
+      await api.post("/api/account/forgot-password", { email });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível enviar o e-mail.") };
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (token: string, password: string): Promise<AuthResult> => {
+    try {
+      await api.post("/api/account/reset-password", { token, password });
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível redefinir sua senha.") };
+    }
+  }, []);
+
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
+      try {
+        await api.put("/api/account/password", { currentPassword, newPassword });
+        return { ok: true };
+      } catch (err) {
+        return { ok: false, error: errorMessage(err, "Não foi possível alterar sua senha.") };
+      }
+    },
+    [],
+  );
+
   const value: AuthContextValue = {
-    customer,
-    isAccountOpen,
-    openAccount: () => setIsAccountOpen(true),
-    closeAccount: () => setIsAccountOpen(false),
+    user,
+    isAuthenticated: Boolean(user),
+    isLoading,
     login,
     register,
     logout,
+    verifyEmail,
+    resendCode,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+    refresh,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

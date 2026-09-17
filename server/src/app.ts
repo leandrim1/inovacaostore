@@ -13,6 +13,7 @@ import { couponsRouter } from "./routes/coupons.routes.js";
 import { promotionsRouter } from "./routes/promotions.routes.js";
 import { settingsRouter } from "./routes/settings.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { accountRouter } from "./routes/account.routes.js";
 import { adminProductsRouter } from "./routes/admin/products.routes.js";
 import { adminCategoriesRouter } from "./routes/admin/categories.routes.js";
 import { adminOrdersRouter } from "./routes/admin/orders.routes.js";
@@ -38,6 +39,7 @@ app.use("/api/shipping", shippingRouter);
 app.use("/api/coupons", couponsRouter);
 app.use("/api/promotions", promotionsRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/account", accountRouter);
 
 app.use("/api/admin/auth", authRouter);
 app.use("/api/admin/products", requireAdmin, adminProductsRouter);

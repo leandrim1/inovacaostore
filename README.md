@@ -60,6 +60,7 @@ npm run preview           # pré-visualiza o build do frontend isoladamente
    - `DIRECT_URL` → cole o valor de `POSTGRES_URL_NON_POOLING` (conexão direta, usada só para migrations).
    - `JWT_SECRET` → uma string longa e aleatória (ex.: `openssl rand -hex 32`).
    - `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` → usadas pelo `db:seed` para criar o primeiro admin.
+   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM_NAME` → envio real dos e-mails de verificação de cadastro e redefinição de senha dos clientes (veja `.env.example` para instruções de como gerar uma senha de app do Gmail).
    - `NODE_ENV=production` (a Vercel já define isso automaticamente em produção, não precisa adicionar).
 5. **Rode as migrations e o seed uma vez**, apontando para o banco de produção. O jeito mais simples é puxar as variáveis para a sua máquina:
    ```bash
@@ -100,27 +101,32 @@ api/
 vercel.json               # rewrites de /api/* para a função serverless e fallback de SPA
 
 server/
-  prisma/schema.prisma   # modelos: Category, Product, ProductImage, ProductVariant,
-                          # Customer, Order, OrderItem, AdminUser
+  prisma/schema.prisma   # modelos: Category, Product, ProductImage, ProductVariant, Customer,
+                          # EmailVerification, PasswordReset, Order, OrderItem, AdminUser, SiteSettings
   prisma/seed.ts         # popula categorias, catálogo inicial e o usuário admin
   src/app.ts             # monta o app Express (rotas, middlewares) sem chamar listen()
   src/index.ts           # entrada de desenvolvimento local: importa app.ts e chama listen()
   src/storage.ts         # upload/remoção de imagem: Vercel Blob ou disco local, conforme o ambiente
-  src/routes/            # rotas públicas (produtos, categorias, pedidos, frete, cupons)
+  src/email.ts            # envio real de e-mail via SMTP (nodemailer)
+  src/emailTemplates.ts   # HTML dos e-mails de verificação e redefinição de senha
+  src/customerAuth.ts     # JWT do cliente (cookie), geração/hash de código e token
+  src/routes/            # rotas públicas (produtos, categorias, pedidos, frete, cupons, conta do cliente)
   src/routes/admin/      # rotas protegidas (CRUD de produtos/categorias, pedidos, dashboard)
-  src/middleware/        # requireAdmin (valida o cookie JWT)
+  src/middleware/        # requireAdmin e requireCustomerAuth/requireVerifiedCustomer (validam o cookie JWT)
   uploads/                # imagens de produto em disco local (dev sem Vercel Blob configurado)
 
 src/
-  lib/api.ts              # cliente fetch (credentials: "include" para o cookie de admin)
+  lib/api.ts              # cliente fetch (credentials: "include" para os cookies de sessão)
   lib/adapters.ts          # converte a resposta da API para o formato usado pelos componentes
-  hooks/                   # dados públicos (useProducts, useProduct, useCategories)
+  hooks/                   # dados públicos (useProducts, useProduct, useCategories, useMyOrders)
   hooks/admin/             # dados do painel (produtos, categorias, pedidos, dashboard)
   context/CartContext.tsx  # carrinho (localStorage) referenciando variantId real do banco
-  context/AuthContext.tsx  # conta do cliente na loja (demonstrativo, localStorage — ver nota abaixo)
+  context/AuthContext.tsx  # sessão real do cliente na loja (checa /api/account/me no backend)
   context/AdminAuthContext.tsx # sessão do admin (checa /api/admin/auth/me no backend)
+  routes/ProtectedRoute.tsx # bloqueia rotas que exigem login (e, opcionalmente, e-mail verificado)
   pages/admin/             # painel administrativo (login, dashboard, produtos, categorias, pedidos)
-  pages/                   # páginas da loja (Home, categoria, busca, produto, carrinho, checkout…)
+  pages/                   # páginas da loja (Home, categoria, produto, carrinho, checkout, login,
+                            # cadastro, verificar-email, esqueci/redefinir senha, minha conta, meus pedidos…)
 ```
 
 ## Como funciona o catálogo (sem dados fixos no frontend)
@@ -154,13 +160,24 @@ Protegido por autenticação real no backend (não é apenas uma tela escondida 
 
 Excluir um produto que já tem pedidos associados é bloqueado (para não perder o histórico) — use "ocultar" nesse caso. Da mesma forma, remover uma variação existente no formulário apenas zera o estoque dela, em vez de apagá-la.
 
+## Autenticação de clientes
+
+Sistema completo e real (não é uma tela mockada): cadastro, confirmação de e-mail por código, login, logout, recuperação de senha e proteção do checkout — tudo com backend, banco de dados, hash de senha e sessão via cookie `httpOnly`.
+
+- **Cadastro** (`/cadastro`): nome, e-mail e senha (mínimo 8 caracteres, com letra e número). A senha é armazenada com hash `bcrypt`, nunca em texto puro. Um código de 6 dígitos é gerado, armazenado com hash (`sha256`) e prazo de expiração de 15 minutos, e enviado por e-mail de verdade.
+- **Confirmação de e-mail** (`/verificar-email`): o cliente digita o código recebido. Há limite de 5 tentativas por código e de 5 reenvios por hora (com intervalo mínimo de 60s entre eles).
+- **Login/logout** (`/login`): sessão via cookie `httpOnly` assinado com JWT (30 dias), no mesmo padrão usado pelo admin. Se o e-mail ainda não foi confirmado, o cliente é encaminhado para `/verificar-email` automaticamente.
+- **Recuperação de senha** (`/esqueci-senha` → `/redefinir-senha`): gera um token de uso único (hash `sha256`, expira em 60 minutos) e envia um link por e-mail. A resposta da API é sempre genérica, para não revelar se um e-mail está cadastrado.
+- **Checkout protegido**: `/checkout` exige sessão autenticada **e** e-mail verificado — o backend confere isso de novo no servidor (`requireVerifiedCustomer`), nunca confiando apenas na checagem feita no React. Sem isso, o cliente é redirecionado para `/login?redirect=/checkout` (ou para `/verificar-email`) e volta automaticamente para o checkout depois de entrar. O carrinho (guardado no `localStorage`) não se perde durante esse fluxo.
+- **Minha conta** (`/minha-conta`) e **Meus pedidos** (`/meus-pedidos`): rotas protegidas; a API de pedidos (`/api/account/orders`) sempre filtra pelo cliente da sessão — nunca por um ID vindo do frontend, então um cliente não consegue ver pedidos de outra conta.
+- **E-mails reais**: enviados via SMTP (`nodemailer`, funciona com Gmail ou qualquer outro provedor) configurado por variáveis de ambiente — veja `.env.example`.
+
 ## O que ainda é simulado e precisa de integração real antes de ir ao ar
 
 - **Pagamento**: o checkout tem UI completa para Pix, cartão e boleto, mas não processa pagamento de verdade — falta integrar um gateway (Mercado Pago, Pagar.me, Stripe etc.) que confirme o pagamento e atualize o status do pedido.
 - **Frete**: o cálculo por CEP (`server/src/shipping.ts`) é uma fórmula determinística local, para demonstrar a UX de ponta a ponta. Substitua por uma integração real (Correios, Melhor Envio, etc.).
-- **Conta do cliente** (login/cadastro na loja, diferente do admin): continua sendo apenas uma demonstração no `localStorage`, sem backend — não é o foco deste projeto, mas pode futuramente reaproveitar o mesmo padrão de autenticação do admin.
 - **Newsletter**: o cadastro de e-mail apenas simula sucesso; conecte a uma ferramenta de e-mail marketing ou a um backend próprio.
-- **E-mail transacional**: não há envio de e-mail de confirmação de pedido; a confirmação ao cliente acontece na tela e, opcionalmente, via WhatsApp.
+- **E-mail de confirmação de pedido**: os e-mails de autenticação (verificação/redefinição de senha) já são reais, mas ainda não existe um e-mail transacional de "pedido confirmado" — a confirmação ao cliente acontece na tela e, opcionalmente, via WhatsApp.
 
 ## Dados de contato a revisar
 

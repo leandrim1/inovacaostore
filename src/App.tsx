@@ -4,9 +4,9 @@ import { AnnouncementBar } from "./components/layout/AnnouncementBar";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { CartDrawer } from "./components/layout/CartDrawer";
-import { AccountModal } from "./components/layout/AccountModal";
 import { WhatsAppButton } from "./components/layout/WhatsAppButton";
 import { AdminAuthProvider } from "./context/AdminAuthContext";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
 
 const Home = lazy(() => import("./pages/Home"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
@@ -17,6 +17,13 @@ const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const MyAccountPage = lazy(() => import("./pages/MyAccountPage"));
+const MyOrdersPage = lazy(() => import("./pages/MyOrdersPage"));
 
 const AdminLoginPage = lazy(() => import("./pages/admin/AdminLoginPage"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -50,15 +57,42 @@ function StorefrontApp() {
           <Route path="/busca" element={<SearchPage />} />
           <Route path="/produto/:slug" element={<ProductPage />} />
           <Route path="/carrinho" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute requireVerified>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/politicas/:slug" element={<PolicyPage />} />
           <Route path="/sobre" element={<AboutPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/cadastro" element={<RegisterPage />} />
+          <Route path="/verificar-email" element={<VerifyEmailPage />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+          <Route
+            path="/minha-conta"
+            element={
+              <ProtectedRoute>
+                <MyAccountPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meus-pedidos"
+            element={
+              <ProtectedRoute>
+                <MyOrdersPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       <Footer />
       <CartDrawer />
-      <AccountModal />
       <WhatsAppButton />
     </div>
   );
