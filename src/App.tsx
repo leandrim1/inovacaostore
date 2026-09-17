@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { AnnouncementBar } from "./components/layout/AnnouncementBar";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { CartDrawer } from "./components/layout/CartDrawer";
@@ -39,6 +40,7 @@ function ScrollToTop() {
 function StorefrontApp() {
   return (
     <div className="flex min-h-dvh flex-col">
+      <AnnouncementBar />
       <Header />
       <main className="flex-1">
         <Routes>

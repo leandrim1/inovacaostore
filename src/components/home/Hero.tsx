@@ -1,17 +1,23 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import heroImage from "../../assets/images/hero-friends.jpg";
+import { useParallax } from "../../hooks/useParallax";
 
 export function Hero() {
+  const { ref, offset } = useParallax(0.15);
+
   return (
     <section className="relative flex min-h-[78vh] items-end overflow-hidden bg-brand-ink sm:min-h-[88vh]">
-      <img
-        src={heroImage}
-        alt="Amigos vestindo peças da Inovação Store"
-        className="absolute inset-0 h-full w-full object-cover object-top opacity-90"
-        fetchPriority="high"
-      />
+      <div ref={ref} className="absolute inset-0" aria-hidden>
+        <img
+          src={heroImage}
+          alt="Amigos vestindo peças da Inovação Store"
+          className="h-[120%] w-full scale-110 object-cover object-top opacity-90"
+          style={{ transform: `translateY(${offset}px) scale(1.1)` }}
+          fetchPriority="high"
+        />
+      </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/10" />
 
       <div className="container-page relative z-10 pb-14 pt-32 sm:pb-20">
@@ -54,6 +60,14 @@ export function Hero() {
           </Link>
         </motion.div>
       </div>
+
+      <a
+        href="#categorias"
+        aria-label="Rolar para baixo"
+        className="absolute inset-x-0 bottom-5 z-10 mx-auto hidden w-fit animate-bounce-slow place-items-center text-white/70 transition-colors hover:text-brand-yellow motion-reduce:animate-none sm:grid"
+      >
+        <ChevronDown size={26} aria-hidden />
+      </a>
     </section>
   );
 }

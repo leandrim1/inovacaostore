@@ -9,7 +9,7 @@ export function CategoryGrid() {
   const { data: products = [] } = useProducts();
 
   return (
-    <section className="container-page py-16 sm:py-24">
+    <section id="categorias" className="container-page py-16 sm:py-24">
       <Reveal>
         <h2 className="section-title mb-2">Categorias</h2>
         <p className="mb-10 max-w-lg text-neutral-500">
