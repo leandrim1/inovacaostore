@@ -35,7 +35,7 @@ export function FiltersPanel({
           <button
             type="button"
             onClick={clearFilters}
-            className="text-xs font-medium text-neutral-400 underline hover:text-brand-ink"
+            className="text-xs font-medium text-neutral-400 underline transition-colors hover:text-brand-ink"
           >
             Limpar tudo
           </button>
@@ -54,7 +54,7 @@ export function FiltersPanel({
                   type="checkbox"
                   checked={categories.includes(cat.slug)}
                   onChange={() => toggleCategory(cat.slug)}
-                  className="h-4 w-4 accent-brand-ink"
+                  className="h-4 w-4 accent-brand-ink focus-visible:outline-offset-4"
                 />
                 {cat.name}
               </label>
@@ -75,10 +75,10 @@ export function FiltersPanel({
                 key={size}
                 type="button"
                 onClick={() => toggleSize(size)}
-                className={`flex h-9 min-w-9 items-center justify-center rounded-md border px-2 text-xs font-semibold transition-colors ${
+                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition-colors ${
                   active
                     ? "border-brand-ink bg-brand-ink text-white"
-                    : "border-black/15 text-neutral-600 hover:border-brand-ink"
+                    : "border-brand-ink/15 text-neutral-600 hover:border-brand-ink"
                 }`}
               >
                 {size}
@@ -104,7 +104,7 @@ export function FiltersPanel({
                 aria-pressed={active}
                 aria-label={color.name}
                 className={`h-8 w-8 rounded-full ring-2 ring-offset-2 transition-all ${
-                  active ? "ring-brand-ink" : "ring-transparent hover:ring-black/20"
+                  active ? "ring-brand-ink" : "ring-transparent hover:ring-brand-ink/20"
                 }`}
                 style={{ backgroundColor: color.hex }}
               />
@@ -128,7 +128,7 @@ export function FiltersPanel({
                 maxPrice,
               )
             }
-            className="w-full rounded-md border border-black/15 px-2 py-1.5 outline-none focus:border-brand-ink"
+            className="w-full rounded-lg border border-brand-ink/15 px-2 py-1.5 outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
           />
           <span className="text-neutral-400">—</span>
           <input
@@ -141,7 +141,7 @@ export function FiltersPanel({
                 e.target.value ? Number(e.target.value) : undefined,
               )
             }
-            className="w-full rounded-md border border-black/15 px-2 py-1.5 outline-none focus:border-brand-ink"
+            className="w-full rounded-lg border border-brand-ink/15 px-2 py-1.5 outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
           />
         </div>
         <p className="mt-1.5 text-xs text-neutral-400">

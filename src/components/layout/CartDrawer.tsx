@@ -14,7 +14,7 @@ export function CartDrawer() {
       {isOpen && (
         <>
           <motion.div
-            className="fixed inset-0 z-[70] bg-black/50"
+            className="fixed inset-0 z-[70] bg-brand-ink/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -30,7 +30,7 @@ export function CartDrawer() {
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <header className="flex items-center justify-between border-b border-black/5 px-5 py-4">
+            <header className="flex items-center justify-between border-b border-brand-ink/10 px-5 py-4">
               <h2 className="font-display text-lg tracking-wide">
                 Sua sacola ({itemCount})
               </h2>
@@ -38,7 +38,7 @@ export function CartDrawer() {
                 type="button"
                 onClick={closeCart}
                 aria-label="Fechar carrinho"
-                className="rounded-full p-2 hover:bg-neutral-100"
+                className="rounded-full p-2 transition-colors hover:bg-neutral-100"
               >
                 <X size={20} />
               </button>
@@ -61,7 +61,7 @@ export function CartDrawer() {
                 <ul className="flex flex-col gap-5">
                   {items.map((item) => (
                     <li key={item.key} className="flex gap-3">
-                      <div className="h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+                      <div className="h-24 w-20 shrink-0 overflow-hidden border border-brand-ink/10 bg-neutral-100">
                         {item.image && (
                           <img
                             src={item.image}
@@ -83,7 +83,7 @@ export function CartDrawer() {
                             type="button"
                             onClick={() => removeItem(item.key)}
                             aria-label={`Remover ${item.name}`}
-                            className="text-neutral-400 hover:text-red-600"
+                            className="text-neutral-400 transition-colors hover:text-red-600"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -108,7 +108,7 @@ export function CartDrawer() {
             </div>
 
             {items.length > 0 && (
-              <footer className="border-t border-black/5 px-5 py-5">
+              <footer className="border-t border-brand-ink/10 px-5 py-5">
                 <div className="mb-4 flex items-center justify-between text-sm">
                   <span className="text-neutral-500">Subtotal</span>
                   <span className="font-display text-lg">{formatBRL(subtotal)}</span>
