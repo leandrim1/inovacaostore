@@ -67,7 +67,9 @@ export function Header() {
             <Menu size={22} />
           </button>
 
-          <Logo size={40} />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0">
+            <Logo size={40} />
+          </div>
 
           <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center overflow-hidden lg:flex">
             <AnimatePresence mode="wait">

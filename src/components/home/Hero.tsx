@@ -46,7 +46,7 @@ export function Hero() {
               opacity: { duration: 0.9, ease: "easeInOut" },
               scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
             }}
-            className="absolute inset-0 h-[120%] w-full object-cover object-[center_65%]"
+            className="absolute inset-x-0 -top-56 h-[120%] w-full object-cover object-[center_65%] sm:top-0"
             style={{ y: offset }}
             fetchPriority={safeIndex === 0 ? "high" : undefined}
           />
@@ -127,7 +127,7 @@ export function Hero() {
       </motion.div>
 
       {count > 1 && (
-        <div className="absolute bottom-14 left-1/2 z-10 flex w-40 -translate-x-1/2 items-center gap-1.5 sm:left-7 sm:translate-x-0">
+        <div className="absolute bottom-9 left-1/2 z-10 flex w-40 -translate-x-1/2 items-center gap-1.5 sm:bottom-14 sm:left-7 sm:translate-x-0">
           {slides.map((slide, i) => (
             <button
               key={slide.id}
