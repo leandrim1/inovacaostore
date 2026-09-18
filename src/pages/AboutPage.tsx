@@ -46,7 +46,7 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl bg-brand-cream p-6">
+        <div className="flex flex-col gap-4 border border-brand-ink/10 bg-brand-cream p-6">
           <div className="flex items-start gap-3">
             <MapPin size={20} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
             <div>
