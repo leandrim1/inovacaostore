@@ -15,6 +15,7 @@
   --color-neutral-25: #fbfbfa;
 
   --animate-marquee: marquee 28s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 34s linear infinite;
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
   --animate-bounce-slow: bounce-slow 2.2s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -27,6 +28,15 @@
   }
   to {
     transform: translateX(-16.6667%);
+  }
+}
+
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-16.6667%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 

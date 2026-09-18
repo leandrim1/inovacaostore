@@ -28,7 +28,7 @@ export function InstagramFeed() {
     <section className="bg-brand-cream py-16 sm:py-24">
       <div className="container-page">
         <SectionHeading
-          index="05"
+          index="04"
           eyebrow="Comunidade"
           title="Siga no Instagram"
           description={

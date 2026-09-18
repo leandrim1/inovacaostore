@@ -1,94 +1,51 @@
-import { useEffect, useRef, useState } from "react";
 import { useSiteSettings, type HeroImage } from "../../hooks/useSiteSettings";
-import { SectionHeading } from "../ui/SectionHeading";
 
-/** Repete a fileira até ter fotos suficientes para nunca faltar conteúdo
- * durante o deslocamento pela rolagem, mesmo com poucas fotos cadastradas. */
-function repeatToFill(images: HeroImage[], minCount = 12, maxRepeats = 8) {
+/** Repete a fileira 6x para a trilha do marquee em loop contínuo (CSS puro).
+ * O deslocamento de -16.6667% (1/6) cai exatamente no fim de uma repetição,
+ * então o espaçamento entre logos vai como margem em cada item (não como
+ * `gap` do flex) — do contrário a trilha "pula" no ponto em que o loop reinicia. */
+const TRACK_REPEATS = 6;
+
+function buildTrack(images: HeroImage[]) {
   if (images.length === 0) return [];
-  const repeats = Math.min(maxRepeats, Math.max(3, Math.ceil(minCount / images.length)));
-  return Array.from({ length: repeats }, () => images).flat();
+  return Array.from({ length: TRACK_REPEATS }, () => images).flat();
 }
 
 export function Gallery() {
   const { data: settings } = useSiteSettings();
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState(0);
 
   const images = settings.galleryImages;
   const mid = Math.ceil(images.length / 2);
-  const row1 = repeatToFill(images.slice(0, mid));
-  const row2 = repeatToFill(images.slice(mid));
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-
-    let ticking = false;
-    function update() {
-      const section = sectionRef.current;
-      if (!section) {
-        ticking = false;
-        return;
-      }
-      const sectionTop = section.getBoundingClientRect().top + window.scrollY;
-      setOffset((window.scrollY - sectionTop + window.innerHeight) * 0.25);
-      ticking = false;
-    }
-    function onScroll() {
-      if (!ticking) {
-        window.requestAnimationFrame(update);
-        ticking = true;
-      }
-    }
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const row1 = buildTrack(images.slice(0, mid));
+  const row2 = buildTrack(images.slice(mid));
 
   if (images.length === 0) return null;
 
   return (
-    <section ref={sectionRef} className="overflow-hidden bg-white py-16 sm:py-24">
-      <div className="container-page">
-        <SectionHeading
-          index="04"
-          eyebrow="Bastidores"
-          title="Nossa loja"
-          description="Peças, ambiente e marcas que trabalhamos — de perto."
-        />
-      </div>
-
+    <section className="overflow-hidden bg-white py-10 sm:py-14">
       <div className="no-scrollbar overflow-hidden" aria-hidden>
         <div className="flex flex-col gap-3 sm:gap-4">
           {row1.length > 0 && (
-            <div
-              className="flex gap-3 sm:gap-4"
-              style={{ transform: `translateX(${offset - 200}px)`, willChange: "transform" }}
-            >
+            <div className="flex w-max animate-marquee motion-reduce:animate-none">
               {row1.map((img, i) => (
                 <div
                   key={`row1-${img.id}-${i}`}
-                  className="h-40 w-60 shrink-0 overflow-hidden rounded-lg bg-neutral-100 sm:h-52 sm:w-80 md:h-[220px] md:w-[340px]"
+                  className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden p-3 mr-3 sm:h-20 sm:w-36 sm:mr-4 md:h-24 md:w-44"
                 >
-                  <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <img src={img.url} alt="" loading="lazy" className="h-full w-full object-contain" />
                 </div>
               ))}
             </div>
           )}
 
           {row2.length > 0 && (
-            <div
-              className="flex gap-3 sm:gap-4"
-              style={{ transform: `translateX(${-(offset - 200)}px)`, willChange: "transform" }}
-            >
+            <div className="flex w-max animate-marquee-reverse motion-reduce:animate-none">
               {row2.map((img, i) => (
                 <div
                   key={`row2-${img.id}-${i}`}
-                  className="h-40 w-60 shrink-0 overflow-hidden rounded-lg bg-neutral-100 sm:h-52 sm:w-80 md:h-[220px] md:w-[340px]"
+                  className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden p-3 mr-3 sm:h-20 sm:w-36 sm:mr-4 md:h-24 md:w-44"
                 >
-                  <img src={img.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <img src={img.url} alt="" loading="lazy" className="h-full w-full object-contain" />
                 </div>
               ))}
             </div>
