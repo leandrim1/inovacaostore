@@ -55,8 +55,6 @@ export default function CheckoutPage() {
   const [cepError, setCepError] = useState<string | null>(null);
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [payment, setPayment] = useState<PaymentMethod>("pix");
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
-  const [installments, setInstallments] = useState(1);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [pixCode] = useState(generatePixCode);
@@ -66,8 +64,6 @@ export default function CheckoutPage() {
 
   const shippingPrice = shippingQuote?.price ?? 0;
   const total = Math.max(0, subtotal - discount) + shippingPrice;
-
-  const installmentValue = total / installments;
 
   const whatsappSummary = useMemo(() => {
     const lines = items.map(
@@ -156,7 +152,7 @@ export default function CheckoutPage() {
             Seu pedido <strong>#{orderNumber}</strong> foi registrado com sucesso.
             {payment === "pix" && " Assim que o pagamento Pix for identificado, iniciaremos a separação."}
             {payment === "boleto" && " Assim que o boleto for compensado, iniciaremos a separação."}
-            {payment === "cartao" && " Seu pagamento está sendo processado."}
+            {payment === "cartao" && " Nossa equipe vai te chamar no WhatsApp para combinar o pagamento no cartão."}
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
@@ -337,49 +333,11 @@ export default function CheckoutPage() {
               )}
 
               {payment === "cartao" && (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <input
-                    required
-                    placeholder="Número do cartão"
-                    value={card.number}
-                    onChange={(e) => setCard({ ...card, number: e.target.value })}
-                    className="col-span-full input-field"
-                  />
-                  <input
-                    required
-                    placeholder="Nome impresso no cartão"
-                    value={card.name}
-                    onChange={(e) => setCard({ ...card, name: e.target.value })}
-                    className="col-span-full input-field"
-                  />
-                  <input
-                    required
-                    placeholder="Validade (MM/AA)"
-                    value={card.expiry}
-                    onChange={(e) => setCard({ ...card, expiry: e.target.value })}
-                    className="input-field"
-                  />
-                  <input
-                    required
-                    placeholder="CVV"
-                    value={card.cvv}
-                    onChange={(e) => setCard({ ...card, cvv: e.target.value })}
-                    className="input-field"
-                  />
-                  <select
-                    value={installments}
-                    onChange={(e) => setInstallments(Number(e.target.value))}
-                    className="col-span-full input-field"
-                  >
-                    {Array.from({ length: 12 }).map((_, i) => {
-                      const n = i + 1;
-                      return (
-                        <option key={n} value={n}>
-                          {n}x de {formatBRL(total / n)} {n <= 3 ? "sem juros" : "com juros"}
-                        </option>
-                      );
-                    })}
-                  </select>
+                <div className="rounded-xl bg-brand-cream p-5 text-sm text-neutral-600">
+                  <p>
+                    Após confirmar o pedido, nossa equipe vai te chamar no WhatsApp para combinar o
+                    pagamento no cartão com segurança.
+                  </p>
                 </div>
               )}
 
@@ -425,11 +383,6 @@ export default function CheckoutPage() {
                 <span>Total</span>
                 <span>{formatBRL(total)}</span>
               </div>
-              {payment === "cartao" && installments > 1 && (
-                <p className="text-right text-xs text-neutral-500">
-                  {installments}x de {formatBRL(installmentValue)}
-                </p>
-              )}
             </div>
 
             {submitError && (
