@@ -245,18 +245,18 @@ export default function AdminProductFormPage() {
 
             <div className="flex flex-col gap-3">
               {variants.map((v, i) => (
-                <div key={i} className="grid grid-cols-12 items-center gap-2">
+                <div key={i} className="grid grid-cols-6 items-center gap-2 sm:grid-cols-12">
                   <input
                     placeholder="Cor (ex: Preto)"
                     value={v.color}
                     onChange={(e) => updateVariant(i, { color: e.target.value })}
-                    className="col-span-4 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-3"
+                    className="col-span-3 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-3"
                   />
                   <input
                     type="color"
                     value={v.colorHex}
                     onChange={(e) => updateVariant(i, { colorHex: e.target.value })}
-                    className="col-span-2 h-9 w-full rounded-lg border border-black/10 sm:col-span-1"
+                    className="col-span-1 h-9 w-full rounded-lg border border-black/10 sm:col-span-1"
                   />
                   <input
                     placeholder="Tamanho"
@@ -276,7 +276,7 @@ export default function AdminProductFormPage() {
                     placeholder="SKU da variação (opcional)"
                     value={v.sku}
                     onChange={(e) => updateVariant(i, { sku: e.target.value })}
-                    className="col-span-9 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-3"
+                    className="col-span-3 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-3"
                   />
                   <button
                     type="button"

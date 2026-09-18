@@ -95,7 +95,7 @@ export default function AdminCategoriesPage() {
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+      <div className="hidden overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-black/5 text-xs uppercase text-neutral-400">
@@ -184,6 +184,78 @@ export default function AdminCategoriesPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:hidden">
+        {isLoading ? (
+          <div className="rounded-2xl bg-white p-6 text-center text-sm text-neutral-400 shadow-sm ring-1 ring-black/5">
+            Carregando…
+          </div>
+        ) : (
+          categories.map((cat) => (
+            <div key={cat.id} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+              {editingId === cat.id ? (
+                <div className="flex flex-col gap-2">
+                  <input
+                    value={editDraft.name}
+                    onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
+                    placeholder="Nome"
+                    className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  />
+                  <input
+                    value={editDraft.description}
+                    onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
+                    placeholder="Descrição"
+                    className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  />
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(cat.id)}
+                      className="rounded-lg p-2 text-green-600 hover:bg-green-50"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-100"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-brand-ink">{cat.name}</p>
+                      <p className="text-xs text-neutral-400">{cat.slug}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => startEdit(cat)}
+                        className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-brand-ink"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(cat)}
+                        className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  {cat.description && <p className="text-sm text-neutral-600">{cat.description}</p>}
+                  <p className="text-xs text-neutral-500">{cat.productCount} produto(s)</p>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

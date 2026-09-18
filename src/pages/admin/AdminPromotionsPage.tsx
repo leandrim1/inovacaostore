@@ -39,7 +39,7 @@ export default function AdminPromotionsPage() {
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+      <div className="hidden overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-black/5 text-xs uppercase text-neutral-400">
@@ -117,6 +117,69 @@ export default function AdminPromotionsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:hidden">
+        {isLoading ? (
+          <div className="rounded-2xl bg-white p-6 text-center text-sm text-neutral-400 shadow-sm ring-1 ring-black/5">
+            Carregando…
+          </div>
+        ) : promotions.length === 0 ? (
+          <div className="rounded-2xl bg-white p-6 text-center text-sm text-neutral-400 shadow-sm ring-1 ring-black/5">
+            Nenhuma promoção cadastrada. Sem promoções ativas, essa seção some da home automaticamente.
+          </div>
+        ) : (
+          promotions.map((p) => (
+            <div key={p.id} className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-16 shrink-0 overflow-hidden rounded-md bg-neutral-100">
+                  {p.imageUrl && <img src={p.imageUrl} alt="" className="h-full w-full object-cover" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium text-brand-ink">{p.title}</p>
+                  <p className="text-xs text-neutral-500">{p.highlight}</p>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+                    p.active ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-500"
+                  }`}
+                >
+                  {p.active ? "Ativa" : "Oculta"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-neutral-500">
+                  {p.endsAt ? `Termina em ${new Date(p.endsAt).toLocaleString("pt-BR")}` : "Sem prazo"}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleActive(p.id, p.active)}
+                    title={p.active ? "Ocultar" : "Reativar"}
+                    className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-brand-ink"
+                  >
+                    {p.active ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                  <Link
+                    to={`/admin/promocoes/${p.id}`}
+                    title="Editar"
+                    className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-brand-ink"
+                  >
+                    <Pencil size={16} />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(p.id, p.title)}
+                    title="Excluir"
+                    className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

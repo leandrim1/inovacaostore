@@ -26,7 +26,7 @@ export default function AdminOrdersPage() {
         </select>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+      <div className="hidden overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-black/5 text-xs uppercase text-neutral-400">
@@ -78,6 +78,42 @@ export default function AdminOrdersPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:hidden">
+        {isLoading ? (
+          <div className="rounded-2xl bg-white p-6 text-center text-sm text-neutral-400 shadow-sm ring-1 ring-black/5">
+            Carregando…
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="rounded-2xl bg-white p-6 text-center text-sm text-neutral-400 shadow-sm ring-1 ring-black/5">
+            Nenhum pedido encontrado.
+          </div>
+        ) : (
+          orders.map((o) => (
+            <Link
+              key={o.id}
+              to={`/admin/pedidos/${o.id}`}
+              className="flex flex-col gap-2 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-brand-ink">#{o.orderNumber}</span>
+                <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLES[o.status]}`}>
+                  {STATUS_LABELS[o.status] ?? o.status}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm text-neutral-700">{o.customer.name}</p>
+                <p className="text-xs text-neutral-400">{o.customer.email}</p>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-neutral-500">{new Date(o.createdAt).toLocaleDateString("pt-BR")}</span>
+                <span className="uppercase text-neutral-500">{o.paymentMethod}</span>
+                <span className="font-medium text-brand-ink">{formatBRL(o.total)}</span>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );

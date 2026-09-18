@@ -451,7 +451,7 @@ export default function AdminShippingPage() {
 
         {tierError && <p className="mb-3 text-sm text-red-600">{tierError}</p>}
 
-        <div className="overflow-x-auto rounded-xl ring-1 ring-black/5">
+        <div className="hidden overflow-x-auto rounded-xl ring-1 ring-black/5 sm:block">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-black/5 text-xs uppercase text-neutral-400">
@@ -591,6 +591,127 @@ export default function AdminShippingPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:hidden">
+          {tiersLoading ? (
+            <div className="rounded-xl p-6 text-center text-sm text-neutral-400 ring-1 ring-black/5">Carregando…</div>
+          ) : tiers.length === 0 ? (
+            <div className="rounded-xl p-6 text-center text-sm text-neutral-400 ring-1 ring-black/5">
+              Nenhuma faixa cadastrada.
+            </div>
+          ) : (
+            tiers.map((tier) => (
+              <div key={tier.id} className="rounded-xl p-4 ring-1 ring-black/5">
+                {editingId === tier.id ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        value={editDraft.minKm}
+                        onChange={(e) => setEditDraft({ ...editDraft, minKm: Number(e.target.value) })}
+                        placeholder="De (km)"
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                      <input
+                        type="number"
+                        value={editDraft.maxKm ?? ""}
+                        onChange={(e) =>
+                          setEditDraft({ ...editDraft, maxKm: e.target.value === "" ? null : Number(e.target.value) })
+                        }
+                        placeholder="Até (km)"
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editDraft.price}
+                        onChange={(e) => setEditDraft({ ...editDraft, price: Number(e.target.value) })}
+                        placeholder="Preço (R$)"
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editDraft.costPrice ?? ""}
+                        onChange={(e) =>
+                          setEditDraft({ ...editDraft, costPrice: e.target.value === "" ? null : Number(e.target.value) })
+                        }
+                        placeholder="Custo (R$)"
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                      <input
+                        value={editDraft.etaLabel}
+                        onChange={(e) => setEditDraft({ ...editDraft, etaLabel: e.target.value })}
+                        placeholder="Prazo (ex: 3 a 5 dias úteis)"
+                        className="col-span-2 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                      <input
+                        type="number"
+                        value={editDraft.order}
+                        onChange={(e) => setEditDraft({ ...editDraft, order: Number(e.target.value) })}
+                        placeholder="Ordem"
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                    </div>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => saveEditTier(tier.id)}
+                        className="rounded-lg p-2 text-green-600 hover:bg-green-50"
+                      >
+                        <Check size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingId(null)}
+                        className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-100"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-medium text-brand-ink">
+                        {tier.minKm} – {tier.maxKm ?? "sem limite"} km
+                      </p>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => startEditTier(tier)}
+                          className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-brand-ink"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTier(tier)}
+                          className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-neutral-600">
+                      <span>
+                        Preço: <strong className="text-brand-ink">{tier.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+                      </span>
+                      <span>
+                        Custo:{" "}
+                        {tier.costPrice != null
+                          ? tier.costPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                          : "—"}
+                      </span>
+                      <span>Ordem: {tier.order}</span>
+                    </div>
+                    <p className="text-xs text-neutral-500">{tier.etaLabel ?? "—"}</p>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </section>
     </div>

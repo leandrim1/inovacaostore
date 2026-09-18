@@ -271,7 +271,7 @@ export default function AdminFinanceSettingsPage() {
 
         {expenseError && <p className="mb-3 text-sm text-red-600">{expenseError}</p>}
 
-        <div className="overflow-x-auto rounded-xl ring-1 ring-black/5">
+        <div className="hidden overflow-x-auto rounded-xl ring-1 ring-black/5 sm:block">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-black/5 text-xs uppercase text-neutral-400">
@@ -381,6 +381,95 @@ export default function AdminFinanceSettingsPage() {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:hidden">
+          {expensesLoading ? (
+            <div className="rounded-xl p-6 text-center text-sm text-neutral-400 ring-1 ring-black/5">Carregando…</div>
+          ) : expenses.length === 0 ? (
+            <div className="rounded-xl p-6 text-center text-sm text-neutral-400 ring-1 ring-black/5">
+              Nenhuma despesa registrada.
+            </div>
+          ) : (
+            expenses.map((expense) => (
+              <div key={expense.id} className="rounded-xl p-4 ring-1 ring-black/5">
+                {editingId === expense.id ? (
+                  <div className="flex flex-col gap-2">
+                    <select
+                      value={editDraft.category}
+                      onChange={(e) => setEditDraft({ ...editDraft, category: e.target.value as ExpenseCategory })}
+                      className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                    >
+                      {EXPENSE_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {CATEGORY_LABELS[c]}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      value={editDraft.description}
+                      onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
+                      placeholder="Descrição"
+                      className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editDraft.amount}
+                        onChange={(e) => setEditDraft({ ...editDraft, amount: Number(e.target.value) })}
+                        placeholder="Valor (R$)"
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                      <input
+                        type="date"
+                        value={editDraft.occurredAt}
+                        onChange={(e) => setEditDraft({ ...editDraft, occurredAt: e.target.value })}
+                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      />
+                    </div>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button type="button" onClick={() => saveEditExpense(expense.id)} className="rounded-lg p-2 text-green-600 hover:bg-green-50">
+                        <Check size={16} />
+                      </button>
+                      <button type="button" onClick={() => setEditingId(null)} className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-100">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-brand-ink">{CATEGORY_LABELS[expense.category]}</p>
+                        <p className="text-xs text-neutral-500">{expense.description || "—"}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => startEditExpense(expense)}
+                          className="rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-brand-ink"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteExpense(expense)}
+                          className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-neutral-600">
+                      <span>{new Date(expense.occurredAt).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</span>
+                      <span className="font-medium text-brand-ink">{formatBRL(expense.amount)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </section>
     </div>
