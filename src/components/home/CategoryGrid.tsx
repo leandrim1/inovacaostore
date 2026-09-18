@@ -28,7 +28,7 @@ export function CategoryGrid() {
             <Reveal key={cat.slug} delay={i * 0.05} className={featured ? "col-span-2 lg:row-span-2" : ""}>
               <Link
                 to={`/categoria/${cat.slug}`}
-                className={`group relative flex h-full w-full flex-col justify-end overflow-hidden bg-neutral-900 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-brand-yellow after:transition-transform after:duration-300 hover:after:scale-x-100 ${
+                className={`group relative flex h-full w-full flex-col justify-end overflow-hidden rounded-2xl bg-neutral-900 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-brand-yellow after:transition-transform after:duration-300 hover:after:scale-x-100 ${
                   featured ? "aspect-[16/11] sm:aspect-[21/9] lg:aspect-auto" : "aspect-[4/5]"
                 }`}
               >

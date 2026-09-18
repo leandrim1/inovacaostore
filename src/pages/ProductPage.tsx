@@ -107,7 +107,7 @@ export default function ProductPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
-            <div className="aspect-[4/5] overflow-hidden border border-brand-ink/10 bg-neutral-100">
+            <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-brand-ink/10 bg-neutral-100">
               {product.images[activeImage] ? (
                 <img
                   src={product.images[activeImage]}
@@ -125,7 +125,7 @@ export default function ProductPage() {
                     key={img}
                     type="button"
                     onClick={() => setActiveImage(i)}
-                    className={`h-20 w-16 shrink-0 overflow-hidden border transition-all ${
+                    className={`h-20 w-16 shrink-0 overflow-hidden rounded-lg border transition-all ${
                       activeImage === i ? "border-brand-ink" : "border-transparent hover:border-brand-ink/30"
                     }`}
                   >
@@ -251,7 +251,7 @@ export default function ProductPage() {
               Tirar dúvidas pelo WhatsApp
             </a>
 
-            <div className="mt-8 grid grid-cols-1 gap-3 border border-brand-ink/10 bg-brand-cream p-4 text-xs text-neutral-600 sm:grid-cols-3 sm:divide-x sm:divide-brand-ink/10 sm:gap-0">
+            <div className="mt-8 grid grid-cols-1 gap-3 rounded-2xl border border-brand-ink/10 bg-brand-cream p-4 text-xs text-neutral-600 sm:grid-cols-3 sm:divide-x sm:divide-brand-ink/10 sm:gap-0">
               <div className="flex items-center gap-2 sm:px-4 sm:first:pl-0">
                 <Truck size={16} className="text-brand-yellow-dark" /> Frete grátis acima de R$ 299
               </div>

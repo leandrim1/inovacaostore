@@ -13,7 +13,7 @@ function CountdownBadge({ endsAt }: { endsAt: string | null }) {
   const label = parts.days > 0 ? `${parts.days}d ${pad(parts.hours)}:${pad(parts.minutes)}:${pad(parts.seconds)}` : `${pad(parts.hours)}:${pad(parts.minutes)}:${pad(parts.seconds)}`;
 
   return (
-    <div className="flex w-fit items-center gap-2 border border-white/20 bg-black/50 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md">
+    <div className="flex w-fit items-center gap-2 rounded-lg border border-white/20 bg-black/50 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md">
       <Clock size={16} className="text-brand-yellow" />
       <span className="tabular-nums">{label}</span>
     </div>
@@ -24,7 +24,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   const isExternal = /^https?:\/\//.test(promotion.ctaUrl);
 
   return (
-    <div className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px]">
+    <div className="relative flex min-h-[420px] items-center overflow-hidden rounded-2xl sm:min-h-[480px]">
       {promotion.imageUrl ? (
         <img
           src={promotion.imageUrl}

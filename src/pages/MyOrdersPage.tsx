@@ -35,7 +35,7 @@ export default function MyOrdersPage() {
         {isLoading ? (
           <p className="text-neutral-400">Carregando…</p>
         ) : orders.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 border border-brand-ink/10 bg-neutral-50 py-24 text-center text-neutral-500">
+          <div className="flex flex-col items-center gap-4 rounded-2xl border border-brand-ink/10 bg-neutral-50 py-24 text-center text-neutral-500">
             <PackageSearch size={44} strokeWidth={1.25} />
             <p>Você ainda não fez nenhum pedido.</p>
             <Link to="/categoria/camisetas" className="btn-primary">
@@ -45,7 +45,7 @@ export default function MyOrdersPage() {
         ) : (
           <ul className="flex flex-col gap-5">
             {orders.map((order) => (
-              <li key={order.id} className="border border-brand-ink/10 bg-white p-5 sm:p-6">
+              <li key={order.id} className="rounded-2xl border border-brand-ink/10 bg-white p-5 sm:p-6">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 pb-3">
                   <div>
                     <p className="font-display text-base tracking-wide">Pedido #{order.orderNumber}</p>

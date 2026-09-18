@@ -61,7 +61,7 @@ export function CartDrawer() {
                 <ul className="flex flex-col gap-5">
                   {items.map((item) => (
                     <li key={item.key} className="flex gap-3">
-                      <div className="h-24 w-20 shrink-0 overflow-hidden border border-brand-ink/10 bg-neutral-100">
+                      <div className="h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-brand-ink/10 bg-neutral-100">
                         {item.image && (
                           <img
                             src={item.image}

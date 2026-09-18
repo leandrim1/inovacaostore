@@ -51,7 +51,7 @@ export function InstagramFeed() {
                 href={STORE.social.instagram}
                 target="_blank"
                 rel="noreferrer"
-                className="group relative block aspect-square overflow-hidden"
+                className="group relative block aspect-square overflow-hidden rounded-2xl"
               >
                 <img
                   src={src}

@@ -4,6 +4,11 @@
   --font-display: "Bebas Neue", "Inter", sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
 
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
   --color-brand-yellow: #f5c400;
   --color-brand-yellow-dark: #d6a900;
   --color-brand-yellow-light: #ffe066;

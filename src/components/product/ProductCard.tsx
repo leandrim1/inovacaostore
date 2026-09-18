@@ -26,7 +26,7 @@ export function ProductCard({ product }: { product: Product }) {
     <motion.article
       whileHover={{ y: -6 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="group relative flex flex-col overflow-hidden border border-brand-ink/10 bg-white transition-colors duration-300 hover:border-brand-ink/25 hover:shadow-[0_24px_48px_-28px_rgba(0,0,0,0.35)]"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-brand-ink/10 bg-white transition-colors duration-300 hover:border-brand-ink/25 hover:shadow-[0_24px_48px_-28px_rgba(0,0,0,0.35)]"
     >
       <Link
         to={`/produto/${product.slug}`}

@@ -394,7 +394,7 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          <div className="h-fit border border-brand-ink/10 bg-brand-cream p-6 lg:sticky lg:top-24">
+          <div className="h-fit rounded-2xl border border-brand-ink/10 bg-brand-cream p-6 lg:sticky lg:top-24">
             <h2 className="mb-5 font-display text-lg tracking-wide">Resumo do pedido</h2>
             <ul className="mb-4 flex flex-col gap-3">
               {items.map((item) => (

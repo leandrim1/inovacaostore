@@ -58,7 +58,7 @@ export default function MyAccountPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="flex flex-col gap-6 lg:col-span-2">
-            <section className="border border-brand-ink/10 bg-white p-5 sm:p-6">
+            <section className="rounded-2xl border border-brand-ink/10 bg-white p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
                 <User size={16} /> DADOS DA CONTA
               </h2>
@@ -85,7 +85,7 @@ export default function MyAccountPage() {
               </div>
             </section>
 
-            <section className="border border-brand-ink/10 bg-white p-5 sm:p-6">
+            <section className="rounded-2xl border border-brand-ink/10 bg-white p-5 sm:p-6">
               <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
                 <KeyRound size={16} /> ALTERAR SENHA
               </h2>
@@ -129,14 +129,14 @@ export default function MyAccountPage() {
           <div className="flex flex-col gap-3">
             <Link
               to="/meus-pedidos"
-              className="flex items-center gap-3 border border-brand-ink/10 bg-white p-5 text-sm font-medium text-brand-ink transition-colors hover:border-brand-ink/30"
+              className="flex items-center gap-3 rounded-2xl border border-brand-ink/10 bg-white p-5 text-sm font-medium text-brand-ink transition-colors hover:border-brand-ink/30"
             >
               <PackageSearch size={18} /> Meus pedidos
             </Link>
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-3 border border-brand-ink/10 bg-white p-5 text-left text-sm font-medium text-red-600 transition-colors hover:border-red-300 hover:bg-red-50"
+              className="flex items-center gap-3 rounded-2xl border border-brand-ink/10 bg-white p-5 text-left text-sm font-medium text-red-600 transition-colors hover:border-red-300 hover:bg-red-50"
             >
               <LogOut size={18} /> Sair da conta
             </button>
