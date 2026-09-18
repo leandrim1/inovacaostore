@@ -18,6 +18,17 @@ export function Hero() {
   const [prefersReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
+  );
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 1023px)");
+    const update = () => setIsMobile(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   const slides = settings.heroImages.length > 0 ? settings.heroImages : FALLBACK_SLIDE;
   const count = slides.length;
@@ -39,14 +50,14 @@ export function Hero() {
             key={slides[safeIndex].id}
             src={slides[safeIndex].url}
             alt="Amigos vestindo peças da Inovação Store"
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 0.95, scale: prefersReducedMotion ? 1.1 : 1.18 }}
+            initial={{ opacity: 0, scale: isMobile ? 1 : 1.02 }}
+            animate={{ opacity: 0.95, scale: prefersReducedMotion || isMobile ? 1 : 1.18 }}
             exit={{ opacity: 0 }}
             transition={{
               opacity: { duration: 0.9, ease: "easeInOut" },
               scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
             }}
-            className="absolute inset-x-0 -top-56 h-[120%] w-full object-cover object-[center_65%] sm:top-0"
+            className="absolute inset-0 h-full w-full object-contain object-top lg:h-[120%] lg:object-cover lg:object-[center_82%]"
             style={{ y: offset }}
             fetchPriority={safeIndex === 0 ? "high" : undefined}
           />

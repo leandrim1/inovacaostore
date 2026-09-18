@@ -71,7 +71,7 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          <nav className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center overflow-hidden lg:flex">
+          <nav className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
@@ -79,7 +79,7 @@ export function Header() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="flex items-center gap-6 xl:gap-9"
+                className="flex items-center gap-3 xl:gap-9"
               >
                 {visibleCategories.map((cat) => (
                   <NavLink
@@ -110,7 +110,7 @@ export function Header() {
               <Search size={20} />
             </button>
             {isAuthenticated && user ? (
-              <div className="relative hidden sm:block">
+              <div className="relative hidden lg:block">
                 <button
                   type="button"
                   onClick={() => setIsAccountMenuOpen((v) => !v)}
@@ -155,7 +155,7 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <div className="hidden items-center gap-1 sm:flex">
+              <div className="hidden items-center gap-1 lg:flex">
                 <Link
                   to="/login"
                   className="rounded-full px-3.5 py-2 font-display text-xs tracking-widest text-brand-ink/70 transition-colors hover:bg-neutral-100 hover:text-brand-ink"
@@ -167,7 +167,7 @@ export function Header() {
                 </Link>
               </div>
             )}
-            <span className="mx-1 hidden h-6 w-px bg-brand-ink/10 sm:block" aria-hidden />
+            <span className="mx-1 hidden h-6 w-px bg-brand-ink/10 lg:block" aria-hidden />
             <button
               type="button"
               onClick={openCart}
