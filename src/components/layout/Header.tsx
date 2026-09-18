@@ -71,7 +71,7 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-center overflow-hidden lg:flex">
+          <nav className="hidden min-w-0 flex-1 items-center justify-end overflow-hidden lg:flex">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
