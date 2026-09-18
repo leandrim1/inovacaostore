@@ -159,7 +159,26 @@ export async function calculateShipping({
 
   const geo = await geocodeCep(cep);
   if (!geo.ok) {
-    return { ok: false, reason: geo.reason === "not_found" ? "cep_not_found" : "service_unavailable" };
+    if (geo.reason === "not_found") {
+      return { ok: false, reason: "cep_not_found" };
+    }
+    // Geocodificação indisponível (todas as APIs externas falharam): não
+    // deixa a venda inteira travar por causa de uma dependência externa —
+    // usa o mesmo preço de contingência já configurado pelo admin para
+    // quando o cálculo por distância está desativado.
+    console.error(`Geocodificação indisponível para o CEP ${cep}; usando frete de contingência.`);
+    return {
+      ok: true,
+      quote: {
+        price: settings.fallbackFlatPrice,
+        distanceKm: null,
+        distanceMethod: null,
+        isFree: settings.fallbackFlatPrice === 0,
+        tierLabel: null,
+        etaLabel: null,
+        method: "fallback",
+      },
+    };
   }
 
   const freeRegions = parseFreeRegions(settings.freeShippingRegions);

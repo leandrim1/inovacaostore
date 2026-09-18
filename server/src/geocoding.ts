@@ -55,7 +55,8 @@ async function tryBrasilApi(cep: string): Promise<GeocodeCoords | "not_found" | 
       state: String(data.state ?? ""),
       source: "brasilapi",
     };
-  } catch {
+  } catch (err) {
+    console.error("BrasilAPI (geocodificação de CEP) falhou:", err);
     return null;
   }
 }
@@ -87,7 +88,8 @@ async function tryViaCep(cep: string): Promise<ViaCepAddress | "not_found" | nul
       street: String(data.logradouro ?? ""),
       neighborhood: String(data.bairro ?? ""),
     };
-  } catch {
+  } catch (err) {
+    console.error("ViaCEP falhou:", err);
     return null;
   }
 }
@@ -112,7 +114,8 @@ async function geocodeAddress(query: string): Promise<{ lat: number; lng: number
     const lng = Number(first.lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
     return { lat, lng };
-  } catch {
+  } catch (err) {
+    console.error("Nominatim (geocodificação de endereço) falhou:", err);
     return null;
   }
 }
