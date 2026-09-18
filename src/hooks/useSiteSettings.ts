@@ -33,7 +33,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroDescription:
     "Peças selecionadas para o homem moderno. Até 30% OFF em itens selecionados por tempo limitado.",
   heroCtaLabel: "Comprar agora",
-  heroCtaUrl: "/categoria/camisetas",
+  heroCtaUrl: "/busca",
   heroImages: [],
   galleryImages: [],
   whatsappNumber: "5534996576357",

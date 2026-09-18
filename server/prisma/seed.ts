@@ -413,7 +413,7 @@ async function main() {
       heroDescription:
         "Peças selecionadas para o homem moderno. Até 30% OFF em itens selecionados por tempo limitado.",
       heroCtaLabel: "Comprar agora",
-      heroCtaUrl: "/categoria/camisetas",
+      heroCtaUrl: "/busca",
       whatsappNumber: "5534996576357",
       whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
       contactEmail: "inovacaostoretiktok@gmail.com",

@@ -189,7 +189,7 @@ export default function AdminSettingsPage() {
                   />
                 </label>
                 <label className="text-xs font-medium text-neutral-500">
-                  Link do botão (ex: /categoria/camisetas)
+                  Link do botão (ex: /busca, /destaques ou /categoria/tenis)
                   <input
                     required
                     value={heroCtaUrl}
