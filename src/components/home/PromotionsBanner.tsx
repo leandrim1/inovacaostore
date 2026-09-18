@@ -98,7 +98,7 @@ export function PromotionsBanner() {
   const current = promotions[safeIndex];
 
   return (
-    <section className="bg-brand-ink py-10 sm:py-14">
+    <section className="py-10 sm:py-14">
       <div className="container-page">
         <div className="relative">
           <AnimatePresence mode="wait">
