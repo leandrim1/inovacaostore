@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { calculateShipping } from "../shipping.js";
-import { findCoupon } from "../coupons.js";
+import { validateCoupon } from "../coupons.js";
 import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
 
 export const ordersRouter = Router();
@@ -62,13 +62,18 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
   }
   const shippingQuote = shippingOutcome.quote;
 
-  let coupon: ReturnType<typeof findCoupon> = undefined;
+  let coupon: { code: string; percentOff: number; maxRedemptions: number | null } | undefined;
   if (data.couponCode) {
-    coupon = findCoupon(data.couponCode);
-    if (!coupon) {
-      res.status(400).json({ error: "Cupom inválido ou expirado." });
+    const validation = await validateCoupon(data.couponCode, req.customerRecord!.id);
+    if (!validation.ok) {
+      res.status(400).json({ error: validation.error });
       return;
     }
+    coupon = {
+      code: validation.record.code,
+      percentOff: validation.record.percentOff,
+      maxRedemptions: validation.record.maxRedemptions,
+    };
   }
 
   try {
@@ -117,6 +122,24 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
           unitCost: variant.product.costPrice,
           quantity: item.quantity,
         });
+      }
+
+      if (coupon) {
+        // Reserva o uso do cupom de forma atômica dentro da transação —
+        // mesmo padrão do decremento de estoque acima — para não deixar
+        // dois pedidos concorrentes passarem ambos pela checagem prévia e
+        // estourarem juntos um limite de "primeiras N vagas".
+        const reserved =
+          coupon.maxRedemptions != null
+            ? await tx.coupon.updateMany({
+                where: { code: coupon.code, usedCount: { lt: coupon.maxRedemptions } },
+                data: { usedCount: { increment: 1 } },
+              })
+            : await tx.coupon.updateMany({ where: { code: coupon.code }, data: { usedCount: { increment: 1 } } });
+
+        if (reserved.count !== 1) {
+          throw new OrderError(409, "Este cupom já atingiu o limite de usos.");
+        }
       }
 
       const discount = coupon ? Math.round(subtotal * (coupon.percentOff / 100) * 100) / 100 : 0;

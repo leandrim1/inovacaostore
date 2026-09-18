@@ -205,6 +205,28 @@ model Promotion {
   updatedAt   DateTime  @updatedAt
 }
 
+model Coupon {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  description String    @default("")
+  percentOff  Float
+  active      Boolean   @default(true)
+  startsAt    DateTime?
+  expiresAt   DateTime?
+  // null = sem limite. maxRedemptionsPerCustomer existe para que
+  // "quantos clientes podem usar" não seja burlado por um único cliente
+  // aplicando o mesmo código em vários pedidos.
+  maxRedemptions            Int?
+  maxRedemptionsPerCustomer Int?     @default(1)
+  // Contador dedicado (em vez de contar Order por couponCode) para permitir
+  // incremento atômico dentro da transação do pedido — mesmo padrão usado
+  // no controle de estoque, evitando corrida quando vários clientes tentam
+  // usar um cupom de "primeiras N vagas" ao mesmo tempo.
+  usedCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model ShippingTier {
   id        String   @id @default(cuid())
   minKm     Float
