@@ -30,9 +30,9 @@ export default function Home() {
         }}
       />
       <Hero />
-      <PromotionsBanner />
       <Gallery />
       <CategoryGrid />
+      <PromotionsBanner />
       <FeaturedProducts />
       <Benefits />
       <Testimonials />
