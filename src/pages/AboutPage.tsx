@@ -75,7 +75,7 @@ export default function AboutPage() {
             rel="noreferrer"
             className="flex items-center gap-3 text-sm font-medium text-green-700"
           >
-            <MessageCircle size={20} /> {formatWhatsAppDisplay(settings.whatsappNumber)}
+            <MessageCircle size={16} /> {formatWhatsAppDisplay(settings.whatsappNumber)}
           </a>
           <a
             href={STORE.social.instagram}

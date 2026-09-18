@@ -92,8 +92,8 @@ export default function VerifyEmailPage() {
             className="input-field text-center text-lg tracking-[0.3em]"
           />
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          {info && <p className="text-sm text-green-700">{info}</p>}
+          {error && <p className="alert-error">{error}</p>}
+          {info && <p className="alert-success">{info}</p>}
 
           <button
             type="submit"

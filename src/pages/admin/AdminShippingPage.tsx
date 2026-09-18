@@ -270,7 +270,11 @@ export default function AdminShippingPage() {
                   maxLength={2}
                   className="w-20 rounded-lg border border-black/10 px-3 py-2 text-sm uppercase outline-none focus:border-brand-ink"
                 />
-                <button type="button" onClick={addRegion} className="btn-outline shrink-0 px-4 text-xs">
+                <button
+                  type="button"
+                  onClick={addRegion}
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-black/10 px-3 py-2 text-xs font-medium text-brand-ink transition-colors hover:border-brand-ink"
+                >
                   <Plus size={14} /> Adicionar
                 </button>
               </div>
@@ -366,12 +370,10 @@ export default function AdminShippingPage() {
           </section>
         </div>
 
-        <div className="h-fit rounded-2xl bg-brand-cream p-5">
-          {settingsError && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{settingsError}</p>}
+        <div className="h-fit rounded-2xl bg-brand-cream p-5 ring-1 ring-black/5">
+          {settingsError && <p className="alert-error mb-3">{settingsError}</p>}
           {settingsSaved && !isSavingSettings && (
-            <p className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-              Configurações salvas com sucesso.
-            </p>
+            <p className="alert-success mb-3">Configurações salvas com sucesso.</p>
           )}
           <button type="submit" disabled={isSavingSettings} className="btn-primary w-full disabled:opacity-60">
             {isSavingSettings ? "Salvando…" : "Salvar configurações"}

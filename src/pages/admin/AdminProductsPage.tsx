@@ -85,7 +85,7 @@ export default function AdminProductsPage() {
         </select>
       </div>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+      {error && <p className="alert-error">{error}</p>}
 
       <div className="hidden overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5 sm:block">
         <table className="w-full text-left text-sm">

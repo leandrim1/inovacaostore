@@ -54,7 +54,7 @@ export function ProductListingLayout({
             <button
               type="button"
               onClick={() => setIsMobileFiltersOpen(true)}
-              className="flex items-center gap-2 rounded-full border border-black/15 px-4 py-2 text-sm font-medium lg:hidden"
+              className="flex items-center gap-2 rounded-full border border-brand-ink/15 px-4 py-2 text-sm font-medium lg:hidden"
             >
               <SlidersHorizontal size={16} />
               Filtrar
@@ -72,7 +72,7 @@ export function ProductListingLayout({
             <select
               value={filters.sort}
               onChange={(e) => filters.setSort(e.target.value as SortOption)}
-              className="rounded-full border border-black/15 bg-white px-4 py-2 text-sm outline-none focus:border-brand-ink"
+              className="rounded-full border border-brand-ink/15 bg-white px-4 py-2 text-sm text-brand-ink outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
               aria-label="Ordenar por"
             >
               {Object.entries(SORT_LABELS).map(([value, label]) => (

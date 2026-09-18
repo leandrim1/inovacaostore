@@ -128,7 +128,7 @@ export function FiltersPanel({
                 maxPrice,
               )
             }
-            className="w-full rounded-lg border border-brand-ink/15 px-2 py-1.5 outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
+            className="w-full rounded-lg border border-brand-ink/15 bg-white px-2 py-1.5 text-sm text-brand-ink outline-none transition-colors placeholder:text-neutral-400 focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
           />
           <span className="text-neutral-400">—</span>
           <input
@@ -141,7 +141,7 @@ export function FiltersPanel({
                 e.target.value ? Number(e.target.value) : undefined,
               )
             }
-            className="w-full rounded-lg border border-brand-ink/15 px-2 py-1.5 outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
+            className="w-full rounded-lg border border-brand-ink/15 bg-white px-2 py-1.5 text-sm text-brand-ink outline-none transition-colors placeholder:text-neutral-400 focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
           />
         </div>
         <p className="mt-1.5 text-xs text-neutral-400">

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/seo/Seo";
 import { AuthLayout } from "../components/layout/AuthLayout";
+import { PasswordInput } from "../components/ui/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
@@ -48,20 +49,18 @@ export default function LoginPage() {
             required
             className="input-field"
           />
-          <input
-            type="password"
+          <PasswordInput
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
             required
-            className="input-field"
           />
           <Link to="/esqueci-senha" className="-mt-1 text-right text-xs text-neutral-500 hover:text-brand-ink">
             Esqueci minha senha
           </Link>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="alert-error">{error}</p>}
 
           <button type="submit" disabled={isSubmitting} className="btn-primary mt-2 w-full disabled:opacity-60">
             {isSubmitting ? "Entrando…" : "Entrar"}

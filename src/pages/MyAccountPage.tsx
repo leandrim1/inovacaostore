@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BadgeCheck, KeyRound, LogOut, PackageSearch, ShieldAlert, User } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
+import { PasswordInput } from "../components/ui/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 
 export default function MyAccountPage() {
@@ -90,36 +91,30 @@ export default function MyAccountPage() {
                 <KeyRound size={16} /> ALTERAR SENHA
               </h2>
               <form onSubmit={handleChangePassword} className="flex flex-col gap-3 sm:max-w-sm">
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="Senha atual"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   autoComplete="current-password"
                   required
-                  className="input-field"
                 />
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="Nova senha"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   autoComplete="new-password"
                   required
-                  className="input-field"
                 />
-                <input
-                  type="password"
+                <PasswordInput
                   placeholder="Confirmar nova senha"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   autoComplete="new-password"
                   required
-                  className="input-field"
                 />
-                {error && <p className="text-sm text-red-600">{error}</p>}
-                {success && <p className="text-sm text-green-700">Senha alterada com sucesso.</p>}
-                <button type="submit" disabled={isSubmitting} className="btn-outline mt-1 w-full disabled:opacity-60">
+                {error && <p className="alert-error">{error}</p>}
+                {success && <p className="alert-success">Senha alterada com sucesso.</p>}
+                <button type="submit" disabled={isSubmitting} className="btn-primary mt-1 w-full disabled:opacity-60">
                   {isSubmitting ? "Salvando…" : "Alterar senha"}
                 </button>
               </form>

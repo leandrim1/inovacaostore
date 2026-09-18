@@ -162,7 +162,7 @@ export function Header() {
                 >
                   Entrar
                 </Link>
-                <Link to="/cadastro" className="btn-primary !px-4 !py-2 !text-xs">
+                <Link to="/cadastro" className="btn-primary px-4 py-2 text-xs">
                   Criar conta
                 </Link>
               </div>

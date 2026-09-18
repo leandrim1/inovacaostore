@@ -24,7 +24,7 @@ export function FeaturedProducts() {
               className="group flex items-center gap-1.5 font-display text-sm tracking-widest text-brand-ink hover:text-brand-yellow-dark"
             >
               Ver tudo
-              <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           }
         />

@@ -111,14 +111,14 @@ export function MobileMenu({
                   <Link
                     to="/login"
                     onClick={onClose}
-                    className="btn-outline !flex-1 !px-4 !py-2.5 !text-xs"
+                    className="btn-outline flex-1 px-4 py-2.5 text-xs"
                   >
                     Entrar
                   </Link>
                   <Link
                     to="/cadastro"
                     onClick={onClose}
-                    className="btn-primary !flex-1 !px-4 !py-2.5 !text-xs"
+                    className="btn-primary flex-1 px-4 py-2.5 text-xs"
                   >
                     Criar conta
                   </Link>
@@ -130,7 +130,7 @@ export function MobileMenu({
                 rel="noreferrer"
                 className="flex items-center gap-2 text-sm font-medium text-green-700 transition-opacity hover:opacity-70"
               >
-                <MessageCircle size={18} />
+                <MessageCircle size={16} />
                 Fale no WhatsApp
               </a>
               <a

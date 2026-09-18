@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { AuthLayout } from "../components/layout/AuthLayout";
+import { PasswordInput } from "../components/ui/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 
 function useEmailValid(email: string) {
@@ -83,13 +84,11 @@ export default function RegisterPage() {
           />
           {touched && !emailValid && <p className="-mt-2 text-xs text-red-600">Informe um e-mail válido.</p>}
 
-          <input
-            type="password"
+          <PasswordInput
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
-            className="input-field"
           />
           {password.length > 0 && (
             <ul className="-mt-1.5 flex flex-col gap-1 pl-1 text-xs">
@@ -99,19 +98,17 @@ export default function RegisterPage() {
             </ul>
           )}
 
-          <input
-            type="password"
+          <PasswordInput
             placeholder="Confirmar senha"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             autoComplete="new-password"
-            className="input-field"
           />
           {touched && confirmPassword.length > 0 && !passwordsMatch && (
             <p className="-mt-2 text-xs text-red-600">As senhas não coincidem.</p>
           )}
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="alert-error">{error}</p>}
 
           <button type="submit" disabled={isSubmitting} className="btn-primary mt-2 w-full disabled:opacity-60">
             {isSubmitting ? "Criando conta…" : "Criar conta"}

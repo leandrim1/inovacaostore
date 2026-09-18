@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "../../components/ui/Logo";
+import { PasswordInput } from "../../components/ui/PasswordInput";
 import { useAdminAuth } from "../../context/AdminAuthContext";
+
+const ADMIN_INPUT_CLASS = "rounded-lg border border-black/10 px-4 py-2 text-sm outline-none focus:border-brand-ink";
 
 export default function AdminLoginPage() {
   const { admin, isLoading, login } = useAdminAuth();
@@ -45,17 +48,16 @@ export default function AdminLoginPage() {
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-lg border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+            className={ADMIN_INPUT_CLASS}
           />
-          <input
-            type="password"
+          <PasswordInput
             required
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-lg border border-black/10 px-4 py-2.5 text-sm outline-none focus:border-brand-ink"
+            className={ADMIN_INPUT_CLASS}
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="alert-error">{error}</p>}
           <button type="submit" disabled={submitting} className="btn-primary mt-2 w-full disabled:opacity-60">
             {submitting ? "Entrando…" : "Entrar"}
           </button>

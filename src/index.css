@@ -178,7 +178,15 @@
   }
 }
 
-@layer utilities {
+/* Classes compostas (múltiplas propriedades) ficam em @layer components, não
+   utilities: a ordem de camadas do Tailwind v4 é theme < base < components <
+   utilities, então uma utility aplicada na instância (ex.: `pl-9`, `!px-4`)
+   só consegue sobrepor essas classes se elas viverem numa camada anterior.
+   Colocá-las em @layer utilities fazia o CSS delas vencer por ordem de
+   declaração mesmo quando a intenção era o contrário — foi o que causou o
+   ícone do cupom (Ticket, antes Tag) ficar por baixo do texto do input:
+   `input-field`'s `px-4` sobrescrevia silenciosamente o `pl-9` da instância. */
+@layer components {
   .container-page {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
@@ -211,6 +219,16 @@
     @apply w-full rounded-lg border border-brand-ink/15 bg-white px-4 py-3 text-sm text-brand-ink outline-none transition-colors placeholder:text-neutral-400 focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5;
   }
 
+  .alert-error {
+    @apply rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600;
+  }
+
+  .alert-success {
+    @apply rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700;
+  }
+}
+
+@layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

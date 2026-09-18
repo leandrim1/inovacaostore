@@ -433,7 +433,7 @@ export default function CheckoutPage() {
             </div>
 
             {submitError && (
-              <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{submitError}</p>
+              <p className="alert-error mb-3">{submitError}</p>
             )}
             <button
               type="submit"

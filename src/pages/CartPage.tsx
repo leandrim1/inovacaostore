@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, ShoppingBag, Tag, Truck } from "lucide-react";
+import { Trash2, ShoppingBag, Ticket, Truck } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
@@ -109,7 +109,7 @@ export default function CartPage() {
                           aria-label={`Remover ${item.name}`}
                           className="text-neutral-400 hover:text-red-600"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                       <div className="flex items-center justify-between">
@@ -168,7 +168,7 @@ export default function CartPage() {
 
               <form onSubmit={handleApplyCoupon} className="mb-5 flex gap-2">
                 <div className="relative flex-1">
-                  <Tag size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                  <Ticket size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                   <input
                     type="text"
                     placeholder="Cupom de desconto"
@@ -181,9 +181,9 @@ export default function CartPage() {
                   Aplicar
                 </button>
               </form>
-              {couponError && <p className="-mt-3 mb-4 text-xs text-red-600">{couponError}</p>}
+              {couponError && <p className="alert-error -mt-3 mb-4">{couponError}</p>}
               {coupon && (
-                <div className="-mt-3 mb-4 flex items-center justify-between rounded-lg bg-green-50 px-3 py-2 text-xs text-green-700">
+                <div className="alert-success -mt-3 mb-4 flex items-center justify-between">
                   <span>Cupom {coupon.code} aplicado</span>
                   <button type="button" onClick={removeCoupon} className="underline">
                     remover

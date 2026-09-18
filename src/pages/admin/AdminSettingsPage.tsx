@@ -362,16 +362,14 @@ export default function AdminSettingsPage() {
             </div>
           </section>
 
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-          {saved && !error && (
-            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
-              Configurações salvas com sucesso.
-            </p>
-          )}
+          <section className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            {error && <p className="alert-error">{error}</p>}
+            {saved && !error && <p className="alert-success">Configurações salvas com sucesso.</p>}
 
-          <button type="submit" disabled={isSaving} className="btn-primary w-full disabled:opacity-60">
-            {isSaving ? "Salvando…" : "Salvar alterações"}
-          </button>
+            <button type="submit" disabled={isSaving} className="btn-primary w-full disabled:opacity-60">
+              {isSaving ? "Salvando…" : "Salvar alterações"}
+            </button>
+          </section>
         </div>
       </form>
     </div>

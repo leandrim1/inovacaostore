@@ -480,7 +480,7 @@ export default function AdminProductFormPage() {
             </div>
           </section>
 
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+          {error && <p className="alert-error">{error}</p>}
 
           <button type="submit" disabled={isSaving} className="btn-primary w-full disabled:opacity-60">
             {isSaving ? "Salvando…" : isEditing ? "Salvar alterações" : "Criar produto"}

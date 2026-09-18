@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
                 required
                 className="input-field"
               />
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="alert-error">{error}</p>}
               <button type="submit" disabled={isSubmitting} className="btn-primary mt-2 w-full disabled:opacity-60">
                 {isSubmitting ? "Enviando…" : "Enviar link de recuperação"}
               </button>

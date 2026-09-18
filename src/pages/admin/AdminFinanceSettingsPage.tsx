@@ -211,10 +211,10 @@ export default function AdminFinanceSettingsPage() {
           </section>
         </div>
 
-        <div className="h-fit rounded-2xl bg-brand-cream p-5">
-          {settingsError && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{settingsError}</p>}
+        <div className="h-fit rounded-2xl bg-brand-cream p-5 ring-1 ring-black/5">
+          {settingsError && <p className="alert-error mb-3">{settingsError}</p>}
           {settingsSaved && !isSavingSettings && (
-            <p className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">Configurações salvas com sucesso.</p>
+            <p className="alert-success mb-3">Configurações salvas com sucesso.</p>
           )}
           <button type="submit" disabled={isSavingSettings} className="btn-primary w-full disabled:opacity-60">
             {isSavingSettings ? "Salvando…" : "Salvar configurações"}
