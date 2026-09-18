@@ -40,11 +40,13 @@ const updateProductSchema = productSchema.partial();
 const include = { images: { orderBy: { order: "asc" as const } }, variants: true, category: true };
 
 adminProductsRouter.get("/", async (req, res) => {
-  const { q, categoryId, active } = req.query;
+  const { q, categoryId, active, featured } = req.query;
   const where: Prisma.ProductWhereInput = {};
   if (typeof categoryId === "string") where.categoryId = categoryId;
   if (active === "true") where.active = true;
   if (active === "false") where.active = false;
+  if (featured === "true") where.featured = true;
+  if (featured === "false") where.featured = false;
   if (typeof q === "string" && q.trim()) {
     where.OR = [{ name: { contains: q } }, { sku: { contains: q } }];
   }

@@ -10,6 +10,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 
 const Home = lazy(() => import("./pages/Home"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
+const FeaturedPage = lazy(() => import("./pages/FeaturedPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
@@ -55,6 +56,7 @@ function StorefrontApp() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/categoria/:slug" element={<CategoryPage />} />
+          <Route path="/destaques" element={<FeaturedPage />} />
           <Route path="/busca" element={<SearchPage />} />
           <Route path="/produto/:slug" element={<ProductPage />} />
           <Route path="/carrinho" element={<CartPage />} />

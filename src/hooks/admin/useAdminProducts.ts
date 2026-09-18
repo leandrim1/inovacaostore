@@ -26,7 +26,9 @@ export interface AdminProductInput {
   }[];
 }
 
-export function useAdminProducts(filters: { q?: string; categoryId?: string; active?: string } = {}) {
+export function useAdminProducts(
+  filters: { q?: string; categoryId?: string; active?: string; featured?: string } = {},
+) {
   const qs = buildQueryString(filters);
   return useQuery({
     queryKey: ["admin-products", filters],

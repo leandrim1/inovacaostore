@@ -20,7 +20,7 @@ export function FeaturedProducts() {
           description="As peças mais desejadas da temporada, escolhidas a dedo para você."
           action={
             <Link
-              to="/categoria/camisetas"
+              to="/destaques"
               className="group flex items-center gap-1.5 font-display text-sm tracking-widest text-brand-ink hover:text-brand-yellow-dark"
             >
               Ver tudo

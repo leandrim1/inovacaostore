@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Star } from "lucide-react";
 import { useAdminProducts, useDeleteProduct, useUpdateProduct } from "../../hooks/admin/useAdminProducts";
 import { formatBRL } from "../../lib/format";
 
 export default function AdminProductsPage() {
   const [q, setQ] = useState("");
   const [active, setActive] = useState<string>("");
-  const { data: products = [], isLoading } = useAdminProducts({ q: q || undefined, active: active || undefined });
+  const [featured, setFeatured] = useState<string>("");
+  const { data: products = [], isLoading } = useAdminProducts({
+    q: q || undefined,
+    active: active || undefined,
+    featured: featured || undefined,
+  });
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +21,15 @@ export default function AdminProductsPage() {
     setError(null);
     try {
       await updateProduct.mutateAsync({ id, data: { active: !current } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível atualizar o produto.");
+    }
+  }
+
+  async function toggleFeatured(id: string, current: boolean) {
+    setError(null);
+    try {
+      await updateProduct.mutateAsync({ id, data: { featured: !current } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível atualizar o produto.");
     }
@@ -59,6 +73,15 @@ export default function AdminProductsPage() {
           <option value="">Todos os status</option>
           <option value="true">Ativos</option>
           <option value="false">Ocultos</option>
+        </select>
+        <select
+          value={featured}
+          onChange={(e) => setFeatured(e.target.value)}
+          className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+        >
+          <option value="">Destaque: todos</option>
+          <option value="true">Em destaque</option>
+          <option value="false">Fora de destaque</option>
         </select>
       </div>
 
@@ -120,6 +143,16 @@ export default function AdminProductsPage() {
                   </td>
                   <td className="py-3 pr-5">
                     <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => toggleFeatured(p.id, p.featured)}
+                        title={p.featured ? "Remover destaque" : "Marcar como destaque"}
+                        className={`rounded-lg p-2 hover:bg-neutral-100 ${
+                          p.featured ? "text-brand-yellow-dark" : "text-neutral-500 hover:text-brand-ink"
+                        }`}
+                      >
+                        <Star size={16} fill={p.featured ? "currentColor" : "none"} />
+                      </button>
                       <button
                         type="button"
                         onClick={() => toggleActive(p.id, p.active)}
