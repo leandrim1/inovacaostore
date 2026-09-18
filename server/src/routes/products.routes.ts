@@ -66,8 +66,8 @@ productsRouter.get("/", async (req, res) => {
   if (featured === "true") where.featured = true;
   if (q && q.trim()) {
     where.OR = [
-      { name: { contains: q } },
-      { description: { contains: q } },
+      { name: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
     ];
   }
 
