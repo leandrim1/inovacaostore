@@ -15,7 +15,7 @@ import {
 } from "../../hooks/admin/useAdminFinance";
 import { formatBRL } from "../../lib/format";
 
-const inputClass = "mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink";
+const inputClass = "mt-1 w-full admin-input px-3 py-2";
 const labelClass = "text-xs font-medium text-neutral-500";
 const sectionClass = "rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5";
 
@@ -233,7 +233,7 @@ export default function AdminFinanceSettingsPage() {
           <select
             value={newExpense.category}
             onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value as ExpenseCategory })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           >
             {EXPENSE_CATEGORIES.map((c) => (
               <option key={c} value={c}>
@@ -245,7 +245,7 @@ export default function AdminFinanceSettingsPage() {
             placeholder="Descrição"
             value={newExpense.description}
             onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-            className="col-span-2 rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="col-span-2 admin-input px-2 py-1.5"
           />
           <input
             type="number"
@@ -255,14 +255,14 @@ export default function AdminFinanceSettingsPage() {
             placeholder="Valor (R$)"
             value={newExpense.amount}
             onChange={(e) => setNewExpense({ ...newExpense, amount: Number(e.target.value) })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <input
             type="date"
             required
             value={newExpense.occurredAt}
             onChange={(e) => setNewExpense({ ...newExpense, occurredAt: e.target.value })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <button type="submit" className="btn-primary col-span-2 justify-center sm:col-span-6">
             <Plus size={16} /> Adicionar despesa
@@ -304,7 +304,7 @@ export default function AdminFinanceSettingsPage() {
                           <select
                             value={editDraft.category}
                             onChange={(e) => setEditDraft({ ...editDraft, category: e.target.value as ExpenseCategory })}
-                            className="rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="admin-input px-2 py-1"
                           >
                             {EXPENSE_CATEGORIES.map((c) => (
                               <option key={c} value={c}>
@@ -317,7 +317,7 @@ export default function AdminFinanceSettingsPage() {
                           <input
                             value={editDraft.description}
                             onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
-                            className="w-40 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-40 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -326,7 +326,7 @@ export default function AdminFinanceSettingsPage() {
                             step="0.01"
                             value={editDraft.amount}
                             onChange={(e) => setEditDraft({ ...editDraft, amount: Number(e.target.value) })}
-                            className="w-24 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-24 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -334,7 +334,7 @@ export default function AdminFinanceSettingsPage() {
                             type="date"
                             value={editDraft.occurredAt}
                             onChange={(e) => setEditDraft({ ...editDraft, occurredAt: e.target.value })}
-                            className="rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-4">
@@ -398,7 +398,7 @@ export default function AdminFinanceSettingsPage() {
                     <select
                       value={editDraft.category}
                       onChange={(e) => setEditDraft({ ...editDraft, category: e.target.value as ExpenseCategory })}
-                      className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      className="admin-input px-2.5 py-2"
                     >
                       {EXPENSE_CATEGORIES.map((c) => (
                         <option key={c} value={c}>
@@ -410,7 +410,7 @@ export default function AdminFinanceSettingsPage() {
                       value={editDraft.description}
                       onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
                       placeholder="Descrição"
-                      className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                      className="admin-input px-2.5 py-2"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
@@ -419,13 +419,13 @@ export default function AdminFinanceSettingsPage() {
                         value={editDraft.amount}
                         onChange={(e) => setEditDraft({ ...editDraft, amount: Number(e.target.value) })}
                         placeholder="Valor (R$)"
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                       <input
                         type="date"
                         value={editDraft.occurredAt}
                         onChange={(e) => setEditDraft({ ...editDraft, occurredAt: e.target.value })}
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                     </div>
                     <div className="flex items-center justify-end gap-1.5">

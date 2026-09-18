@@ -43,7 +43,7 @@ export default function AdminOrderDetailPage() {
         <select
           value={order.status}
           onChange={(e) => handleStatusChange(e.target.value)}
-          className="rounded-lg border border-black/10 px-3 py-2 text-sm font-medium outline-none focus:border-brand-ink"
+          className="admin-input px-3 py-2 font-medium"
         >
           {ORDER_STATUSES.map((s) => (
             <option key={s} value={s}>

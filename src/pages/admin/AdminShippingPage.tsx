@@ -14,7 +14,7 @@ import {
 } from "../../hooks/admin/useAdminShipping";
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink";
+  "mt-1 w-full admin-input px-3 py-2";
 const labelClass = "text-xs font-medium text-neutral-500";
 const sectionClass = "rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5";
 
@@ -261,14 +261,14 @@ export default function AdminShippingPage() {
                   value={newRegionCity}
                   onChange={(e) => setNewRegionCity(e.target.value)}
                   placeholder="Cidade (opcional)"
-                  className="flex-1 rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="flex-1 admin-input px-3 py-2"
                 />
                 <input
                   value={newRegionState}
                   onChange={(e) => setNewRegionState(e.target.value.toUpperCase())}
                   placeholder="UF"
                   maxLength={2}
-                  className="w-20 rounded-lg border border-black/10 px-3 py-2 text-sm uppercase outline-none focus:border-brand-ink"
+                  className="w-20 admin-input px-3 py-2 uppercase"
                 />
                 <button
                   type="button"
@@ -403,7 +403,7 @@ export default function AdminShippingPage() {
             placeholder="De (km)"
             value={newTier.minKm}
             onChange={(e) => setNewTier({ ...newTier, minKm: Number(e.target.value) })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <input
             type="number"
@@ -412,7 +412,7 @@ export default function AdminShippingPage() {
             placeholder="Até (km)"
             value={newTier.maxKm ?? ""}
             onChange={(e) => setNewTier({ ...newTier, maxKm: e.target.value === "" ? null : Number(e.target.value) })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <input
             type="number"
@@ -422,7 +422,7 @@ export default function AdminShippingPage() {
             placeholder="Preço (R$)"
             value={newTier.price}
             onChange={(e) => setNewTier({ ...newTier, price: Number(e.target.value) })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <input
             type="number"
@@ -431,20 +431,20 @@ export default function AdminShippingPage() {
             placeholder="Custo (R$)"
             value={newTier.costPrice ?? ""}
             onChange={(e) => setNewTier({ ...newTier, costPrice: e.target.value === "" ? null : Number(e.target.value) })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <input
             placeholder="Prazo (ex: 3 a 5 dias úteis)"
             value={newTier.etaLabel}
             onChange={(e) => setNewTier({ ...newTier, etaLabel: e.target.value })}
-            className="col-span-2 rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="col-span-2 admin-input px-2 py-1.5"
           />
           <input
             type="number"
             placeholder="Ordem"
             value={newTier.order}
             onChange={(e) => setNewTier({ ...newTier, order: Number(e.target.value) })}
-            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+            className="admin-input px-2 py-1.5"
           />
           <button type="submit" className="btn-primary col-span-2 justify-center sm:col-span-7">
             <Plus size={16} /> Adicionar faixa
@@ -489,7 +489,7 @@ export default function AdminShippingPage() {
                             type="number"
                             value={editDraft.minKm}
                             onChange={(e) => setEditDraft({ ...editDraft, minKm: Number(e.target.value) })}
-                            className="w-20 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-20 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -499,7 +499,7 @@ export default function AdminShippingPage() {
                             onChange={(e) =>
                               setEditDraft({ ...editDraft, maxKm: e.target.value === "" ? null : Number(e.target.value) })
                             }
-                            className="w-20 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-20 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -508,7 +508,7 @@ export default function AdminShippingPage() {
                             step="0.01"
                             value={editDraft.price}
                             onChange={(e) => setEditDraft({ ...editDraft, price: Number(e.target.value) })}
-                            className="w-24 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-24 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -519,14 +519,14 @@ export default function AdminShippingPage() {
                             onChange={(e) =>
                               setEditDraft({ ...editDraft, costPrice: e.target.value === "" ? null : Number(e.target.value) })
                             }
-                            className="w-24 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-24 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
                           <input
                             value={editDraft.etaLabel}
                             onChange={(e) => setEditDraft({ ...editDraft, etaLabel: e.target.value })}
-                            className="w-40 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-40 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-3">
@@ -534,7 +534,7 @@ export default function AdminShippingPage() {
                             type="number"
                             value={editDraft.order}
                             onChange={(e) => setEditDraft({ ...editDraft, order: Number(e.target.value) })}
-                            className="w-16 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                            className="w-16 admin-input px-2 py-1"
                           />
                         </td>
                         <td className="py-2 pr-4">
@@ -613,7 +613,7 @@ export default function AdminShippingPage() {
                         value={editDraft.minKm}
                         onChange={(e) => setEditDraft({ ...editDraft, minKm: Number(e.target.value) })}
                         placeholder="De (km)"
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                       <input
                         type="number"
@@ -622,7 +622,7 @@ export default function AdminShippingPage() {
                           setEditDraft({ ...editDraft, maxKm: e.target.value === "" ? null : Number(e.target.value) })
                         }
                         placeholder="Até (km)"
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                       <input
                         type="number"
@@ -630,7 +630,7 @@ export default function AdminShippingPage() {
                         value={editDraft.price}
                         onChange={(e) => setEditDraft({ ...editDraft, price: Number(e.target.value) })}
                         placeholder="Preço (R$)"
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                       <input
                         type="number"
@@ -640,20 +640,20 @@ export default function AdminShippingPage() {
                           setEditDraft({ ...editDraft, costPrice: e.target.value === "" ? null : Number(e.target.value) })
                         }
                         placeholder="Custo (R$)"
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                       <input
                         value={editDraft.etaLabel}
                         onChange={(e) => setEditDraft({ ...editDraft, etaLabel: e.target.value })}
                         placeholder="Prazo (ex: 3 a 5 dias úteis)"
-                        className="col-span-2 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="col-span-2 admin-input px-2.5 py-2"
                       />
                       <input
                         type="number"
                         value={editDraft.order}
                         onChange={(e) => setEditDraft({ ...editDraft, order: Number(e.target.value) })}
                         placeholder="Ordem"
-                        className="rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink"
+                        className="admin-input px-2.5 py-2"
                       />
                     </div>
                     <div className="flex items-center justify-end gap-1.5">

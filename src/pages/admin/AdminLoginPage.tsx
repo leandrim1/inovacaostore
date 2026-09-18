@@ -4,7 +4,7 @@ import { Logo } from "../../components/ui/Logo";
 import { PasswordInput } from "../../components/ui/PasswordInput";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
-const ADMIN_INPUT_CLASS = "rounded-lg border border-black/10 px-4 py-2 text-sm outline-none focus:border-brand-ink";
+const ADMIN_INPUT_CLASS = "admin-input px-4 py-2";
 
 export default function AdminLoginPage() {
   const { admin, isLoading, login } = useAdminAuth();

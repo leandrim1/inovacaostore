@@ -155,7 +155,7 @@ export default function AdminSettingsPage() {
                   required
                   value={heroEyebrow}
                   onChange={(e) => setHeroEyebrow(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               <label className="text-xs font-medium text-neutral-500">
@@ -165,7 +165,7 @@ export default function AdminSettingsPage() {
                   value={heroTitle}
                   onChange={(e) => setHeroTitle(e.target.value)}
                   rows={2}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               <label className="text-xs font-medium text-neutral-500">
@@ -175,7 +175,7 @@ export default function AdminSettingsPage() {
                   value={heroDescription}
                   onChange={(e) => setHeroDescription(e.target.value)}
                   rows={3}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -185,7 +185,7 @@ export default function AdminSettingsPage() {
                     required
                     value={heroCtaLabel}
                     onChange={(e) => setHeroCtaLabel(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                    className="mt-1 w-full admin-input px-3 py-2"
                   />
                 </label>
                 <label className="text-xs font-medium text-neutral-500">
@@ -194,7 +194,7 @@ export default function AdminSettingsPage() {
                     required
                     value={heroCtaUrl}
                     onChange={(e) => setHeroCtaUrl(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                    className="mt-1 w-full admin-input px-3 py-2"
                   />
                 </label>
               </div>
@@ -298,28 +298,28 @@ export default function AdminSettingsPage() {
                 placeholder="Item 1"
                 value={announcementItem1}
                 onChange={(e) => setAnnouncementItem1(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <input
                 required
                 placeholder="Item 2"
                 value={announcementItem2}
                 onChange={(e) => setAnnouncementItem2(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <input
                 required
                 placeholder="Item 3"
                 value={announcementItem3}
                 onChange={(e) => setAnnouncementItem3(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <input
                 required
                 placeholder="Item 4"
                 value={announcementItem4}
                 onChange={(e) => setAnnouncementItem4(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
             </div>
           </section>
@@ -336,7 +336,7 @@ export default function AdminSettingsPage() {
                   placeholder="5534999998888"
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               <label className="text-xs font-medium text-neutral-500">
@@ -346,7 +346,7 @@ export default function AdminSettingsPage() {
                   value={whatsappMessage}
                   onChange={(e) => setWhatsappMessage(e.target.value)}
                   rows={3}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               <label className="text-xs font-medium text-neutral-500">
@@ -356,7 +356,7 @@ export default function AdminSettingsPage() {
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
             </div>

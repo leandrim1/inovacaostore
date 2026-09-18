@@ -226,6 +226,13 @@
   .alert-success {
     @apply rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700;
   }
+
+  /* Recipe do admin (borda mais leve, sem preenchimento próprio) — a
+     largura/padding de cada instância continua vindo da própria className,
+     igual ao .input-field do storefront. */
+  .admin-input {
+    @apply rounded-lg border border-black/10 text-sm text-brand-ink outline-none transition-colors placeholder:text-neutral-400 focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5;
+  }
 }
 
 @layer utilities {

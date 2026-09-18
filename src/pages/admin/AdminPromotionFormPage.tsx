@@ -120,34 +120,34 @@ export default function AdminPromotionFormPage() {
                 placeholder="Título (ex: PROMOÇÃO IMPERDÍVEL)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <input
                 required
                 placeholder="Destaque (ex: 20% OFF)"
                 value={highlight}
                 onChange={(e) => setHighlight(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <textarea
                 placeholder="Descrição (ex: Em toda a loja, por tempo limitado!)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input
                   placeholder="Texto do botão"
                   value={ctaLabel}
                   onChange={(e) => setCtaLabel(e.target.value)}
-                  className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="admin-input px-3 py-2"
                 />
                 <input
                   placeholder="Link do botão (ex: /categoria/moletons)"
                   value={ctaUrl}
                   onChange={(e) => setCtaUrl(e.target.value)}
-                  className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="admin-input px-3 py-2"
                 />
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function AdminPromotionFormPage() {
               type="datetime-local"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
-              className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+              className="w-full admin-input px-3 py-2"
             />
             <p className="mt-1.5 text-xs text-neutral-400">
               Deixe em branco para uma promoção sem contagem regressiva.
@@ -218,7 +218,7 @@ export default function AdminPromotionFormPage() {
               type="number"
               value={order}
               onChange={(e) => setOrder(Number(e.target.value))}
-              className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+              className="w-full admin-input px-3 py-2"
             />
           </section>
 

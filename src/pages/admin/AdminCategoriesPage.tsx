@@ -76,7 +76,7 @@ export default function AdminCategoriesPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Ex: Moletons"
-            className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+            className="w-full admin-input px-3 py-2"
           />
         </div>
         <div className="flex-1">
@@ -85,7 +85,7 @@ export default function AdminCategoriesPage() {
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
             placeholder="Descrição curta"
-            className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+            className="w-full admin-input px-3 py-2"
           />
         </div>
         <button type="submit" className="btn-primary shrink-0">
@@ -122,7 +122,7 @@ export default function AdminCategoriesPage() {
                         <input
                           value={editDraft.name}
                           onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
-                          className="w-full rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+                          className="w-full admin-input px-2 py-1.5"
                         />
                       </td>
                       <td className="py-2.5 pr-4 text-neutral-400">{cat.slug}</td>
@@ -130,7 +130,7 @@ export default function AdminCategoriesPage() {
                         <input
                           value={editDraft.description}
                           onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
-                          className="w-full rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+                          className="w-full admin-input px-2 py-1.5"
                         />
                       </td>
                       <td className="py-2.5 pr-4">{cat.productCount}</td>
@@ -200,13 +200,13 @@ export default function AdminCategoriesPage() {
                     value={editDraft.name}
                     onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
                     placeholder="Nome"
-                    className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                    className="w-full admin-input px-3 py-2"
                   />
                   <input
                     value={editDraft.description}
                     onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
                     placeholder="Descrição"
-                    className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                    className="w-full admin-input px-3 py-2"
                   />
                   <div className="flex items-center justify-end gap-1.5">
                     <button

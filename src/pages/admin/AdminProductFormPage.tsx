@@ -208,27 +208,27 @@ export default function AdminProductFormPage() {
                 placeholder="Nome do produto"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="col-span-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="col-span-full admin-input px-3 py-2"
               />
               <input
                 placeholder="Slug (URL) — gerado automaticamente se vazio"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                className="col-span-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="col-span-full admin-input px-3 py-2"
               />
               <textarea
                 placeholder="Descrição"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="col-span-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="col-span-full admin-input px-3 py-2"
               />
               <textarea
                 placeholder={"Características (uma por linha)\nEx: 100% algodão"}
                 value={featuresText}
                 onChange={(e) => setFeaturesText(e.target.value)}
                 rows={4}
-                className="col-span-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="col-span-full admin-input px-3 py-2"
               />
             </div>
           </section>
@@ -250,7 +250,7 @@ export default function AdminProductFormPage() {
                     placeholder="Cor (ex: Preto)"
                     value={v.color}
                     onChange={(e) => updateVariant(i, { color: e.target.value })}
-                    className="col-span-3 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-3"
+                    className="col-span-3 admin-input px-2.5 py-2 sm:col-span-3"
                   />
                   <input
                     type="color"
@@ -262,7 +262,7 @@ export default function AdminProductFormPage() {
                     placeholder="Tamanho"
                     value={v.size}
                     onChange={(e) => updateVariant(i, { size: e.target.value })}
-                    className="col-span-2 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-2"
+                    className="col-span-2 admin-input px-2.5 py-2 sm:col-span-2"
                   />
                   <input
                     type="number"
@@ -270,13 +270,13 @@ export default function AdminProductFormPage() {
                     placeholder="Estoque"
                     value={v.stock}
                     onChange={(e) => updateVariant(i, { stock: Number(e.target.value) })}
-                    className="col-span-2 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-2"
+                    className="col-span-2 admin-input px-2.5 py-2 sm:col-span-2"
                   />
                   <input
                     placeholder="SKU da variação (opcional)"
                     value={v.sku}
                     onChange={(e) => updateVariant(i, { sku: e.target.value })}
-                    className="col-span-3 rounded-lg border border-black/10 px-2.5 py-2 text-sm outline-none focus:border-brand-ink sm:col-span-3"
+                    className="col-span-3 admin-input px-2.5 py-2 sm:col-span-3"
                   />
                   <button
                     type="button"
@@ -344,7 +344,7 @@ export default function AdminProductFormPage() {
                 placeholder="Preço"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               <input
                 type="number"
@@ -353,7 +353,7 @@ export default function AdminProductFormPage() {
                 placeholder="Preço promocional (De: / riscado)"
                 value={compareAtPrice}
                 onChange={(e) => setCompareAtPrice(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
               {price && compareAtPrice && Number(compareAtPrice) > Number(price) && (
                 <p className="text-xs text-neutral-400">
@@ -369,7 +369,7 @@ export default function AdminProductFormPage() {
                   placeholder="0"
                   value={costPrice}
                   onChange={(e) => setCostPrice(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               {price && costPrice && Number(price) > 0 && (
@@ -386,7 +386,7 @@ export default function AdminProductFormPage() {
                 placeholder="SKU"
                 value={sku}
                 onChange={(e) => setSku(e.target.value)}
-                className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                className="admin-input px-3 py-2"
               />
             </div>
           </section>
@@ -405,7 +405,7 @@ export default function AdminProductFormPage() {
                   placeholder="0"
                   value={weightKg}
                   onChange={(e) => setWeightKg(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
               <label className="text-xs font-medium text-neutral-500">
@@ -417,7 +417,7 @@ export default function AdminProductFormPage() {
                   placeholder="0"
                   value={volumeM3}
                   onChange={(e) => setVolumeM3(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                  className="mt-1 w-full admin-input px-3 py-2"
                 />
               </label>
             </div>
@@ -433,7 +433,7 @@ export default function AdminProductFormPage() {
               required
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+              className="w-full admin-input px-3 py-2"
             >
               <option value="" disabled>
                 Selecione

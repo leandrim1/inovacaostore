@@ -62,13 +62,13 @@ export default function AdminProductsPage() {
             placeholder="Buscar por nome ou SKU"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="w-full rounded-lg border border-black/10 py-2 pl-9 pr-3 text-sm outline-none focus:border-brand-ink"
+            className="w-full admin-input py-2 pl-9 pr-3"
           />
         </div>
         <select
           value={active}
           onChange={(e) => setActive(e.target.value)}
-          className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+          className="admin-input px-3 py-2"
         >
           <option value="">Todos os status</option>
           <option value="true">Ativos</option>
@@ -77,7 +77,7 @@ export default function AdminProductsPage() {
         <select
           value={featured}
           onChange={(e) => setFeatured(e.target.value)}
-          className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+          className="admin-input px-3 py-2"
         >
           <option value="">Destaque: todos</option>
           <option value="true">Em destaque</option>
