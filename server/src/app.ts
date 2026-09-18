@@ -20,6 +20,7 @@ import { adminOrdersRouter } from "./routes/admin/orders.routes.js";
 import { adminDashboardRouter } from "./routes/admin/dashboard.routes.js";
 import { adminPromotionsRouter } from "./routes/admin/promotions.routes.js";
 import { adminSettingsRouter } from "./routes/admin/settings.routes.js";
+import { adminShippingRouter } from "./routes/admin/shipping.routes.js";
 import { requireAdmin } from "./middleware/requireAdmin.js";
 import { UPLOADS_DIR } from "./storage.js";
 import { HttpError } from "./errors.js";
@@ -48,6 +49,7 @@ app.use("/api/admin/orders", requireAdmin, adminOrdersRouter);
 app.use("/api/admin/dashboard", requireAdmin, adminDashboardRouter);
 app.use("/api/admin/promotions", requireAdmin, adminPromotionsRouter);
 app.use("/api/admin/settings", requireAdmin, adminSettingsRouter);
+app.use("/api/admin/shipping", requireAdmin, adminShippingRouter);
 
 app.use(
   (err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

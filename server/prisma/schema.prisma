@@ -36,6 +36,8 @@ model Product {
   tags           String           @default("[]") // JSON string array: novo, mais-vendido, importado, ultimas-unidades
   price          Float
   compareAtPrice Float?
+  weightKg       Float            @default(0)
+  volumeM3       Float            @default(0)
   sku            String           @unique
   featured       Boolean          @default(false)
   active         Boolean          @default(true)
@@ -121,9 +123,11 @@ model Order {
   subtotal      Float
   discount      Float       @default(0)
   couponCode    String?
-  shippingPrice Float       @default(0)
-  shippingLabel String?
-  total         Float
+  shippingPrice      Float       @default(0)
+  shippingLabel      String?
+  shippingDistanceKm Float?
+  shippingMethod     String?
+  total              Float
   paymentMethod String
   status        String      @default("pendente")
   cep           String
@@ -194,4 +198,41 @@ model Promotion {
   order       Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+model ShippingTier {
+  id        String   @id @default(cuid())
+  minKm     Float
+  maxKm     Float? // null = sem limite superior (última faixa)
+  price     Float
+  etaLabel  String? // ex.: "3 a 5 dias úteis"
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingSettings {
+  id                        String   @id @default("singleton")
+  enabled                   Boolean  @default(true)
+  originLat                 Float
+  originLng                 Float
+  freeShippingMinOrderValue Float?
+  freeShippingRegions       String   @default("[]") // JSON: [{ state, city? }]
+  minShippingPrice          Float    @default(0)
+  freeWeightKg              Float    @default(0)
+  pricePerExtraKg           Float    @default(0)
+  freeVolumeM3              Float    @default(0)
+  pricePerExtraM3           Float    @default(0)
+  fallbackFlatPrice         Float    @default(25)
+  updatedAt                 DateTime @updatedAt
+}
+
+model CepGeocodeCache {
+  cep       String   @id
+  lat       Float
+  lng       Float
+  city      String
+  state     String
+  source    String
+  createdAt DateTime @default(now())
 }

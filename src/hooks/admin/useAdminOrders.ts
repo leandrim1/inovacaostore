@@ -18,6 +18,8 @@ export interface AdminOrder {
   couponCode?: string | null;
   shippingPrice: number;
   shippingLabel?: string | null;
+  shippingDistanceKm?: number | null;
+  shippingMethod?: string | null;
   total: number;
   paymentMethod: string;
   status: string;

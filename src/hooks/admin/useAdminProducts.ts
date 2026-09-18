@@ -10,6 +10,8 @@ export interface AdminProductInput {
   tags: string[];
   price: number;
   compareAtPrice?: number | null;
+  weightKg?: number;
+  volumeM3?: number;
   sku: string;
   featured: boolean;
   active: boolean;

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
-import { isValidCep, quoteShipping } from "../shipping.js";
+import { calculateShipping } from "../shipping.js";
 import { findCoupon } from "../coupons.js";
 import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
 
@@ -24,8 +24,15 @@ const orderSchema = z.object({
   items: z.array(z.object({ variantId: z.string().min(1), quantity: z.number().int().positive() })).min(1),
   paymentMethod: z.enum(["pix", "cartao", "boleto"]),
   couponCode: z.string().optional(),
-  shippingLabel: z.enum(["economico", "expresso"]),
 });
+
+const SHIPPING_ERROR_MESSAGES: Record<string, string> = {
+  invalid_cep: "CEP inválido.",
+  cep_not_found: "CEP não encontrado.",
+  service_unavailable: "Não foi possível calcular o frete no momento. Tente novamente em instantes.",
+  no_coverage: "Não entregamos nesse destino no momento.",
+  no_items: "Informe ao menos um item para calcular o frete.",
+};
 
 class OrderError extends Error {
   status: number;
@@ -47,16 +54,13 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
   }
   const data = parsed.data;
 
-  if (!isValidCep(data.address.cep)) {
-    res.status(400).json({ error: "CEP inválido." });
+  const shippingOutcome = await calculateShipping({ cep: data.address.cep, items: data.items });
+  if (!shippingOutcome.ok) {
+    const status = shippingOutcome.reason === "service_unavailable" ? 503 : 400;
+    res.status(status).json({ error: SHIPPING_ERROR_MESSAGES[shippingOutcome.reason], reason: shippingOutcome.reason });
     return;
   }
-  const shippingOptions = quoteShipping(data.address.cep);
-  const shippingOption = shippingOptions?.find((o) => o.id === data.shippingLabel);
-  if (!shippingOption) {
-    res.status(400).json({ error: "Opção de frete inválida." });
-    return;
-  }
+  const shippingQuote = shippingOutcome.quote;
 
   let coupon: ReturnType<typeof findCoupon> = undefined;
   if (data.couponCode) {
@@ -114,7 +118,7 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
       }
 
       const discount = coupon ? Math.round(subtotal * (coupon.percentOff / 100) * 100) / 100 : 0;
-      const total = Math.max(0, subtotal - discount) + shippingOption.price;
+      const total = Math.max(0, subtotal - discount) + shippingQuote.price;
 
       // A identidade do cliente vem exclusivamente da sessão autenticada
       // (nunca do corpo da requisição) — já validada e carregada pelo
@@ -131,8 +135,14 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
           subtotal,
           discount,
           couponCode: coupon?.code,
-          shippingPrice: shippingOption.price,
-          shippingLabel: shippingOption.label,
+          shippingPrice: shippingQuote.price,
+          shippingLabel: shippingQuote.isFree
+            ? "Frete grátis"
+            : shippingQuote.tierLabel
+              ? `Frete (${shippingQuote.tierLabel})`
+              : "Frete",
+          shippingDistanceKm: shippingQuote.distanceKm,
+          shippingMethod: shippingQuote.method,
           total,
           paymentMethod: data.paymentMethod,
           cep: data.address.cep,

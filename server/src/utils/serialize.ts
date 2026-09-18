@@ -27,6 +27,8 @@ export function serializeProduct(product: ProductWithRelations) {
     tags: safeParseArray(product.tags),
     price: product.price,
     compareAtPrice: product.compareAtPrice ?? undefined,
+    weightKg: product.weightKg,
+    volumeM3: product.volumeM3,
     sku: product.sku,
     featured: product.featured,
     active: product.active,

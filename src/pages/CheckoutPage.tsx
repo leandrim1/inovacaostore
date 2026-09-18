@@ -4,7 +4,7 @@ import { CheckCircle2, Copy, CreditCard, MessageCircle, QrCode, Receipt } from "
 import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
 import { formatBRL } from "../lib/format";
-import { formatCep, isValidCep, type ShippingQuote } from "../lib/shipping";
+import { formatCep, isValidCep, quoteShipping, type ShippingQuote } from "../lib/shipping";
 import { api } from "../lib/api";
 import { buildWhatsAppLink, STORE } from "../data/store";
 import { useSiteSettings } from "../hooks/useSiteSettings";
@@ -52,8 +52,8 @@ export default function CheckoutPage() {
 
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null);
-  const [selectedShipping, setSelectedShipping] = useState<string | null>(null);
   const [cepError, setCepError] = useState<string | null>(null);
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [payment, setPayment] = useState<PaymentMethod>("pix");
   const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
   const [installments, setInstallments] = useState(1);
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const shippingPrice = shippingQuote?.options.find((o) => o.id === selectedShipping)?.price ?? 0;
+  const shippingPrice = shippingQuote?.price ?? 0;
   const total = Math.max(0, subtotal - discount) + shippingPrice;
 
   const installmentValue = total / installments;
@@ -91,20 +91,25 @@ export default function CheckoutPage() {
       setShippingQuote(null);
       return;
     }
+    setIsCalculatingShipping(true);
     try {
-      const quote = await api.get<ShippingQuote>(`/api/shipping/quote?cep=${encodeURIComponent(address.cep)}`);
+      const quote = await quoteShipping(
+        address.cep,
+        items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+      );
       setShippingQuote(quote);
-      setSelectedShipping(quote?.options[0]?.id ?? null);
       setCepError(null);
-    } catch {
-      setCepError("Não foi possível calcular o frete para esse CEP.");
+    } catch (err) {
+      setCepError(err instanceof Error ? err.message : "Não foi possível calcular o frete para esse CEP.");
       setShippingQuote(null);
+    } finally {
+      setIsCalculatingShipping(false);
     }
   }
 
   async function handleConfirm(e: React.FormEvent) {
     e.preventDefault();
-    if (!shippingQuote || !selectedShipping) {
+    if (!shippingQuote) {
       await handleCepBlur();
       return;
     }
@@ -125,7 +130,6 @@ export default function CheckoutPage() {
         items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
         paymentMethod: payment,
         couponCode: coupon?.code,
-        shippingLabel: selectedShipping,
       });
       setOrderNumber(result.orderNumber);
       setOrderConfirmed(true);
@@ -215,7 +219,6 @@ export default function CheckoutPage() {
                   onBlur={handleCepBlur}
                   className="input-field"
                 />
-                {cepError && <p className="col-span-full -mt-2 text-xs text-red-600">{cepError}</p>}
                 <input
                   required
                   placeholder="Endereço"
@@ -263,35 +266,28 @@ export default function CheckoutPage() {
 
             <section>
               <h2 className="mb-4 font-display text-lg tracking-wide">2. Frete</h2>
-              {!shippingQuote ? (
+              {cepError && <p className="mb-2 text-sm text-red-600">{cepError}</p>}
+              {isCalculatingShipping ? (
                 <p className="rounded-lg bg-neutral-100 px-4 py-3 text-sm text-neutral-500">
-                  Informe o CEP acima para ver as opções de frete.
+                  Calculando frete…
+                </p>
+              ) : !shippingQuote ? (
+                <p className="rounded-lg bg-neutral-100 px-4 py-3 text-sm text-neutral-500">
+                  Informe o CEP acima para calcular o frete.
                 </p>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {shippingQuote.options.map((opt) => (
-                    <label
-                      key={opt.id}
-                      className={`flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 text-sm transition-colors ${
-                        selectedShipping === opt.id ? "border-brand-ink bg-brand-cream" : "border-black/10"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="shipping-checkout"
-                          checked={selectedShipping === opt.id}
-                          onChange={() => setSelectedShipping(opt.id)}
-                          className="accent-brand-ink"
-                        />
-                        <span>
-                          <span className="block font-medium">{opt.label}</span>
-                          <span className="text-xs text-neutral-500">{opt.days}</span>
-                        </span>
-                      </span>
-                      <span className="font-display">{formatBRL(opt.price)}</span>
-                    </label>
-                  ))}
+                <div className="flex items-center justify-between rounded-lg border border-brand-ink bg-brand-cream px-4 py-3 text-sm">
+                  <span>
+                    <span className="block font-medium">
+                      {shippingQuote.isFree ? "Frete grátis" : "Frete"}
+                    </span>
+                    {shippingQuote.etaLabel && (
+                      <span className="block text-xs text-neutral-500">{shippingQuote.etaLabel}</span>
+                    )}
+                  </span>
+                  <span className="font-display">
+                    {shippingQuote.isFree ? "Grátis" : formatBRL(shippingQuote.price)}
+                  </span>
                 </div>
               )}
             </section>

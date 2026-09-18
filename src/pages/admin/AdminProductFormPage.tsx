@@ -48,6 +48,8 @@ export default function AdminProductFormPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [price, setPrice] = useState("");
   const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [weightKg, setWeightKg] = useState("");
+  const [volumeM3, setVolumeM3] = useState("");
   const [sku, setSku] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [featured, setFeatured] = useState(false);
@@ -67,6 +69,8 @@ export default function AdminProductFormPage() {
     setTags(product.tags);
     setPrice(String(product.price));
     setCompareAtPrice(product.compareAtPrice ? String(product.compareAtPrice) : "");
+    setWeightKg(product.weightKg ? String(product.weightKg) : "");
+    setVolumeM3(product.volumeM3 ? String(product.volumeM3) : "");
     setSku(product.sku);
     setCategoryId(product.categoryId);
     setFeatured(product.featured);
@@ -133,6 +137,8 @@ export default function AdminProductFormPage() {
       tags: tags as AdminProductInput["tags"],
       price: Number(price),
       compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
+      weightKg: weightKg ? Number(weightKg) : 0,
+      volumeM3: volumeM3 ? Number(volumeM3) : 0,
       sku,
       featured,
       active,
@@ -359,6 +365,42 @@ export default function AdminProductFormPage() {
                 className="rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
               />
             </div>
+          </section>
+
+          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <h2 className="mb-4 font-display text-sm tracking-widest text-neutral-500">
+              PESO E VOLUME
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-xs font-medium text-neutral-500">
+                Peso (kg)
+                <input
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  placeholder="0"
+                  value={weightKg}
+                  onChange={(e) => setWeightKg(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                />
+              </label>
+              <label className="text-xs font-medium text-neutral-500">
+                Volume (m³)
+                <input
+                  type="number"
+                  step="0.001"
+                  min={0}
+                  placeholder="0"
+                  value={volumeM3}
+                  onChange={(e) => setVolumeM3(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                />
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-neutral-400">
+              Usados para calcular um adicional de frete quando o pedido excede os limites livres
+              configurados na página de Frete. Deixe em 0 se não afetar o frete.
+            </p>
           </section>
 
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">

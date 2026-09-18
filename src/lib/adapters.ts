@@ -9,6 +9,8 @@ export interface ProductDTO {
   tags: string[];
   price: number;
   compareAtPrice?: number;
+  weightKg: number;
+  volumeM3: number;
   sku: string;
   featured: boolean;
   active: boolean;

@@ -13,6 +13,14 @@ const STATUS_LABELS: Record<string, string> = {
   cancelado: "Cancelado",
 };
 
+const SHIPPING_METHOD_LABELS: Record<string, string> = {
+  distancia: "Calculado por distância",
+  "gratis-valor": "Grátis (valor mínimo do pedido)",
+  "gratis-regiao": "Grátis (região promocional)",
+  fallback: "Valor fixo de contingência",
+  desativado: "Cálculo por distância desativado",
+};
+
 export default function AdminOrderDetailPage() {
   const { id } = useParams();
   const { data: order, isLoading } = useAdminOrder(id);
@@ -87,6 +95,12 @@ export default function AdminOrderDetailPage() {
             {order.shippingLabel && (
               <p className="mt-2 text-sm text-neutral-500">
                 {order.shippingLabel} — {formatBRL(order.shippingPrice)}
+              </p>
+            )}
+            {order.shippingDistanceKm != null && (
+              <p className="mt-1 text-xs text-neutral-400">
+                ~{order.shippingDistanceKm} km da loja (linha reta, aproximada)
+                {order.shippingMethod && ` · ${SHIPPING_METHOD_LABELS[order.shippingMethod] ?? order.shippingMethod}`}
               </p>
             )}
           </section>
