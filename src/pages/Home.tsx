@@ -31,11 +31,11 @@ export default function Home() {
       />
       <Hero />
       <PromotionsBanner />
+      <Gallery />
       <CategoryGrid />
       <FeaturedProducts />
       <Benefits />
       <Testimonials />
-      <Gallery />
       <InstagramFeed />
       <Newsletter />
     </>
