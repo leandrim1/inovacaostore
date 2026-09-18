@@ -1,25 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ORDER_STATUSES, useAdminOrders } from "../../hooks/admin/useAdminOrders";
+import { useAdminOrders } from "../../hooks/admin/useAdminOrders";
+import { ORDER_STATUSES, STATUS_LABELS, STATUS_STYLES } from "../../lib/orderStatus";
 import { formatBRL } from "../../lib/format";
-
-const STATUS_LABELS: Record<string, string> = {
-  pendente: "Pendente",
-  pago: "Pago",
-  separacao: "Separação",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-};
-
-const STATUS_STYLES: Record<string, string> = {
-  pendente: "bg-yellow-100 text-yellow-700",
-  pago: "bg-blue-100 text-blue-700",
-  separacao: "bg-purple-100 text-purple-700",
-  enviado: "bg-indigo-100 text-indigo-700",
-  entregue: "bg-green-100 text-green-700",
-  cancelado: "bg-red-100 text-red-700",
-};
 
 export default function AdminOrdersPage() {
   const [status, setStatus] = useState("");

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
-import { serializeProduct } from "../../utils/serialize.js";
+import { serializeAdminProduct } from "../../utils/serialize.js";
 import { uniqueSlug } from "../../utils/slug.js";
 import { upload, randomUploadName } from "../../upload.js";
 import { saveUpload, deleteUpload } from "../../storage.js";
@@ -26,6 +26,7 @@ const productSchema = z.object({
   tags: z.array(z.enum(["novo", "mais-vendido", "importado", "ultimas-unidades"])).default([]),
   price: z.number().positive(),
   compareAtPrice: z.number().positive().nullable().optional(),
+  costPrice: z.number().min(0).default(0),
   weightKg: z.number().min(0).default(0),
   volumeM3: z.number().min(0).default(0),
   sku: z.string().min(1),
@@ -56,7 +57,7 @@ adminProductsRouter.get("/", async (req, res) => {
     include,
     orderBy: { createdAt: "desc" },
   });
-  res.json({ items: products.map(serializeProduct) });
+  res.json({ items: products.map(serializeAdminProduct) });
 });
 
 adminProductsRouter.get("/:id", async (req, res) => {
@@ -65,7 +66,7 @@ adminProductsRouter.get("/:id", async (req, res) => {
     res.status(404).json({ error: "Produto não encontrado." });
     return;
   }
-  res.json(serializeProduct(product));
+  res.json(serializeAdminProduct(product));
 });
 
 adminProductsRouter.post("/", async (req, res) => {
@@ -90,6 +91,7 @@ adminProductsRouter.post("/", async (req, res) => {
         tags: JSON.stringify(data.tags),
         price: data.price,
         compareAtPrice: data.compareAtPrice ?? null,
+        costPrice: data.costPrice,
         weightKg: data.weightKg,
         volumeM3: data.volumeM3,
         sku: data.sku,
@@ -109,7 +111,7 @@ adminProductsRouter.post("/", async (req, res) => {
       include,
     });
 
-    res.status(201).json(serializeProduct(product));
+    res.status(201).json(serializeAdminProduct(product));
   } catch (err) {
     handlePrismaError(err, res, "produto");
   }
@@ -142,6 +144,7 @@ adminProductsRouter.patch("/:id", async (req, res) => {
           ...(data.tags !== undefined ? { tags: JSON.stringify(data.tags) } : {}),
           ...(data.price !== undefined ? { price: data.price } : {}),
           ...(data.compareAtPrice !== undefined ? { compareAtPrice: data.compareAtPrice } : {}),
+          ...(data.costPrice !== undefined ? { costPrice: data.costPrice } : {}),
           ...(data.weightKg !== undefined ? { weightKg: data.weightKg } : {}),
           ...(data.volumeM3 !== undefined ? { volumeM3: data.volumeM3 } : {}),
           ...(data.sku !== undefined ? { sku: data.sku } : {}),
@@ -199,7 +202,7 @@ adminProductsRouter.patch("/:id", async (req, res) => {
     });
 
     const product = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-    res.json(serializeProduct(product));
+    res.json(serializeAdminProduct(product));
   } catch (err) {
     handlePrismaError(err, res, "produto");
   }
@@ -256,7 +259,7 @@ adminProductsRouter.post("/:id/images", upload.array("images", 8), async (req, r
   });
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-  res.status(201).json(serializeProduct(updated));
+  res.status(201).json(serializeAdminProduct(updated));
 });
 
 adminProductsRouter.delete("/:id/images/:imageId", async (req, res) => {
@@ -271,7 +274,7 @@ adminProductsRouter.delete("/:id/images/:imageId", async (req, res) => {
   await deleteUpload(image.url);
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-  res.json(serializeProduct(updated));
+  res.json(serializeAdminProduct(updated));
 });
 
 function handlePrismaError(err: unknown, res: import("express").Response, label: string) {

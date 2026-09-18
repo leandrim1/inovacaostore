@@ -38,6 +38,7 @@ const AdminPromotionsPage = lazy(() => import("./pages/admin/AdminPromotionsPage
 const AdminPromotionFormPage = lazy(() => import("./pages/admin/AdminPromotionFormPage"));
 const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
 const AdminShippingPage = lazy(() => import("./pages/admin/AdminShippingPage"));
+const AdminFinanceSettingsPage = lazy(() => import("./pages/admin/AdminFinanceSettingsPage"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -119,6 +120,7 @@ function AdminApp() {
           <Route path="pedidos/:id" element={<AdminOrderDetailPage />} />
           <Route path="configuracoes" element={<AdminSettingsPage />} />
           <Route path="frete" element={<AdminShippingPage />} />
+          <Route path="financeiro" element={<AdminFinanceSettingsPage />} />
         </Route>
       </Routes>
     </AdminAuthProvider>

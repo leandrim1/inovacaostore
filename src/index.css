@@ -219,3 +219,11 @@
     -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
   }
 }
+
+/* Impressão/"Exportar PDF" do dashboard financeiro: esconde a navegação do
+   admin e qualquer elemento marcado como .no-print, deixando só o conteúdo. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

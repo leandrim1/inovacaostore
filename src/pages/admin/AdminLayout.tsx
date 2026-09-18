@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Settings, Truck } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Settings, Truck, Wallet } from "lucide-react";
 import { Logo } from "../../components/ui/Logo";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/admin/promocoes", label: "Promoções", icon: Megaphone },
   { to: "/admin/pedidos", label: "Pedidos", icon: ShoppingCart },
   { to: "/admin/frete", label: "Frete", icon: Truck },
+  { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
@@ -33,7 +34,7 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-dvh bg-neutral-50">
-      <aside className="hidden w-64 shrink-0 flex-col bg-brand-ink text-white lg:flex">
+      <aside className="no-print hidden w-64 shrink-0 flex-col bg-brand-ink text-white lg:flex">
         <div className="border-b border-white/10 p-5">
           <Logo />
         </div>
@@ -75,15 +76,15 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-black/5 bg-white px-5 py-4 lg:hidden">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="no-print flex items-center justify-between border-b border-black/5 bg-white px-5 py-4 lg:hidden">
           <Logo />
           <button type="button" onClick={handleLogout} className="text-sm font-medium text-neutral-500">
             Sair
           </button>
         </header>
 
-        <nav className="flex gap-1 overflow-x-auto border-b border-black/5 bg-white px-3 py-2 lg:hidden">
+        <nav className="no-print flex gap-1 overflow-x-auto border-b border-black/5 bg-white px-3 py-2 lg:hidden">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}

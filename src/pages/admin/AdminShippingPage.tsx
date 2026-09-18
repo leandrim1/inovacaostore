@@ -18,7 +18,7 @@ const inputClass =
 const labelClass = "text-xs font-medium text-neutral-500";
 const sectionClass = "rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5";
 
-const EMPTY_TIER_DRAFT: ShippingTierInput = { minKm: 0, maxKm: null, price: 0, etaLabel: "", order: 0 };
+const EMPTY_TIER_DRAFT: ShippingTierInput = { minKm: 0, maxKm: null, price: 0, costPrice: null, etaLabel: "", order: 0 };
 
 export default function AdminShippingPage() {
   const { data: settings, isLoading: settingsLoading } = useAdminShippingSettings();
@@ -125,6 +125,7 @@ export default function AdminShippingPage() {
       minKm: tier.minKm,
       maxKm: tier.maxKm,
       price: tier.price,
+      costPrice: tier.costPrice,
       etaLabel: tier.etaLabel ?? "",
       order: tier.order,
     });
@@ -390,7 +391,7 @@ export default function AdminShippingPage() {
 
         <form
           onSubmit={handleCreateTier}
-          className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-neutral-50 p-3 sm:grid-cols-6"
+          className="mb-4 grid grid-cols-2 gap-2 rounded-xl bg-neutral-50 p-3 sm:grid-cols-7"
         >
           <input
             type="number"
@@ -422,6 +423,15 @@ export default function AdminShippingPage() {
             className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
           />
           <input
+            type="number"
+            min={0}
+            step="0.01"
+            placeholder="Custo (R$)"
+            value={newTier.costPrice ?? ""}
+            onChange={(e) => setNewTier({ ...newTier, costPrice: e.target.value === "" ? null : Number(e.target.value) })}
+            className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
+          />
+          <input
             placeholder="Prazo (ex: 3 a 5 dias úteis)"
             value={newTier.etaLabel}
             onChange={(e) => setNewTier({ ...newTier, etaLabel: e.target.value })}
@@ -434,7 +444,7 @@ export default function AdminShippingPage() {
             onChange={(e) => setNewTier({ ...newTier, order: Number(e.target.value) })}
             className="rounded-lg border border-black/10 px-2 py-1.5 text-sm outline-none focus:border-brand-ink"
           />
-          <button type="submit" className="btn-primary col-span-2 justify-center sm:col-span-6">
+          <button type="submit" className="btn-primary col-span-2 justify-center sm:col-span-7">
             <Plus size={16} /> Adicionar faixa
           </button>
         </form>
@@ -448,6 +458,7 @@ export default function AdminShippingPage() {
                 <th className="py-3 pl-4 pr-3">De (km)</th>
                 <th className="py-3 pr-3">Até (km)</th>
                 <th className="py-3 pr-3">Preço</th>
+                <th className="py-3 pr-3">Custo</th>
                 <th className="py-3 pr-3">Prazo</th>
                 <th className="py-3 pr-3">Ordem</th>
                 <th className="py-3 pr-4 text-right">Ações</th>
@@ -456,13 +467,13 @@ export default function AdminShippingPage() {
             <tbody>
               {tiersLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-neutral-400">
+                  <td colSpan={7} className="py-8 text-center text-neutral-400">
                     Carregando…
                   </td>
                 </tr>
               ) : tiers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-neutral-400">
+                  <td colSpan={7} className="py-8 text-center text-neutral-400">
                     Nenhuma faixa cadastrada.
                   </td>
                 </tr>
@@ -495,6 +506,17 @@ export default function AdminShippingPage() {
                             step="0.01"
                             value={editDraft.price}
                             onChange={(e) => setEditDraft({ ...editDraft, price: Number(e.target.value) })}
+                            className="w-24 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
+                          />
+                        </td>
+                        <td className="py-2 pr-3">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editDraft.costPrice ?? ""}
+                            onChange={(e) =>
+                              setEditDraft({ ...editDraft, costPrice: e.target.value === "" ? null : Number(e.target.value) })
+                            }
                             className="w-24 rounded-lg border border-black/10 px-2 py-1 text-sm outline-none focus:border-brand-ink"
                           />
                         </td>
@@ -538,6 +560,9 @@ export default function AdminShippingPage() {
                         <td className="py-2.5 pr-3">{tier.maxKm ?? "sem limite"}</td>
                         <td className="py-2.5 pr-3">
                           {tier.price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                        </td>
+                        <td className="py-2.5 pr-3 text-neutral-500">
+                          {tier.costPrice != null ? tier.costPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}
                         </td>
                         <td className="py-2.5 pr-3 text-neutral-600">{tier.etaLabel ?? "—"}</td>
                         <td className="py-2.5 pr-3">{tier.order}</td>

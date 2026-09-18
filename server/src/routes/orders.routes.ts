@@ -80,6 +80,7 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
         color: string;
         size: string;
         price: number;
+        unitCost: number;
         quantity: number;
       }[] = [];
 
@@ -113,6 +114,7 @@ ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
           color: variant.color,
           size: variant.size,
           price,
+          unitCost: variant.product.costPrice,
           quantity: item.quantity,
         });
       }

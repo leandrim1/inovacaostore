@@ -1,17 +1,9 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { ORDER_STATUSES, useAdminOrder, useUpdateOrderStatus } from "../../hooks/admin/useAdminOrders";
+import { useAdminOrder, useUpdateOrderStatus } from "../../hooks/admin/useAdminOrders";
+import { ORDER_STATUSES, STATUS_LABELS } from "../../lib/orderStatus";
 import { formatBRL } from "../../lib/format";
-
-const STATUS_LABELS: Record<string, string> = {
-  pendente: "Pendente",
-  pago: "Pago",
-  separacao: "Separação",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-};
 
 const SHIPPING_METHOD_LABELS: Record<string, string> = {
   distancia: "Calculado por distância",

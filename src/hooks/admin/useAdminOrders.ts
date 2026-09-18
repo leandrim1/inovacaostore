@@ -35,8 +35,6 @@ export interface AdminOrder {
   items: AdminOrderItem[];
 }
 
-export const ORDER_STATUSES = ["pendente", "pago", "separacao", "enviado", "entregue", "cancelado"] as const;
-
 export function useAdminOrders(status?: string) {
   const qs = buildQueryString({ status });
   return useQuery({
@@ -62,6 +60,7 @@ export function useUpdateOrderStatus() {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
       qc.invalidateQueries({ queryKey: ["admin-order"] });
       qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+      qc.invalidateQueries({ queryKey: ["admin-analytics"] });
     },
   });
 }

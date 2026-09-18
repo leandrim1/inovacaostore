@@ -1,10 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db.js";
+import { ORDER_STATUSES } from "../../orderStatus.js";
 
 export const adminOrdersRouter = Router();
-
-const STATUSES = ["pendente", "pago", "separacao", "enviado", "entregue", "cancelado"] as const;
 
 adminOrdersRouter.get("/", async (req, res) => {
   const { status } = req.query;
@@ -28,7 +27,7 @@ adminOrdersRouter.get("/:id", async (req, res) => {
   res.json(order);
 });
 
-const statusSchema = z.object({ status: z.enum(STATUSES) });
+const statusSchema = z.object({ status: z.enum(ORDER_STATUSES) });
 
 adminOrdersRouter.patch("/:id", async (req, res) => {
   const parsed = statusSchema.safeParse(req.body);

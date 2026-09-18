@@ -48,6 +48,7 @@ const tierSchema = z.object({
   minKm: z.number().min(0),
   maxKm: z.number().min(0).nullable(),
   price: z.number().min(0),
+  costPrice: z.number().min(0).nullable().optional(),
   etaLabel: z.string().optional(),
   order: z.number().int().default(0),
 });

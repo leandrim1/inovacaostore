@@ -10,6 +10,7 @@ export interface AdminProductInput {
   tags: string[];
   price: number;
   compareAtPrice?: number | null;
+  costPrice?: number;
   weightKg?: number;
   volumeM3?: number;
   sku: string;
@@ -51,6 +52,7 @@ function useInvalidateProducts() {
     qc.invalidateQueries({ queryKey: ["products"] });
     qc.invalidateQueries({ queryKey: ["product"] });
     qc.invalidateQueries({ queryKey: ["admin-dashboard"] });
+    qc.invalidateQueries({ queryKey: ["admin-analytics"] });
   };
 }
 

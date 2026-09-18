@@ -48,6 +48,7 @@ export default function AdminProductFormPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [price, setPrice] = useState("");
   const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [costPrice, setCostPrice] = useState("");
   const [weightKg, setWeightKg] = useState("");
   const [volumeM3, setVolumeM3] = useState("");
   const [sku, setSku] = useState("");
@@ -69,6 +70,7 @@ export default function AdminProductFormPage() {
     setTags(product.tags);
     setPrice(String(product.price));
     setCompareAtPrice(product.compareAtPrice ? String(product.compareAtPrice) : "");
+    setCostPrice(product.costPrice ? String(product.costPrice) : "");
     setWeightKg(product.weightKg ? String(product.weightKg) : "");
     setVolumeM3(product.volumeM3 ? String(product.volumeM3) : "");
     setSku(product.sku);
@@ -137,6 +139,7 @@ export default function AdminProductFormPage() {
       tags: tags as AdminProductInput["tags"],
       price: Number(price),
       compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
+      costPrice: costPrice ? Number(costPrice) : 0,
       weightKg: weightKg ? Number(weightKg) : 0,
       volumeM3: volumeM3 ? Number(volumeM3) : 0,
       sku,
@@ -357,6 +360,27 @@ export default function AdminProductFormPage() {
                   De {formatBRL(Number(compareAtPrice))} por {formatBRL(Number(price))}
                 </p>
               )}
+              <label className="text-xs font-medium text-neutral-500">
+                Custo do produto (R$)
+                <input
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  placeholder="0"
+                  value={costPrice}
+                  onChange={(e) => setCostPrice(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-black/10 px-3 py-2 text-sm outline-none focus:border-brand-ink"
+                />
+              </label>
+              {price && costPrice && Number(price) > 0 && (
+                <p className="text-xs text-neutral-400">
+                  Margem estimada: {(((Number(price) - Number(costPrice)) / Number(price)) * 100).toFixed(1)}%
+                </p>
+              )}
+              <p className="-mt-1 text-xs text-neutral-400">
+                Usado para calcular o lucro no dashboard de vendas. Deixe em 0 se não quiser acompanhar o lucro
+                deste produto.
+              </p>
               <input
                 required
                 placeholder="SKU"

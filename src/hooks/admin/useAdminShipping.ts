@@ -29,6 +29,7 @@ export interface ShippingTier {
   minKm: number;
   maxKm: number | null;
   price: number;
+  costPrice: number | null;
   etaLabel: string | null;
   order: number;
 }
@@ -37,6 +38,7 @@ export interface ShippingTierInput {
   minKm: number;
   maxKm: number | null;
   price: number;
+  costPrice: number | null;
   etaLabel: string;
   order: number;
 }
@@ -65,7 +67,10 @@ export function useAdminShippingTiers() {
 
 function useInvalidateShippingTiers() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: ["admin-shipping-tiers"] });
+  return () => {
+    qc.invalidateQueries({ queryKey: ["admin-shipping-tiers"] });
+    qc.invalidateQueries({ queryKey: ["admin-analytics"] });
+  };
 }
 
 export function useCreateShippingTier() {

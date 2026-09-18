@@ -57,6 +57,11 @@ export function serializeProduct(product: ProductWithRelations) {
   };
 }
 
+/** Inclui o custo de aquisição — nunca exposto na API pública, só no admin. */
+export function serializeAdminProduct(product: ProductWithRelations) {
+  return { ...serializeProduct(product), costPrice: product.costPrice };
+}
+
 function dedupeColors(variants: ProductWithRelations["variants"]) {
   const map = new Map<string, string>();
   for (const v of variants) map.set(v.color, v.colorHex);
