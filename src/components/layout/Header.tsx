@@ -96,14 +96,14 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          {/* Centralizado entre a logo e as ações, em vez de empurrado para a
-              direita. Centralizar na página inteira (absolute + left-1/2) dava
-              o alinhamento perfeito em telas largas, mas em 1024px o menu
-              passava por cima dos ícones — o bloco de ações é bem mais largo
-              que a logo, então o centro real da página não é o centro do
-              espaço livre. Como irmão flex, ele divide o espaço e nunca
-              colide. */}
-          <nav className="hidden flex-1 items-center justify-center lg:flex">
+          {/* Centralizado no meio da PÁGINA, não no vão entre a logo e as
+              ações: por ser absoluto, ele ignora a largura desigual dos dois
+              lados e cai no centro exato. Isso antes esbarrava nos ícones em
+              1024px, quando Entrar/Criar conta ainda eram dois botões largos;
+              desde que viraram um ícone nessa faixa, sobra folga (ver teste de
+              colisão). Se um dia voltarem a crescer ali, o menu volta a
+              encostar — é o custo de centralizar na página. */}
+          <nav className="hidden items-center lg:absolute lg:left-1/2 lg:flex lg:-translate-x-1/2">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
@@ -148,13 +148,18 @@ export function Header() {
                   onClick={() => setIsAccountMenuOpen((v) => !v)}
                   aria-label="Conta do cliente"
                   aria-expanded={isAccountMenuOpen}
-                  className="flex items-center gap-1.5 rounded-full py-1.5 pl-1.5 pr-2.5 hover:bg-neutral-100"
+                  className="flex items-center gap-1.5 rounded-full p-1.5 hover:bg-neutral-100 xl:py-1.5 xl:pl-1.5 xl:pr-2.5"
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-yellow text-xs font-bold text-brand-ink">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
-                  <span className="max-w-[110px] truncate text-sm font-medium">Olá, {user.name.split(" ")[0]}</span>
-                  <ChevronDown size={14} />
+                  {/* Entre 1024 e 1279 fica só o avatar, pela mesma razão do
+                      ícone de visitante: com o nome, o bloco da direita chega a
+                      293px e o menu centralizado bate nele. */}
+                  <span className="hidden max-w-[110px] truncate text-sm font-medium xl:inline">
+                    Olá, {user.name.split(" ")[0]}
+                  </span>
+                  <ChevronDown size={14} className="hidden xl:block" />
                 </button>
 
                 {isAccountMenuOpen && (
