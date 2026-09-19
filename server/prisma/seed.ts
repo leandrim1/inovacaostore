@@ -34,8 +34,6 @@ const CATEGORIES = [
   { slug: "camisas", name: "Camisas", description: "Social e casual, para compor looks de qualquer ocasião.", order: 2 },
   { slug: "calcas", name: "Calças", description: "Jeans e sarja com caimento moderno.", order: 3 },
   { slug: "bermudas", name: "Bermudas", description: "Jeans e moletom para dias quentes.", order: 4 },
-  { slug: "jaquetas", name: "Jaquetas", description: "Corta-vento, jeans e bomber para fechar o visual.", order: 5 },
-  { slug: "acessorios", name: "Acessórios", description: "Bonés, correntes e itens para finalizar o estilo.", order: 6 },
 ];
 
 const PRETO = { name: "Preto", hex: "#141414" };
@@ -252,73 +250,6 @@ const PRODUCTS: SeedProduct[] = [
     active: false,
     stockPerVariant: 0,
   },
-  {
-    slug: "jaqueta-corta-vento-preta",
-    name: "Jaqueta Corta-Vento Preta",
-    category: "jaquetas",
-    price: 219.9,
-    sku: "IS-JQ-001",
-    colors: [PRETO],
-    sizes: ["P", "M", "G", "GG"],
-    description:
-      "Jaqueta corta-vento leve e resistente, com capuz destacável. Proteção contra vento e chuva fina sem abrir mão do estilo urbano.",
-    features: ["Tecido impermeável", "Capuz destacável", "Bolsos com zíper"],
-    rating: 4.7,
-    reviewCount: 6,
-    featured: false,
-    active: false,
-    stockPerVariant: 0,
-  },
-  {
-    slug: "jaqueta-bomber-jeans",
-    name: "Jaqueta Bomber Jeans",
-    category: "jaquetas",
-    price: 249.9,
-    sku: "IS-JQ-002",
-    colors: [CINZA],
-    sizes: ["P", "M", "G", "GG"],
-    description: "Jaqueta bomber em jeans com forro quentinho. Peça statement para elevar qualquer produção do inverno.",
-    features: ["Jeans premium", "Forro interno", "Punhos e barra em ribana"],
-    tags: ["novo"],
-    rating: 4.8,
-    reviewCount: 3,
-    featured: false,
-    active: false,
-    stockPerVariant: 0,
-  },
-  {
-    slug: "bone-aba-reta-preto",
-    name: "Boné Aba Reta Preto",
-    category: "acessorios",
-    price: 69.9,
-    sku: "IS-AC-001",
-    colors: [PRETO],
-    sizes: ["Único"],
-    description: "Boné aba reta com ajuste no snapback. Item essencial para completar qualquer look streetwear.",
-    features: ["Aba reta", "Ajuste snapback", "Bordado frontal"],
-    rating: 4.6,
-    reviewCount: 15,
-    featured: false,
-    active: false,
-    stockPerVariant: 0,
-  },
-  {
-    slug: "corrente-prateada-aco-inox",
-    name: "Corrente Prateada Aço Inox",
-    category: "acessorios",
-    price: 89.9,
-    sku: "IS-AC-002",
-    colors: [{ name: "Prata", hex: "#c7c9cc" }],
-    sizes: ["Único"],
-    description:
-      "Corrente em aço inoxidável, antialérgica e resistente ao tempo. O acessório final para fechar sua produção com estilo.",
-    features: ["Aço inoxidável", "Antialérgica", "60cm de comprimento"],
-    rating: 4.5,
-    reviewCount: 10,
-    featured: false,
-    active: false,
-    stockPerVariant: 0,
-  },
 ];
 
 function slugifyCode(text: string) {
@@ -330,18 +261,22 @@ function slugifyCode(text: string) {
     .slice(0, 4);
 }
 
-async function main() {
+async function seedCatalog() {
+  // O seed é um BOOTSTRAP: ele existe para popular um banco vazio na primeira
+  // instalação, não para sincronizar o catálogo a cada deploy. Como o Vercel
+  // roda `npm run db:seed` em todo build (ver vercel.json), sem esta guarda o
+  // upsert abaixo recriaria toda categoria ou produto que o admin tivesse
+  // excluído pelo painel — era por isso que as categorias "voltavam sozinhas"
+  // sempre que o site era publicado de novo.
+  if ((await prisma.category.count()) > 0) {
+    console.log("Catálogo já existe — categorias e produtos não são tocados pelo seed.");
+    return;
+  }
+
   console.log("Seeding categories...");
   const categoryMap = new Map<string, string>();
   for (const cat of CATEGORIES) {
-    // update vazio de propósito: o seed só cria a categoria na primeira vez.
-    // Rodar de novo (ex.: a cada deploy) nunca deve sobrescrever uma edição
-    // feita depois pelo painel administrativo.
-    const created = await prisma.category.upsert({
-      where: { slug: cat.slug },
-      update: {},
-      create: cat,
-    });
+    const created = await prisma.category.create({ data: cat });
     categoryMap.set(cat.slug, created.id);
   }
 
@@ -398,6 +333,10 @@ async function main() {
       }
     }
   }
+}
+
+async function main() {
+  await seedCatalog();
 
   console.log("Seeding site settings...");
   // update vazio de propósito: assim como as categorias, os valores default só

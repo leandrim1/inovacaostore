@@ -192,7 +192,9 @@ Em `src/data/store.ts`:
 
 As fotos usadas em `server/uploads/` (catálogo inicial) e `src/assets/images/` (banner, seção "Siga no Instagram") vêm do acervo enviado da loja. Como parte do catálogo fotografado mostra estampas com marcas de terceiros (ex.: réplicas/paródias não-oficiais), os nomes e descrições dos produtos foram escritos de forma **genérica** (cor, corte, estilo), sem atribuir marca, para não sugerir autenticidade de produtos de marca registrada. Ajuste os nomes/descrições pelo próprio painel administrativo conforme a real natureza de cada produto.
 
-As categorias **Camisas**, **Jaquetas** e **Acessórios** vêm com produtos cadastrados porém **ocultos** (sem foto real), pois não havia fotos dessas peças no material enviado — edite-os no painel para adicionar fotos reais e reativá-los.
+A categoria **Camisas** vem com produtos cadastrados porém **ocultos** (sem foto real), pois não havia fotos dessas peças no material enviado — edite-os no painel para adicionar fotos reais e reativá-los.
+
+> **O seed só popula banco vazio.** `npm run db:seed` roda a cada deploy (ver `buildCommand` no `vercel.json`), então ele nunca recria categorias ou produtos excluídos pelo painel: se já existir qualquer categoria no banco, ele pula o catálogo inteiro. O mesmo vale para depoimentos e configurações do site.
 
 ## SEO
 
