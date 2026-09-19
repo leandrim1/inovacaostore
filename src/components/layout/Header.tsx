@@ -1,39 +1,26 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, Search, User, ShoppingBag, ChevronDown, PackageSearch, LogOut } from "lucide-react";
+import { Menu, Search, User, ShoppingBag, Mail, Phone, MessageCircle, PackageSearch, LogOut } from "lucide-react";
 import { Logo } from "../ui/Logo";
+import { InstagramIcon } from "../ui/InstagramIcon";
 import { useCategories } from "../../hooks/useCategories";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
+import { STORE, buildWhatsAppLink, formatWhatsAppDisplay } from "../../data/store";
 import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
-
-const CATEGORIES_PER_PAGE = 5;
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-  const [categoryPage, setCategoryPage] = useState(0);
   const { itemCount, openCart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const { data: categories = [] } = useCategories();
+  const { data: settings } = useSiteSettings();
   const navigate = useNavigate();
-
-  const categoryPageCount = Math.ceil(categories.length / CATEGORIES_PER_PAGE);
-  const safeCategoryPage = categoryPageCount > 0 ? categoryPage % categoryPageCount : 0;
-  const visibleCategories = categories.slice(
-    safeCategoryPage * CATEGORIES_PER_PAGE,
-    safeCategoryPage * CATEGORIES_PER_PAGE + CATEGORIES_PER_PAGE,
-  );
-
-  useEffect(() => {
-    if (categoryPageCount <= 1) return;
-    const timer = setInterval(() => setCategoryPage((p) => p + 1), 10000);
-    return () => clearInterval(timer);
-  }, [categoryPageCount]);
 
   async function handleLogout() {
     setIsAccountMenuOpen(false);
@@ -52,6 +39,46 @@ export function Header() {
 
   return (
     <>
+      {/* Barra de utilidade: contato + redes — não fixa, some ao rolar a página */}
+      <div className="hidden items-center justify-between bg-brand-ink px-6 py-2 text-[11px] tracking-wide text-white/70 lg:flex lg:px-10">
+        <div className="flex items-center gap-6">
+          <a
+            href={`tel:+${settings.whatsappNumber}`}
+            className="flex items-center gap-1.5 transition-colors hover:text-white"
+          >
+            <Phone size={12} />
+            {formatWhatsAppDisplay(settings.whatsappNumber)}
+          </a>
+          <a
+            href={`mailto:${settings.contactEmail}`}
+            className="flex items-center gap-1.5 transition-colors hover:text-white"
+          >
+            <Mail size={12} />
+            {settings.contactEmail}
+          </a>
+        </div>
+        <div className="flex items-center gap-4">
+          <a
+            href={STORE.social.instagram}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Instagram"
+            className="transition-colors hover:text-white"
+          >
+            <InstagramIcon size={13} />
+          </a>
+          <a
+            href={buildWhatsAppLink(settings.whatsappNumber, "Olá! Vim pelo site e quero falar com a loja.")}
+            target="_blank"
+            rel="noreferrer"
+            aria-label="WhatsApp"
+            className="transition-colors hover:text-white"
+          >
+            <MessageCircle size={13} />
+          </a>
+        </div>
+      </div>
+
       <header
         className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur-md transition-shadow duration-300 ${
           isScrolled ? "border-brand-ink/10 shadow-[0_1px_0_rgba(0,0,0,0.04),0_12px_24px_-20px_rgba(0,0,0,0.35)]" : "border-transparent"
@@ -71,33 +98,22 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-end overflow-hidden lg:flex">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={safeCategoryPage}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="flex items-center gap-3 xl:gap-9"
+          <nav className="no-scrollbar hidden min-w-0 flex-1 items-center justify-center gap-3 overflow-x-auto lg:flex xl:gap-9">
+            {categories.map((cat) => (
+              <NavLink
+                key={cat.slug}
+                to={`/categoria/${cat.slug}`}
+                className={({ isActive }) =>
+                  `relative shrink-0 whitespace-nowrap py-2 font-display text-sm tracking-widest transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-brand-yellow-dark after:transition-all after:duration-300 ${
+                    isActive
+                      ? "text-brand-ink after:w-full"
+                      : "text-brand-ink/60 after:w-0 hover:text-brand-ink hover:after:w-full"
+                  }`
+                }
               >
-                {visibleCategories.map((cat) => (
-                  <NavLink
-                    key={cat.slug}
-                    to={`/categoria/${cat.slug}`}
-                    className={({ isActive }) =>
-                      `relative shrink-0 whitespace-nowrap py-2 font-display text-sm tracking-widest transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-brand-yellow-dark after:transition-all after:duration-300 ${
-                        isActive
-                          ? "text-brand-ink after:w-full"
-                          : "text-brand-ink/60 after:w-0 hover:text-brand-ink hover:after:w-full"
-                      }`
-                    }
-                  >
-                    {cat.name}
-                  </NavLink>
-                ))}
-              </motion.div>
-            </AnimatePresence>
+                {cat.name}
+              </NavLink>
+            ))}
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
@@ -109,6 +125,7 @@ export function Header() {
             >
               <Search size={20} />
             </button>
+
             {isAuthenticated && user ? (
               <div className="relative hidden lg:block">
                 <button
@@ -116,13 +133,11 @@ export function Header() {
                   onClick={() => setIsAccountMenuOpen((v) => !v)}
                   aria-label="Conta do cliente"
                   aria-expanded={isAccountMenuOpen}
-                  className="flex items-center gap-1.5 rounded-full py-1.5 pl-1.5 pr-2.5 hover:bg-neutral-100"
+                  className="flex items-center justify-center rounded-full p-1.5 hover:bg-neutral-100"
                 >
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-yellow text-xs font-bold text-brand-ink">
                     {user.name.charAt(0).toUpperCase()}
                   </span>
-                  <span className="max-w-[110px] truncate text-sm font-medium">Olá, {user.name.split(" ")[0]}</span>
-                  <ChevronDown size={14} />
                 </button>
 
                 {isAccountMenuOpen && (
@@ -155,18 +170,16 @@ export function Header() {
                 )}
               </div>
             ) : (
-              <div className="hidden items-center gap-1 lg:flex">
-                <Link
-                  to="/login"
-                  className="rounded-full px-3.5 py-2 font-display text-xs tracking-widest text-brand-ink/70 transition-colors hover:bg-neutral-100 hover:text-brand-ink"
-                >
-                  Entrar
-                </Link>
-                <Link to="/cadastro" className="btn-primary px-4 py-2 text-xs">
-                  Criar conta
-                </Link>
-              </div>
+              <Link
+                to="/login"
+                aria-label="Entrar ou criar conta"
+                title="Entrar ou criar conta"
+                className="hidden rounded-full p-2.5 hover:bg-neutral-100 lg:block"
+              >
+                <User size={20} />
+              </Link>
             )}
+
             <span className="mx-1 hidden h-6 w-px bg-brand-ink/10 lg:block" aria-hidden />
             <button
               type="button"
