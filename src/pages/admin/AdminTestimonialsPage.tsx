@@ -8,6 +8,8 @@ import {
   type TestimonialStatus,
 } from "../../hooks/admin/useAdminTestimonials";
 import { StarRating } from "../../components/ui/StarRating";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 
 const FILTERS: { value: string; label: string }[] = [
   { value: "pendente", label: "Pendentes" },
@@ -125,6 +127,7 @@ export default function AdminTestimonialsPage() {
   const updateTestimonial = useUpdateTestimonial();
   const deleteTestimonial = useDeleteTestimonial();
   const [error, setError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
 
   const items = data?.items ?? [];
   const pendingCount = data?.pendingCount ?? 0;
@@ -153,14 +156,19 @@ export default function AdminTestimonialsPage() {
     }
   }
 
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`Excluir definitivamente o depoimento de ${name}?`)) return;
-    setError(null);
-    try {
-      await deleteTestimonial.mutateAsync(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível excluir.");
-    }
+  function handleDelete(id: string, name: string) {
+    confirmDialog.ask({
+      title: "Excluir depoimento",
+      description: `O depoimento de ${name} será apagado para sempre. Se a ideia é só tirá-lo do site, use "Tirar do site".`,
+      onConfirm: async () => {
+        setError(null);
+        try {
+          await deleteTestimonial.mutateAsync(id);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Não foi possível excluir.");
+        }
+      },
+    });
   }
 
   return (
@@ -224,6 +232,8 @@ export default function AdminTestimonialsPage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }

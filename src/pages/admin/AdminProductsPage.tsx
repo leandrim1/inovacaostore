@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Star } from "lucide-react";
 import { useAdminProducts, useDeleteProduct, useUpdateProduct } from "../../hooks/admin/useAdminProducts";
 import { formatBRL } from "../../lib/format";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 
 export default function AdminProductsPage() {
   const [q, setQ] = useState("");
@@ -16,6 +18,7 @@ export default function AdminProductsPage() {
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [error, setError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
 
   async function toggleActive(id: string, current: boolean) {
     setError(null);
@@ -35,14 +38,19 @@ export default function AdminProductsPage() {
     }
   }
 
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`Excluir "${name}"? Esta ação não pode ser desfeita.`)) return;
-    setError(null);
-    try {
-      await deleteProduct.mutateAsync(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível excluir.");
-    }
+  function handleDelete(id: string, name: string) {
+    confirmDialog.ask({
+      title: "Excluir produto",
+      description: `"${name}" será removido para sempre, junto com suas fotos e variações. Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        setError(null);
+        try {
+          await deleteProduct.mutateAsync(id);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Não foi possível excluir.");
+        }
+      },
+    });
   }
 
   return (
@@ -264,6 +272,8 @@ export default function AdminProductsPage() {
           ))
         )}
       </div>
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ import {
   type FinanceSettingsInput,
 } from "../../hooks/admin/useAdminFinance";
 import { formatBRL } from "../../lib/format";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 
 const inputClass = "mt-1 w-full admin-input px-3 py-2";
 const labelClass = "text-xs font-medium text-neutral-500";
@@ -54,6 +56,7 @@ export default function AdminFinanceSettingsPage() {
 
   const [newExpense, setNewExpense] = useState<ExpenseInput>(EMPTY_EXPENSE_DRAFT);
   const [expenseError, setExpenseError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<ExpenseInput>(EMPTY_EXPENSE_DRAFT);
 
@@ -122,14 +125,19 @@ export default function AdminFinanceSettingsPage() {
     }
   }
 
-  async function handleDeleteExpense(expense: Expense) {
-    if (!confirm(`Excluir a despesa "${expense.description || CATEGORY_LABELS[expense.category]}"?`)) return;
-    setExpenseError(null);
-    try {
-      await deleteExpense.mutateAsync(expense.id);
-    } catch (err) {
-      setExpenseError(err instanceof Error ? err.message : "Não foi possível excluir a despesa.");
-    }
+  function handleDeleteExpense(expense: Expense) {
+    confirmDialog.ask({
+      title: "Excluir despesa",
+      description: `"${expense.description || CATEGORY_LABELS[expense.category]}" sai do cálculo de lucro do dashboard. Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        setExpenseError(null);
+        try {
+          await deleteExpense.mutateAsync(expense.id);
+        } catch (err) {
+          setExpenseError(err instanceof Error ? err.message : "Não foi possível excluir a despesa.");
+        }
+      },
+    });
   }
 
   if (settingsLoading) {
@@ -472,6 +480,8 @@ export default function AdminFinanceSettingsPage() {
           )}
         </div>
       </section>
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }

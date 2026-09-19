@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { useAdminPromotions, useDeletePromotion, useUpdatePromotion } from "../../hooks/admin/useAdminPromotions";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 
 export default function AdminPromotionsPage() {
   const { data: promotions = [], isLoading } = useAdminPromotions();
   const updatePromotion = useUpdatePromotion();
   const deletePromotion = useDeletePromotion();
   const [error, setError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
 
   async function toggleActive(id: string, current: boolean) {
     setError(null);
@@ -18,14 +21,19 @@ export default function AdminPromotionsPage() {
     }
   }
 
-  async function handleDelete(id: string, title: string) {
-    if (!confirm(`Excluir a promoção "${title}"?`)) return;
-    setError(null);
-    try {
-      await deletePromotion.mutateAsync(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível excluir.");
-    }
+  function handleDelete(id: string, title: string) {
+    confirmDialog.ask({
+      title: "Excluir promoção",
+      description: `A promoção "${title}" sai do banner da home na hora. Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        setError(null);
+        try {
+          await deletePromotion.mutateAsync(id);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Não foi possível excluir.");
+        }
+      },
+    });
   }
 
   return (
@@ -181,6 +189,8 @@ export default function AdminPromotionsPage() {
           ))
         )}
       </div>
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }

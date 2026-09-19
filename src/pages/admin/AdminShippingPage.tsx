@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import {
   useAdminShippingSettings,
   useAdminShippingTiers,
@@ -47,6 +49,7 @@ export default function AdminShippingPage() {
 
   const [newTier, setNewTier] = useState<ShippingTierInput>(EMPTY_TIER_DRAFT);
   const [tierError, setTierError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<ShippingTierInput>(EMPTY_TIER_DRAFT);
 
@@ -141,15 +144,20 @@ export default function AdminShippingPage() {
     }
   }
 
-  async function handleDeleteTier(tier: ShippingTier) {
-    if (!confirm(`Excluir a faixa de ${tier.minKm}km${tier.maxKm ? ` a ${tier.maxKm}km` : " (sem limite)"}?`))
-      return;
-    setTierError(null);
-    try {
-      await deleteTier.mutateAsync(tier.id);
-    } catch (err) {
-      setTierError(err instanceof Error ? err.message : "Não foi possível excluir a faixa.");
-    }
+  function handleDeleteTier(tier: ShippingTier) {
+    const faixa = `${tier.minKm}km${tier.maxKm ? ` a ${tier.maxKm}km` : " (sem limite)"}`;
+    confirmDialog.ask({
+      title: "Excluir faixa de frete",
+      description: `A faixa de ${faixa} deixa de ser usada no cálculo do frete. Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        setTierError(null);
+        try {
+          await deleteTier.mutateAsync(tier.id);
+        } catch (err) {
+          setTierError(err instanceof Error ? err.message : "Não foi possível excluir a faixa.");
+        }
+      },
+    });
   }
 
   if (settingsLoading) {
@@ -716,6 +724,8 @@ export default function AdminShippingPage() {
           )}
         </div>
       </section>
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }

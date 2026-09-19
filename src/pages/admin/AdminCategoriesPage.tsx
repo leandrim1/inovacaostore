@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Pencil, Plus, Trash2, X, Check } from "lucide-react";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 import {
   useAdminCategories,
   useCreateCategory,
@@ -22,6 +24,7 @@ export default function AdminCategoriesPage() {
     description: "",
   });
   const [error, setError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -51,14 +54,19 @@ export default function AdminCategoriesPage() {
     }
   }
 
-  async function handleDelete(cat: AdminCategory) {
-    if (!confirm(`Excluir a categoria "${cat.name}"?`)) return;
-    setError(null);
-    try {
-      await deleteCategory.mutateAsync(cat.id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível excluir.");
-    }
+  function handleDelete(cat: AdminCategory) {
+    confirmDialog.ask({
+      title: "Excluir categoria",
+      description: `A categoria "${cat.name}" sairá do site e do menu. Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        setError(null);
+        try {
+          await deleteCategory.mutateAsync(cat.id);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Não foi possível excluir.");
+        }
+      },
+    });
   }
 
   return (
@@ -171,6 +179,8 @@ export default function AdminCategoriesPage() {
                           <button
                             type="button"
                             onClick={() => handleDelete(cat)}
+                            title="Excluir categoria"
+                            aria-label={`Excluir categoria ${cat.name}`}
                             className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600"
                           >
                             <Trash2 size={16} />
@@ -243,6 +253,8 @@ export default function AdminCategoriesPage() {
                       <button
                         type="button"
                         onClick={() => handleDelete(cat)}
+                        title="Excluir categoria"
+                        aria-label={`Excluir categoria ${cat.name}`}
                         className="rounded-lg p-2 text-neutral-500 hover:bg-red-50 hover:text-red-600"
                       >
                         <Trash2 size={16} />
@@ -257,6 +269,8 @@ export default function AdminCategoriesPage() {
           ))
         )}
       </div>
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }

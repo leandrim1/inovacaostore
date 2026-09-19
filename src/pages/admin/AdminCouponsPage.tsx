@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { useAdminCoupons, useDeleteCoupon, useUpdateCoupon } from "../../hooks/admin/useAdminCoupons";
+import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { useConfirmDialog } from "../../hooks/useConfirmDialog";
 
 function formatDate(iso: string | null) {
   return iso ? new Date(iso).toLocaleString("pt-BR") : null;
@@ -25,6 +27,7 @@ export default function AdminCouponsPage() {
   const updateCoupon = useUpdateCoupon();
   const deleteCoupon = useDeleteCoupon();
   const [error, setError] = useState<string | null>(null);
+  const confirmDialog = useConfirmDialog();
 
   async function toggleActive(id: string, current: boolean) {
     setError(null);
@@ -35,14 +38,19 @@ export default function AdminCouponsPage() {
     }
   }
 
-  async function handleDelete(id: string, code: string) {
-    if (!confirm(`Excluir o cupom "${code}"?`)) return;
-    setError(null);
-    try {
-      await deleteCoupon.mutateAsync(id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível excluir.");
-    }
+  function handleDelete(id: string, code: string) {
+    confirmDialog.ask({
+      title: "Excluir cupom",
+      description: `O cupom "${code}" deixará de funcionar imediatamente. Esta ação não pode ser desfeita.`,
+      onConfirm: async () => {
+        setError(null);
+        try {
+          await deleteCoupon.mutateAsync(id);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Não foi possível excluir.");
+        }
+      },
+    });
   }
 
   return (
@@ -192,6 +200,8 @@ export default function AdminCouponsPage() {
           ))
         )}
       </div>
+
+      <ConfirmDialog {...confirmDialog.dialogProps} />
     </div>
   );
 }
