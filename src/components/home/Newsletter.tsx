@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { Reveal } from "../ui/Reveal";
+import newsletterBg from "../../assets/images/newsletter-bg.webp";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -14,8 +15,11 @@ export function Newsletter() {
   }
 
   return (
-    <section className="bg-brand-ink py-16 text-white sm:py-24">
-      <div className="container-page grid gap-10 sm:grid-cols-2 sm:items-center sm:gap-16">
+    <section className="relative overflow-hidden bg-brand-ink py-16 text-white sm:py-24">
+      <img src={newsletterBg} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="absolute inset-0 bg-black/75" />
+
+      <div className="container-page relative z-10 grid gap-10 sm:grid-cols-2 sm:items-center sm:gap-16">
         <Reveal>
           <div className="mb-4 flex items-center gap-2.5">
             <span className="h-px w-8 bg-brand-yellow" aria-hidden />
