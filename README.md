@@ -69,6 +69,7 @@ npm run preview           # pré-visualiza o build do frontend isoladamente
    npx dotenv -e .env.production.local -- npm run db:migrate:deploy
    npx dotenv -e .env.production.local -- npm run db:seed
    ```
+   **Esse seed é rodado uma vez só, à mão.** O build da Vercel (`buildCommand` no `vercel.json`) roda apenas `prisma migrate deploy`, nunca o seed: um seed automático a cada deploy recriava tudo que tinha sido excluído pelo painel. Só rode `db:seed` de novo contra produção se o banco estiver realmente vazio.
 6. **Deploy**: `npx vercel --prod`, ou simplesmente faça push no branch conectado — a Vercel builda e publica sozinha a cada push.
 
 Depois disso a loja, o painel admin e a API inteira funcionam no domínio da Vercel, sem servidor separado. Detalhes técnicos de como isso funciona:
@@ -194,7 +195,7 @@ As fotos usadas em `server/uploads/` (catálogo inicial) e `src/assets/images/` 
 
 A categoria **Camisas** vem com produtos cadastrados porém **ocultos** (sem foto real), pois não havia fotos dessas peças no material enviado — edite-os no painel para adicionar fotos reais e reativá-los.
 
-> **O seed só popula banco vazio.** `npm run db:seed` roda a cada deploy (ver `buildCommand` no `vercel.json`), então ele nunca recria categorias ou produtos excluídos pelo painel: se já existir qualquer categoria no banco, ele pula o catálogo inteiro. O mesmo vale para depoimentos e configurações do site.
+> **O seed nunca roda sozinho.** O build da Vercel roda só `prisma migrate deploy`; `npm run db:seed` é manual e de instalação. Por garantia, o próprio seed também se recusa a tocar no catálogo quando já existe qualquer categoria no banco. Essas duas travas juntas significam que nada que você excluir pelo painel volta num deploy.
 
 ## SEO
 
