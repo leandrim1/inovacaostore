@@ -16,8 +16,12 @@ export function Newsletter() {
 
   return (
     <section className="relative overflow-hidden bg-brand-ink py-16 text-white sm:py-24">
-      <img src={newsletterBg} alt="" className="absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0 bg-black/75" />
+      <img
+        src={newsletterBg}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover object-[38%_center] sm:object-center"
+      />
+      <div className="absolute inset-0 bg-black/55" />
 
       <div className="container-page relative z-10 grid gap-10 sm:grid-cols-2 sm:items-center sm:gap-16">
         <Reveal>
@@ -44,7 +48,7 @@ export function Newsletter() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Seu melhor e-mail"
-                className="w-full flex-1 border border-white/20 bg-white/5 px-5 py-3.5 text-sm text-white outline-none placeholder:text-white/40 focus:border-brand-yellow"
+                className="w-full flex-1 border border-white/20 bg-black/30 px-5 py-3.5 text-sm text-white outline-none placeholder:text-white/50 focus:border-brand-yellow"
               />
               <button type="submit" className="btn-accent shrink-0">
                 Quero receber
