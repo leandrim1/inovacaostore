@@ -57,7 +57,7 @@ export function Header() {
           isScrolled ? "border-brand-ink/10 shadow-[0_1px_0_rgba(0,0,0,0.04),0_12px_24px_-20px_rgba(0,0,0,0.35)]" : "border-transparent"
         }`}
       >
-        <div className="container-page relative flex h-16 items-center gap-4 sm:h-20">
+        <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
@@ -71,7 +71,7 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          <nav className="no-scrollbar hidden min-w-0 items-center overflow-x-auto lg:ml-2.5 lg:flex xl:ml-10">
+          <nav className="hidden min-w-0 flex-1 items-center justify-end overflow-hidden lg:flex lg:mr-14 xl:mr-24">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
@@ -79,7 +79,7 @@ export function Header() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="flex items-center gap-2.5 xl:gap-10"
+                className="flex items-center gap-3 xl:gap-9"
               >
                 {visibleCategories.map((cat) => (
                   <NavLink
@@ -100,7 +100,7 @@ export function Header() {
             </AnimatePresence>
           </nav>
 
-          <div className="flex items-center gap-1 sm:ml-auto sm:gap-2 lg:ml-2.5 xl:ml-10">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               type="button"
               onClick={() => setIsSearchOpen(true)}
