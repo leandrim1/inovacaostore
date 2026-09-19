@@ -25,6 +25,10 @@
   --animate-bounce-slow: bounce-slow 2.2s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-float: float 5s ease-in-out infinite;
+  --animate-shine-sweep: shine-sweep 4.5s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-cta-pulse: cta-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-tick: tick 1s ease-out infinite;
 }
 
 @keyframes marquee {
@@ -94,6 +98,49 @@
   }
   to {
     transform: scaleX(1);
+  }
+}
+
+/* Faixa de brilho que atravessa o texto da promoção e depois descansa — o
+   trecho 55%→100% é a pausa, senão o efeito vira um estroboscópio. */
+@keyframes shine-sweep {
+  0% {
+    background-position: 190% center;
+  }
+  55%,
+  100% {
+    background-position: -90% center;
+  }
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 16px rgba(245, 196, 0, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 36px rgba(245, 196, 0, 0.6));
+  }
+}
+
+@keyframes cta-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 196, 0, 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 16px rgba(245, 196, 0, 0);
+  }
+}
+
+@keyframes tick {
+  0%,
+  70%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.14);
   }
 }
 
@@ -189,6 +236,28 @@
 @layer components {
   .container-page {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Texto de destaque da promoção: o próprio gradiente é recortado no formato
+     das letras e deslizado pela animação, o que produz o brilho atravessando a
+     palavra. `animate-none` (utilities) ainda vence isto, então
+     `motion-reduce:animate-none` na instância desliga o efeito. */
+  .promo-highlight {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-brand-yellow) 0%,
+      var(--color-brand-yellow) 38%,
+      #fff6c2 46%,
+      #ffffff 50%,
+      #fff6c2 54%,
+      var(--color-brand-yellow) 62%,
+      var(--color-brand-yellow) 100%
+    );
+    background-size: 230% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: var(--animate-shine-sweep);
   }
 
   .btn-primary {
