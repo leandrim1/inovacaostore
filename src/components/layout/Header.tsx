@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, Search, User, ShoppingBag, ChevronDown, PackageSearch, LogOut } from "lucide-react";
+import { Menu, Search, User, UserPlus, ShoppingBag, ChevronDown, PackageSearch, LogOut } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { useCategories } from "../../hooks/useCategories";
 import { useCart } from "../../context/CartContext";
@@ -21,6 +21,27 @@ export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const { data: categories = [] } = useCategories();
   const navigate = useNavigate();
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  // Fecha o menu da conta ao clicar fora ou apertar Esc. O padrão anterior era
+  // um `fixed inset-0` invisível atrás do menu, mas o `backdrop-blur-md` do
+  // header faz dele o bloco de contenção dos filhos `fixed` — esse fundo
+  // cobria só a faixa do cabeçalho, então clicar na página não fechava nada.
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+    function onPointerDown(e: PointerEvent) {
+      if (!accountMenuRef.current?.contains(e.target as Node)) setIsAccountMenuOpen(false);
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsAccountMenuOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isAccountMenuOpen]);
 
   const categoryPageCount = Math.ceil(categories.length / CATEGORIES_PER_PAGE);
   const safeCategoryPage = categoryPageCount > 0 ? categoryPage % categoryPageCount : 0;
@@ -121,7 +142,7 @@ export function Header() {
               <Search size={20} />
             </button>
             {isAuthenticated && user ? (
-              <div className="relative hidden lg:block">
+              <div ref={accountMenuRef} className="relative hidden lg:block">
                 <button
                   type="button"
                   onClick={() => setIsAccountMenuOpen((v) => !v)}
@@ -137,46 +158,80 @@ export function Header() {
                 </button>
 
                 {isAccountMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setIsAccountMenuOpen(false)} />
-                    <div className="absolute right-0 z-50 mt-2 w-52 rounded-xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
-                      <Link
-                        to="/minha-conta"
-                        onClick={() => setIsAccountMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-neutral-50"
-                      >
-                        <User size={16} /> Minha conta
-                      </Link>
-                      <Link
-                        to="/meus-pedidos"
-                        onClick={() => setIsAccountMenuOpen(false)}
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-neutral-50"
-                      >
-                        <PackageSearch size={16} /> Meus pedidos
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                      >
-                        <LogOut size={16} /> Sair
-                      </button>
-                    </div>
-                  </>
+                  <div className="absolute right-0 z-50 mt-2 w-52 rounded-xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
+                    <Link
+                      to="/minha-conta"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-neutral-50"
+                    >
+                      <User size={16} /> Minha conta
+                    </Link>
+                    <Link
+                      to="/meus-pedidos"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-neutral-50"
+                    >
+                      <PackageSearch size={16} /> Meus pedidos
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut size={16} /> Sair
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
-              <div className="hidden items-center gap-1 lg:flex">
-                <Link
-                  to="/login"
-                  className="rounded-full px-3.5 py-2 font-display text-xs tracking-widest text-brand-ink/70 transition-colors hover:bg-neutral-100 hover:text-brand-ink"
-                >
-                  Entrar
-                </Link>
-                <Link to="/cadastro" className="btn-primary px-4 py-2 text-xs">
-                  Criar conta
-                </Link>
-              </div>
+              <>
+                {/* De 1024 a 1279 os dois botões de texto ocupam espaço demais
+                    e empurram as categorias contra os ícones. Nessa faixa eles
+                    viram um ícone de pessoa com as mesmas duas opções dentro.
+                    De xl pra cima, onde sobra largura, voltam como botões. */}
+                <div ref={accountMenuRef} className="relative hidden lg:block xl:hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsAccountMenuOpen((v) => !v)}
+                    aria-label="Entrar ou criar conta"
+                    aria-expanded={isAccountMenuOpen}
+                    className="rounded-full p-2.5 hover:bg-neutral-100"
+                  >
+                    <User size={20} />
+                  </button>
+
+                  {isAccountMenuOpen && (
+                    <div className="absolute right-0 z-50 mt-2 w-48 rounded-xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
+                      <Link
+                        to="/login"
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-neutral-50"
+                      >
+                        <User size={16} /> Entrar
+                      </Link>
+                      <Link
+                        to="/cadastro"
+                        onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-brand-ink hover:bg-neutral-50"
+                      >
+                        <UserPlus size={16} /> Criar conta
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                <div className="hidden items-center gap-1 xl:flex">
+                  <Link
+                    to="/login"
+                    className="rounded-full px-3.5 py-2 font-display text-xs tracking-widest text-brand-ink/70 transition-colors hover:bg-neutral-100 hover:text-brand-ink"
+                  >
+                    Entrar
+                  </Link>
+                  <Link to="/cadastro" className="btn-primary px-4 py-2 text-xs">
+                    Criar conta
+                  </Link>
+                </div>
+              </>
             )}
             <span className="mx-1 hidden h-6 w-px bg-brand-ink/10 lg:block" aria-hidden />
             <button
