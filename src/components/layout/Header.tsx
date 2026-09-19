@@ -71,7 +71,13 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          <nav className="hidden min-w-0 flex-1 items-center justify-end overflow-hidden lg:flex lg:mr-14 xl:mr-24">
+          {/* A margem à direita é o respiro entre as categorias e a lupa. O nav
+              tem `min-w-0 overflow-hidden`, então uma margem maior que o espaço
+              livre corta os nomes no meio, silenciosamente. Medido com a Bebas
+              Neue real e as categorias mais longas: cabe até ~184px em 1024px e
+              ~344px de 1280px pra cima — os valores abaixo ficam bem debaixo
+              disso, deixando folga para nomes novos. */}
+          <nav className="hidden min-w-0 flex-1 items-center justify-end overflow-hidden lg:flex lg:mr-20 xl:mr-48">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
