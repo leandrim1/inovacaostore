@@ -50,7 +50,7 @@ export function CartDrawer() {
                   <ShoppingBag size={40} strokeWidth={1.25} />
                   <p>Sua sacola está vazia.</p>
                   <Link
-                    to="/categoria/camisetas"
+                    to="/busca"
                     onClick={closeCart}
                     className="btn-outline mt-2"
                   >

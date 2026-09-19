@@ -38,7 +38,7 @@ export default function MyOrdersPage() {
           <div className="flex flex-col items-center gap-4 rounded-2xl border border-brand-ink/10 bg-neutral-50 py-24 text-center text-neutral-500">
             <PackageSearch size={44} strokeWidth={1.25} />
             <p>Você ainda não fez nenhum pedido.</p>
-            <Link to="/categoria/camisetas" className="btn-primary">
+            <Link to="/busca" className="btn-primary">
               Ver produtos
             </Link>
           </div>
