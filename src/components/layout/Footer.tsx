@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { InstagramIcon } from "../ui/InstagramIcon";
+import logoImage from "../../assets/images/logo.jpg";
 import { STORE, buildWhatsAppLink, formatWhatsAppDisplay } from "../../data/store";
 import { useCategories } from "../../hooks/useCategories";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
@@ -132,56 +133,23 @@ function FooterCard() {
 }
 
 /**
- * Palavra gigante mesclada ao fundo da página (mesma cor do bg-brand-cream
- * do <body>), com um filtro SVG artesanal que desenha um relevo de vidro
- * (sombra externa + realce/entalhe internos) por cima — sem esse filtro o
- * texto ficaria literalmente invisível; com ele, aparece como um relevo
- * sutil, só perceptível de perto ou com a luz certa.
+ * Fechamento decorativo do footer: a logo real da loja em tamanho grande,
+ * com sombra suave para dar profundidade. Puramente decorativo (o mesmo
+ * logo já é acessível lá em cima, dentro do FooterCard), por isso fica
+ * fora da árvore de acessibilidade.
  */
-function GlassText() {
+function BrandMark() {
   return (
-    <div className="relative flex w-full items-center justify-center overflow-hidden pb-2 pt-10 sm:pt-14">
-      <svg className="absolute h-0 w-0" aria-hidden="true" focusable="false">
-        <defs>
-          <filter id="footer-glass-effect" x="-50%" y="-50%" width="200%" height="200%">
-            <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#0a0a0a" floodOpacity="0.1" result="outer-shadow" />
-            <feComponentTransfer in="SourceAlpha" result="alpha">
-              <feFuncA type="linear" slope="1" />
-            </feComponentTransfer>
-            <feOffset in="alpha" dx="0" dy="4" result="offset-white" />
-            <feGaussianBlur in="offset-white" stdDeviation="4" result="blur-white" />
-            <feComposite in="alpha" in2="blur-white" operator="out" result="inner-white-mask" />
-            <feFlood floodColor="#ffffff" floodOpacity="0.7" result="white-fill" />
-            <feComposite in="white-fill" in2="inner-white-mask" operator="in" result="inner-white-final" />
-            <feGaussianBlur in="alpha" stdDeviation="6" result="blur-black" />
-            <feComposite in="alpha" in2="blur-black" operator="out" result="inner-black-mask" />
-            <feFlood floodColor="#0a0a0a" floodOpacity="0.12" result="black-fill" />
-            <feComposite in="black-fill" in2="inner-black-mask" operator="in" result="inner-black-final" />
-            <feMerge>
-              <feMergeNode in="outer-shadow" />
-              <feMergeNode in="SourceGraphic" />
-              <feMergeNode in="inner-white-final" />
-              <feMergeNode in="inner-black-final" />
-            </feMerge>
-          </filter>
-        </defs>
-      </svg>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
+    <div className="flex w-full items-center justify-center overflow-hidden pb-12 pt-10 sm:pb-16 sm:pt-14" aria-hidden="true">
+      <motion.img
+        src={logoImage}
+        alt=""
+        initial={{ opacity: 0, scale: 0.92 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative"
-      >
-        <h2
-          aria-hidden="true"
-          className="select-none whitespace-nowrap px-4 font-display text-[min(20vw,220px)] leading-none tracking-wide text-brand-cream"
-          style={{ filter: "url(#footer-glass-effect)" }}
-        >
-          INOVAÇÃO
-        </h2>
-      </motion.div>
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="h-[140px] w-[140px] rounded-[28px] object-cover shadow-[0_30px_60px_-15px_rgba(10,10,10,0.25)] ring-1 ring-brand-ink/10 sm:h-[200px] sm:w-[200px] sm:rounded-[36px] lg:h-[240px] lg:w-[240px] lg:rounded-[44px]"
+      />
     </div>
   );
 }
@@ -192,7 +160,7 @@ export function Footer() {
       <div className="container-page flex justify-center">
         <FooterCard />
       </div>
-      <GlassText />
+      <BrandMark />
     </footer>
   );
 }
