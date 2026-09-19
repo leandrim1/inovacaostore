@@ -424,6 +424,54 @@ async function main() {
     },
   });
 
+  console.log("Seeding testimonials...");
+  // Depoimentos que antes eram conteúdo fixo no código. Só entram se a tabela
+  // estiver vazia — rodar o seed de novo nunca deve reviver um depoimento que
+  // o admin removeu, nem duplicar os que já estão publicados.
+  if ((await prisma.testimonial.count()) === 0) {
+    await prisma.testimonial.createMany({
+      data: [
+        {
+          name: "Lucas Almeida",
+          city: "Patos de Minas, MG",
+          rating: 5,
+          quote:
+            "Comprei duas camisetas e a qualidade surpreendeu. Chegou rápido e o caimento é perfeito. Já virei cliente fiel.",
+          status: "aprovado",
+          featured: true,
+          order: 0,
+        },
+        {
+          name: "Rafael Souza",
+          city: "Patos de Minas, MG",
+          rating: 5,
+          quote:
+            "Atendimento excelente pelo WhatsApp, tiraram todas as minhas dúvidas antes da compra. Recomendo demais a loja.",
+          status: "aprovado",
+          order: 1,
+        },
+        {
+          name: "Gabriel Ferreira",
+          city: "Uberlândia, MG",
+          rating: 4,
+          quote:
+            "Peças com ótimo custo-benefício e estilo diferenciado. A calça jeans ficou show, com certeza vou comprar mais.",
+          status: "aprovado",
+          order: 2,
+        },
+        {
+          name: "Matheus Costa",
+          city: "Patos de Minas, MG",
+          rating: 5,
+          quote:
+            "Loja de confiança, embalagem caprichada e troca facilitada quando precisei mudar o tamanho. Nota 10!",
+          status: "aprovado",
+          order: 3,
+        },
+      ],
+    });
+  }
+
   console.log("Seeding admin user...");
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;

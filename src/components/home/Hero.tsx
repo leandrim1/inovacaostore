@@ -9,7 +9,7 @@ import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { useElementAspectRatio } from "../../hooks/useElementAspectRatio";
 import { DEFAULT_IMAGE_SETTINGS, totalScale } from "../../lib/imageSettings";
 import { StarRating } from "../ui/StarRating";
-import { AVERAGE_RATING } from "../../data/testimonials";
+import { useTestimonials } from "../../hooks/useTestimonials";
 
 const FALLBACK_SLIDE: HeroImage[] = [
   { id: "fallback", url: heroImageFallback, desktopSettings: null, mobileSettings: null },
@@ -20,6 +20,8 @@ export function Hero() {
   const { ref, offset } = useParallax(0.15);
   const aspect = useElementAspectRatio(ref, 16 / 9);
   const { data: settings } = useSiteSettings();
+  const { data: testimonials } = useTestimonials();
+  const averageRating = testimonials?.averageRating ?? null;
   const [index, setIndex] = useState(0);
   const [prefersReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -137,20 +139,25 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Cartão flutuante de prova social — quebra o limite da foto para dar profundidade */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-        className="absolute bottom-28 right-4 z-10 hidden animate-float items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-6 sm:flex"
-      >
-        <StarRating rating={AVERAGE_RATING} size={13} />
-        <div className="h-8 w-px bg-white/20" aria-hidden />
-        <div className="leading-tight">
-          <p className="font-display text-sm text-white">{AVERAGE_RATING.toFixed(1).replace(".", ",")} / 5</p>
-          <p className="text-[11px] text-white/60">Avaliação dos clientes</p>
-        </div>
-      </motion.div>
+      {/* Cartão flutuante de prova social — quebra o limite da foto para dar profundidade.
+          Só aparece quando existe algum depoimento aprovado para sustentar a nota. */}
+      {averageRating !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="absolute bottom-28 right-4 z-10 hidden animate-float items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-6 sm:flex"
+        >
+          <StarRating rating={averageRating} size={13} />
+          <div className="h-8 w-px bg-white/20" aria-hidden />
+          <div className="leading-tight">
+            <p className="font-display text-sm text-white">
+              {averageRating.toFixed(1).replace(".", ",")} / 5
+            </p>
+            <p className="text-[11px] text-white/60">Avaliação dos clientes</p>
+          </div>
+        </motion.div>
+      )}
 
       {count > 1 && (
         <div className="absolute bottom-9 left-1/2 z-10 flex w-40 -translate-x-1/2 items-center gap-1.5 sm:bottom-14 sm:left-7 sm:translate-x-0">

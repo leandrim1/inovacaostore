@@ -90,6 +90,30 @@ model Customer {
   orders             Order[]
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
+  testimonials       Testimonial[]
+}
+
+model Testimonial {
+  id String @id @default(cuid())
+  // Nulo nos depoimentos que vieram do conteúdo fixo antigo (seed) — os
+  // enviados pelo site sempre têm um cliente por trás.
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  // Snapshot do nome no momento do envio: o admin pode ajustar como o nome
+  // aparece no site sem alterar o cadastro do cliente.
+  name    String
+  city    String @default("")
+  rating  Int
+  quote   String
+  // pendente = aguardando moderação; só "aprovado" aparece no site.
+  status   String  @default("pendente")
+  featured Boolean @default(false)
+  order    Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([customerId])
 }
 
 model EmailVerification {
