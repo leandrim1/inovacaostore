@@ -10,8 +10,6 @@ export interface ConfirmDialogProps {
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  /** `danger` pinta o botão de vermelho — use para exclusões. */
-  tone?: "danger" | "default";
   /** Trava os botões enquanto a ação está em andamento. */
   isPending?: boolean;
   onConfirm: () => void;
@@ -24,7 +22,6 @@ export function ConfirmDialog({
   description,
   confirmLabel = "Excluir",
   cancelLabel = "Cancelar",
-  tone = "danger",
   isPending = false,
   onConfirm,
   onCancel,
@@ -73,9 +70,7 @@ export function ConfirmDialog({
           >
             <div className="flex gap-4 p-6">
               <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
-                  tone === "danger" ? "bg-red-50 text-red-600" : "bg-brand-yellow/20 text-brand-yellow-dark"
-                }`}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-yellow/20 text-brand-yellow-dark"
                 aria-hidden
               >
                 <AlertTriangle size={20} />
@@ -106,9 +101,7 @@ export function ConfirmDialog({
                 type="button"
                 onClick={onConfirm}
                 disabled={isPending}
-                className={`rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-60 ${
-                  tone === "danger" ? "bg-red-600 hover:bg-red-700" : "bg-brand-ink hover:bg-black"
-                }`}
+                className="rounded-lg bg-brand-ink px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black disabled:opacity-60"
               >
                 {isPending ? "Excluindo…" : confirmLabel}
               </button>

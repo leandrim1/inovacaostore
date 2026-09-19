@@ -4,7 +4,6 @@ interface ConfirmRequest {
   title: string;
   description?: string;
   confirmLabel?: string;
-  tone?: "danger" | "default";
   onConfirm: () => void | Promise<void>;
 }
 
@@ -48,7 +47,6 @@ export function useConfirmDialog() {
       title: request?.title ?? "",
       description: request?.description,
       confirmLabel: request?.confirmLabel,
-      tone: request?.tone,
       isPending,
       onConfirm: confirm,
       onCancel: cancel,
