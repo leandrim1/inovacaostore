@@ -4,10 +4,12 @@ import { X, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { formatBRL } from "../../lib/format";
 import { QuantityStepper } from "../ui/QuantityStepper";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, removeItem, updateQuantity, subtotal, itemCount } =
     useCart();
+  useBodyScrollLock(isOpen);
 
   return (
     <AnimatePresence>

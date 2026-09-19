@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 const SUGGESTIONS = ["Camiseta", "Calça jeans", "Bermuda", "Jaqueta", "Boné"];
 
@@ -14,6 +15,7 @@ export function SearchOverlay({
 }) {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  useBodyScrollLock(isOpen);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

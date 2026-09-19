@@ -5,6 +5,7 @@ import { STORE, buildWhatsAppLink } from "../../data/store";
 import { useAuth } from "../../context/AuthContext";
 import { useCategories } from "../../hooks/useCategories";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { InstagramIcon } from "../ui/InstagramIcon";
 
 export function MobileMenu({
@@ -18,6 +19,7 @@ export function MobileMenu({
   const { data: categories = [] } = useCategories();
   const { data: settings } = useSiteSettings();
   const navigate = useNavigate();
+  useBodyScrollLock(isOpen);
 
   async function handleLogout() {
     onClose();
