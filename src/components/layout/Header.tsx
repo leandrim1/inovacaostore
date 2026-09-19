@@ -57,7 +57,11 @@ export function Header() {
           isScrolled ? "border-brand-ink/10 shadow-[0_1px_0_rgba(0,0,0,0.04),0_12px_24px_-20px_rgba(0,0,0,0.35)]" : "border-transparent"
         }`}
       >
-        <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20">
+        {/* No desktop o header solta a largura máxima do container e vai de
+            ponta a ponta (logo colada na esquerda, ações na direita), com o
+            menu centralizado — o arranjo de header de loja grande. Abaixo de
+            lg nada muda: continua o `container-page` de sempre. */}
+        <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20 lg:max-w-none lg:px-10">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
@@ -71,13 +75,14 @@ export function Header() {
             <Logo size={40} />
           </div>
 
-          {/* A margem à direita é o respiro entre as categorias e a lupa. O nav
-              tem `min-w-0 overflow-hidden`, então uma margem maior que o espaço
-              livre corta os nomes no meio, silenciosamente. Medido com a Bebas
-              Neue real e as categorias mais longas: cabe até ~184px em 1024px e
-              ~344px de 1280px pra cima — os valores abaixo ficam bem debaixo
-              disso, deixando folga para nomes novos. */}
-          <nav className="hidden min-w-0 flex-1 items-center justify-end overflow-hidden lg:flex lg:mr-20 xl:mr-48">
+          {/* Centralizado entre a logo e as ações, em vez de empurrado para a
+              direita. Centralizar na página inteira (absolute + left-1/2) dava
+              o alinhamento perfeito em telas largas, mas em 1024px o menu
+              passava por cima dos ícones — o bloco de ações é bem mais largo
+              que a logo, então o centro real da página não é o centro do
+              espaço livre. Como irmão flex, ele divide o espaço e nunca
+              colide. */}
+          <nav className="hidden flex-1 items-center justify-center lg:flex">
             <AnimatePresence mode="wait">
               <motion.div
                 key={safeCategoryPage}
@@ -85,7 +90,7 @@ export function Header() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.35, ease: "easeOut" }}
-                className="flex items-center gap-3 xl:gap-9"
+                className="flex items-center gap-8"
               >
                 {visibleCategories.map((cat) => (
                   <NavLink
