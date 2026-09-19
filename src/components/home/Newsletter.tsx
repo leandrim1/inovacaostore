@@ -15,11 +15,11 @@ export function Newsletter() {
   }
 
   return (
-    <section className="relative overflow-hidden bg-brand-ink py-16 text-white sm:py-24">
+    <section className="relative min-h-[420px] overflow-hidden bg-brand-ink py-16 text-white sm:min-h-[460px] sm:py-24">
       <img
         src={newsletterBg}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover object-[38%_center] sm:object-center"
+        className="absolute inset-0 h-full w-full object-cover object-[38%_center] sm:object-[50%_40%]"
       />
       <div className="absolute inset-0 bg-black/55" />
 
