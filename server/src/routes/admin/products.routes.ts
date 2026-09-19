@@ -6,6 +6,7 @@ import { serializeAdminProduct } from "../../utils/serialize.js";
 import { uniqueSlug } from "../../utils/slug.js";
 import { upload, randomUploadName } from "../../upload.js";
 import { saveUpload, deleteUpload } from "../../storage.js";
+import { imageSettingsPatchSchema } from "../../imageSettings.js";
 
 export const adminProductsRouter = Router();
 
@@ -272,6 +273,37 @@ adminProductsRouter.delete("/:id/images/:imageId", async (req, res) => {
 
   await prisma.productImage.delete({ where: { id: imageId } });
   await deleteUpload(image.url);
+
+  const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
+  res.json(serializeAdminProduct(updated));
+});
+
+adminProductsRouter.patch("/:id/images/:imageId", async (req, res) => {
+  const { id: productId, imageId } = req.params;
+  const parsed = imageSettingsPatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });
+    return;
+  }
+
+  const image = await prisma.productImage.findFirst({ where: { id: imageId, productId } });
+  if (!image) {
+    res.status(404).json({ error: "Imagem não encontrada." });
+    return;
+  }
+
+  const data = parsed.data;
+  await prisma.productImage.update({
+    where: { id: imageId },
+    data: {
+      ...(data.desktopSettings !== undefined
+        ? { desktopSettings: data.desktopSettings ?? Prisma.DbNull }
+        : {}),
+      ...(data.mobileSettings !== undefined
+        ? { mobileSettings: data.mobileSettings ?? Prisma.DbNull }
+        : {}),
+    },
+  });
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
   res.json(serializeAdminProduct(updated));

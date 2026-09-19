@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
 import { upload, randomUploadName } from "../../upload.js";
 import { saveUpload, deleteUpload } from "../../storage.js";
+import { imageSettingsPatchSchema } from "../../imageSettings.js";
 
 export const adminSettingsRouter = Router();
 
@@ -68,6 +70,36 @@ adminSettingsRouter.post("/hero-images", upload.array("images", 8), async (req, 
 
   const heroImages = await prisma.heroImage.findMany({ orderBy: { order: "asc" } });
   res.status(201).json({ items: heroImages });
+});
+
+adminSettingsRouter.patch("/hero-images/:id", async (req, res) => {
+  const parsed = imageSettingsPatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });
+    return;
+  }
+
+  const image = await prisma.heroImage.findUnique({ where: { id: req.params.id } });
+  if (!image) {
+    res.status(404).json({ error: "Imagem não encontrada." });
+    return;
+  }
+
+  const data = parsed.data;
+  await prisma.heroImage.update({
+    where: { id: image.id },
+    data: {
+      ...(data.desktopSettings !== undefined
+        ? { desktopSettings: data.desktopSettings ?? Prisma.DbNull }
+        : {}),
+      ...(data.mobileSettings !== undefined
+        ? { mobileSettings: data.mobileSettings ?? Prisma.DbNull }
+        : {}),
+    },
+  });
+
+  const heroImages = await prisma.heroImage.findMany({ orderBy: { order: "asc" } });
+  res.json({ items: heroImages });
 });
 
 adminSettingsRouter.delete("/hero-images/:id", async (req, res) => {

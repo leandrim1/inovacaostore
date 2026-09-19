@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import { Upload, X } from "lucide-react";
+import { Crop, Upload, X } from "lucide-react";
 import {
   useAdminGalleryImages,
   useAdminHeroImages,
   useAdminSettings,
   useDeleteGalleryImage,
   useDeleteHeroImage,
+  useUpdateHeroImageSettings,
   useUpdateSettings,
   useUploadGalleryImages,
   useUploadHeroImages,
   type SiteSettingsInput,
 } from "../../hooks/admin/useAdminSettings";
+import type { HeroImage } from "../../hooks/useSiteSettings";
+import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
 
 export default function AdminSettingsPage() {
   const { data: settings, isLoading } = useAdminSettings();
@@ -19,6 +22,8 @@ export default function AdminSettingsPage() {
   const updateSettings = useUpdateSettings();
   const uploadHeroImages = useUploadHeroImages();
   const deleteHeroImage = useDeleteHeroImage();
+  const updateHeroImageSettings = useUpdateHeroImageSettings();
+  const [editingHeroImage, setEditingHeroImage] = useState<HeroImage | null>(null);
   const uploadGalleryImages = useUploadGalleryImages();
   const deleteGalleryImage = useDeleteGalleryImage();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -215,6 +220,15 @@ export default function AdminSettingsPage() {
                 {heroImages.map((img) => (
                   <div key={img.id} className="group relative aspect-[16/10] overflow-hidden rounded-lg bg-neutral-100">
                     <img src={img.url} alt="" className="h-full w-full object-cover" />
+                    <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => setEditingHeroImage(img)}
+                        className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-brand-ink hover:bg-white"
+                      >
+                        <Crop size={11} /> Ajustar
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(img.id)}
@@ -372,6 +386,19 @@ export default function AdminSettingsPage() {
           </section>
         </div>
       </form>
+
+      {editingHeroImage && (
+        <ImagePositionEditor
+          src={editingHeroImage.url}
+          alt=""
+          desktopAspect={16 / 7}
+          mobileAspect={9 / 16}
+          initialDesktopSettings={editingHeroImage.desktopSettings ?? null}
+          initialMobileSettings={editingHeroImage.mobileSettings ?? null}
+          onClose={() => setEditingHeroImage(null)}
+          onSave={(data) => updateHeroImageSettings.mutateAsync({ id: editingHeroImage.id, data })}
+        />
+      )}
     </div>
   );
 }

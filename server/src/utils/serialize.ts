@@ -41,7 +41,13 @@ export function serializeProduct(product: ProductWithRelations) {
     },
     categoryId: product.categoryId,
     images: product.images.map((img) => img.url),
-    imageDetails: product.images.map((img) => ({ id: img.id, url: img.url, order: img.order })),
+    imageDetails: product.images.map((img) => ({
+      id: img.id,
+      url: img.url,
+      order: img.order,
+      desktopSettings: img.desktopSettings,
+      mobileSettings: img.mobileSettings,
+    })),
     colors: dedupeColors(product.variants),
     sizes: dedupeSizes(product.variants),
     variants: product.variants.map((v) => ({

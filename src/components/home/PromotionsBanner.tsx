@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { usePromotions, type Promotion } from "../../hooks/usePromotions";
 import { useCountdown } from "../../hooks/useCountdown";
+import { PositionedImage } from "../ui/PositionedImage";
 
 function CountdownBadge({ endsAt }: { endsAt: string | null }) {
   const parts = useCountdown(endsAt);
@@ -26,10 +27,12 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   return (
     <div className="relative flex min-h-[420px] items-center overflow-hidden rounded-2xl sm:min-h-[480px]">
       {promotion.imageUrl ? (
-        <img
+        <PositionedImage
           src={promotion.imageUrl}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          desktopSettings={promotion.desktopSettings}
+          mobileSettings={promotion.mobileSettings}
+          wrapperClassName="absolute inset-0 h-full w-full"
         />
       ) : (
         <div className="absolute inset-0 bg-brand-ink">

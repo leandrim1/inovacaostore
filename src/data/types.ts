@@ -1,3 +1,5 @@
+import type { ImageSettings } from "../lib/imageSettings";
+
 export interface Category {
   id: string;
   slug: string;
@@ -20,6 +22,14 @@ export interface ProductVariant {
   sku?: string;
 }
 
+export interface ProductImageDetail {
+  id: string;
+  url: string;
+  order: number;
+  desktopSettings: ImageSettings | null;
+  mobileSettings: ImageSettings | null;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -28,6 +38,7 @@ export interface Product {
   price: number;
   compareAtPrice?: number;
   images: string[];
+  imageDetails: ProductImageDetail[];
   colors: ColorOption[];
   sizes: string[];
   description: string;

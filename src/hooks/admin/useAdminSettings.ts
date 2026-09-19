@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import type { HeroImage, SiteSettings } from "../useSiteSettings";
+import type { ImageSettings } from "../../lib/imageSettings";
 
 export type { HeroImage };
 
@@ -61,6 +62,20 @@ export function useDeleteHeroImage() {
   const invalidate = useInvalidateHeroImages();
   return useMutation({
     mutationFn: (id: string) => api.delete<{ items: HeroImage[] }>(`/api/admin/settings/hero-images/${id}`),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateHeroImageSettings() {
+  const invalidate = useInvalidateHeroImages();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { desktopSettings?: ImageSettings | null; mobileSettings?: ImageSettings | null };
+    }) => api.patch<{ items: HeroImage[] }>(`/api/admin/settings/hero-images/${id}`, data),
     onSuccess: invalidate,
   });
 }

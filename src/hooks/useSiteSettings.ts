@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import type { ImageSettings } from "../lib/imageSettings";
 
 export interface HeroImage {
   id: string;
   url: string;
+  desktopSettings?: ImageSettings | null;
+  mobileSettings?: ImageSettings | null;
 }
 
 export interface SiteSettings {

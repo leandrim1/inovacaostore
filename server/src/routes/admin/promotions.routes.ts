@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
 import { upload, randomUploadName } from "../../upload.js";
 import { saveUpload, deleteUpload } from "../../storage.js";
+import { imageSettingsSchema } from "../../imageSettings.js";
 
 export const adminPromotionsRouter = Router();
 
@@ -13,6 +14,8 @@ const promotionSchema = z.object({
   description: z.string().default(""),
   ctaLabel: z.string().min(1).default("Compre agora"),
   ctaUrl: z.string().min(1).default("/"),
+  desktopSettings: imageSettingsSchema.nullable().optional(),
+  mobileSettings: imageSettingsSchema.nullable().optional(),
   endsAt: z.string().datetime().nullable().optional(),
   active: z.boolean().default(true),
   order: z.number().int().default(0),
@@ -81,6 +84,12 @@ adminPromotionsRouter.patch("/:id", async (req, res) => {
         ...(data.endsAt !== undefined ? { endsAt: data.endsAt ? new Date(data.endsAt) : null } : {}),
         ...(data.active !== undefined ? { active: data.active } : {}),
         ...(data.order !== undefined ? { order: data.order } : {}),
+        ...(data.desktopSettings !== undefined
+          ? { desktopSettings: data.desktopSettings ?? Prisma.DbNull }
+          : {}),
+        ...(data.mobileSettings !== undefined
+          ? { mobileSettings: data.mobileSettings ?? Prisma.DbNull }
+          : {}),
       },
     });
     res.json(promotion);

@@ -4,37 +4,43 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import heroImageFallback from "../../assets/images/hero-friends.jpg";
 import { useParallax } from "../../hooks/useParallax";
-import { useSiteSettings } from "../../hooks/useSiteSettings";
+import { useSiteSettings, type HeroImage } from "../../hooks/useSiteSettings";
+import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
+import { useElementAspectRatio } from "../../hooks/useElementAspectRatio";
+import { DEFAULT_IMAGE_SETTINGS, totalScale } from "../../lib/imageSettings";
 import { StarRating } from "../ui/StarRating";
 import { AVERAGE_RATING } from "../../data/testimonials";
 
-const FALLBACK_SLIDE = [{ id: "fallback", url: heroImageFallback }];
+const FALLBACK_SLIDE: HeroImage[] = [
+  { id: "fallback", url: heroImageFallback, desktopSettings: null, mobileSettings: null },
+];
 const SLIDE_DURATION = 6000;
 
 export function Hero() {
   const { ref, offset } = useParallax(0.15);
+  const aspect = useElementAspectRatio(ref, 16 / 9);
   const { data: settings } = useSiteSettings();
   const [index, setIndex] = useState(0);
   const [prefersReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches,
-  );
-
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 1023px)");
-    const update = () => setIsMobile(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
+  const isMobile = useIsMobileViewport();
 
   const slides = settings.heroImages.length > 0 ? settings.heroImages : FALLBACK_SLIDE;
   const count = slides.length;
   const safeIndex = index < count ? index : 0;
   const isExternalCta = /^https?:\/\//.test(settings.heroCtaUrl);
   const titleLines = settings.heroTitle.split("\n");
+
+  const currentSlide = slides[safeIndex];
+  const customSettings = isMobile ? currentSlide.mobileSettings : currentSlide.desktopSettings;
+  const effectiveSettings = customSettings ?? DEFAULT_IMAGE_SETTINGS;
+  const zoomFactor = totalScale(effectiveSettings, aspect);
+  const imgClassName = customSettings
+    ? "absolute inset-0 h-full w-full object-cover"
+    : isMobile
+      ? "absolute inset-0 h-full w-full object-contain object-top"
+      : "absolute inset-0 h-[120%] w-full object-cover object-[center_82%]";
 
   useEffect(() => {
     if (count < 2) return;
@@ -47,18 +53,27 @@ export function Hero() {
       <div ref={ref} className="absolute inset-0" aria-hidden>
         <AnimatePresence>
           <motion.img
-            key={slides[safeIndex].id}
-            src={slides[safeIndex].url}
+            key={currentSlide.id}
+            src={currentSlide.url}
             alt="Amigos vestindo peças da Inovação Store"
-            initial={{ opacity: 0, scale: isMobile ? 1 : 1.02 }}
-            animate={{ opacity: 0.95, scale: prefersReducedMotion || isMobile ? 1 : 1.18 }}
+            initial={{ opacity: 0, scale: (isMobile ? 1 : 1.02) * zoomFactor, rotate: effectiveSettings.rotation }}
+            animate={{
+              opacity: 0.95,
+              scale: (prefersReducedMotion || isMobile ? 1 : 1.18) * zoomFactor,
+              rotate: effectiveSettings.rotation,
+            }}
             exit={{ opacity: 0 }}
             transition={{
               opacity: { duration: 0.9, ease: "easeInOut" },
               scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
             }}
-            className="absolute inset-0 h-full w-full object-contain object-top lg:h-[120%] lg:object-cover lg:object-[center_82%]"
-            style={{ y: offset }}
+            className={imgClassName}
+            style={{
+              y: offset,
+              ...(customSettings
+                ? { objectPosition: `${customSettings.positionX}% ${customSettings.positionY}%` }
+                : {}),
+            }}
             fetchPriority={safeIndex === 0 ? "high" : undefined}
           />
         </AnimatePresence>

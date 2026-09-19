@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Plus, Trash2, Upload, X } from "lucide-react";
+import { Crop, Plus, Trash2, Upload, X } from "lucide-react";
 import {
   useAdminProduct,
   useCreateProduct,
   useDeleteProductImage,
   useUpdateProduct,
+  useUpdateProductImageSettings,
   useUploadProductImages,
   type AdminProductInput,
 } from "../../hooks/admin/useAdminProducts";
 import { useAdminCategories } from "../../hooks/admin/useAdminCategories";
 import { formatBRL } from "../../lib/format";
+import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
 
 const TAG_OPTIONS = [
   { value: "novo", label: "Novo" },
@@ -39,7 +41,9 @@ export default function AdminProductFormPage() {
   const updateProduct = useUpdateProduct();
   const uploadImages = useUploadProductImages();
   const deleteImage = useDeleteProductImage();
+  const updateImageSettings = useUpdateProductImageSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -302,6 +306,15 @@ export default function AdminProductFormPage() {
                 {product?.imageDetails.map((img) => (
                   <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg bg-neutral-100">
                     <img src={img.url} alt="" className="h-full w-full object-cover" />
+                    <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent py-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        type="button"
+                        onClick={() => setEditingImageId(img.id)}
+                        className="flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium text-brand-ink hover:bg-white"
+                      >
+                        <Crop size={10} /> Ajustar
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(img.id)}
@@ -487,6 +500,25 @@ export default function AdminProductFormPage() {
           </button>
         </div>
       </form>
+
+      {editingImageId && id && (() => {
+        const editingImage = product?.imageDetails.find((img) => img.id === editingImageId);
+        if (!editingImage) return null;
+        return (
+          <ImagePositionEditor
+            src={editingImage.url}
+            alt=""
+            desktopAspect={4 / 5}
+            mobileAspect={4 / 5}
+            initialDesktopSettings={editingImage.desktopSettings}
+            initialMobileSettings={editingImage.mobileSettings}
+            onClose={() => setEditingImageId(null)}
+            onSave={(data) =>
+              updateImageSettings.mutateAsync({ productId: id, imageId: editingImage.id, data })
+            }
+          />
+        );
+      })()}
     </div>
   );
 }

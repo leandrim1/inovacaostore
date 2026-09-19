@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Upload, X } from "lucide-react";
+import { Crop, Upload, X } from "lucide-react";
 import {
   useAdminPromotion,
   useCreatePromotion,
@@ -9,6 +9,7 @@ import {
   useUploadPromotionImage,
   type PromotionInput,
 } from "../../hooks/admin/useAdminPromotions";
+import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
 
 function toDatetimeLocal(iso: string | null) {
   if (!iso) return "";
@@ -39,6 +40,7 @@ export default function AdminPromotionFormPage() {
   const [order, setOrder] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [isAdjustingImage, setIsAdjustingImage] = useState(false);
 
   useEffect(() => {
     if (!promotion) return;
@@ -160,6 +162,15 @@ export default function AdminPromotionFormPage() {
               {promotion?.imageUrl ? (
                 <div className="group relative mb-4 aspect-[16/7] overflow-hidden rounded-lg bg-neutral-100">
                   <img src={promotion.imageUrl} alt="" className="h-full w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => setIsAdjustingImage(true)}
+                      className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-brand-ink hover:bg-white"
+                    >
+                      <Crop size={11} /> Ajustar
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={handleDeleteImage}
@@ -229,6 +240,19 @@ export default function AdminPromotionFormPage() {
           </button>
         </div>
       </form>
+
+      {isAdjustingImage && promotion?.imageUrl && (
+        <ImagePositionEditor
+          src={promotion.imageUrl}
+          alt=""
+          desktopAspect={21 / 9}
+          mobileAspect={9 / 10}
+          initialDesktopSettings={promotion.desktopSettings}
+          initialMobileSettings={promotion.mobileSettings}
+          onClose={() => setIsAdjustingImage(false)}
+          onSave={(data) => updatePromotion.mutateAsync({ id: promotion.id, data })}
+        />
+      )}
     </div>
   );
 }

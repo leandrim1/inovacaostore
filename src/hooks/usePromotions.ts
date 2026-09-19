@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
+import type { ImageSettings } from "../lib/imageSettings";
 
 export interface Promotion {
   id: string;
@@ -9,6 +10,8 @@ export interface Promotion {
   ctaLabel: string;
   ctaUrl: string;
   imageUrl: string | null;
+  desktopSettings: ImageSettings | null;
+  mobileSettings: ImageSettings | null;
   endsAt: string | null;
   active: boolean;
   order: number;

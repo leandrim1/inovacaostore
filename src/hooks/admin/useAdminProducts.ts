@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, buildQueryString } from "../../lib/api";
 import type { ProductDTO } from "../../lib/adapters";
+import type { ImageSettings } from "../../lib/imageSettings";
 
 export interface AdminProductInput {
   name: string;
@@ -98,6 +99,22 @@ export function useDeleteProductImage() {
   return useMutation({
     mutationFn: ({ productId, imageId }: { productId: string; imageId: string }) =>
       api.delete<ProductDTO>(`/api/admin/products/${productId}/images/${imageId}`),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateProductImageSettings() {
+  const invalidate = useInvalidateProducts();
+  return useMutation({
+    mutationFn: ({
+      productId,
+      imageId,
+      data,
+    }: {
+      productId: string;
+      imageId: string;
+      data: { desktopSettings?: ImageSettings | null; mobileSettings?: ImageSettings | null };
+    }) => api.patch<ProductDTO>(`/api/admin/products/${productId}/images/${imageId}`, data),
     onSuccess: invalidate,
   });
 }

@@ -9,6 +9,7 @@ import { PriceTag } from "../components/ui/PriceTag";
 import { StarRating } from "../components/ui/StarRating";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
 import { PlaceholderImage } from "../components/ui/PlaceholderImage";
+import { PositionedImage } from "../components/ui/PositionedImage";
 import { ProductCard } from "../components/product/ProductCard";
 import { Reveal } from "../components/ui/Reveal";
 import { useCart } from "../context/CartContext";
@@ -108,28 +109,34 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
             <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-brand-ink/10 bg-neutral-100">
-              {product.images[activeImage] ? (
-                <img
-                  src={product.images[activeImage]}
+              {product.imageDetails[activeImage] ? (
+                <PositionedImage
+                  src={product.imageDetails[activeImage].url}
                   alt={product.name}
-                  className="h-full w-full object-cover"
+                  desktopSettings={product.imageDetails[activeImage].desktopSettings}
+                  mobileSettings={product.imageDetails[activeImage].mobileSettings}
                 />
               ) : (
                 <PlaceholderImage label="Em breve" />
               )}
             </div>
-            {product.images.length > 1 && (
+            {product.imageDetails.length > 1 && (
               <div className="flex gap-2">
-                {product.images.map((img, i) => (
+                {product.imageDetails.map((img, i) => (
                   <button
-                    key={img}
+                    key={img.id}
                     type="button"
                     onClick={() => setActiveImage(i)}
                     className={`h-20 w-16 shrink-0 overflow-hidden rounded-lg border transition-all ${
                       activeImage === i ? "border-brand-ink" : "border-transparent hover:border-brand-ink/30"
                     }`}
                   >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
+                    <PositionedImage
+                      src={img.url}
+                      alt=""
+                      desktopSettings={img.desktopSettings}
+                      mobileSettings={img.mobileSettings}
+                    />
                   </button>
                 ))}
               </div>

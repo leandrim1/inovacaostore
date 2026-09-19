@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
 import type { Promotion } from "../usePromotions";
+import type { ImageSettings } from "../../lib/imageSettings";
 
 export type { Promotion };
 
@@ -10,6 +11,8 @@ export interface PromotionInput {
   description?: string;
   ctaLabel?: string;
   ctaUrl?: string;
+  desktopSettings?: ImageSettings | null;
+  mobileSettings?: ImageSettings | null;
   endsAt?: string | null;
   active?: boolean;
   order?: number;

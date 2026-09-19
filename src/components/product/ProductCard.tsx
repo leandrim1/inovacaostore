@@ -4,12 +4,13 @@ import type { Product } from "../../data/types";
 import { PriceTag } from "../ui/PriceTag";
 import { Badge } from "../ui/Badge";
 import { PlaceholderImage } from "../ui/PlaceholderImage";
+import { PositionedImage } from "../ui/PositionedImage";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
-  const image = product.images[0];
+  const image = product.imageDetails[0];
   const availableVariant = product.variants.find((v) => v.stock > 0);
 
   function handleQuickAdd(e: React.MouseEvent) {
@@ -33,11 +34,13 @@ export function ProductCard({ product }: { product: Product }) {
         className="relative block aspect-[4/5] overflow-hidden bg-neutral-100"
       >
         {image ? (
-          <img
-            src={image}
+          <PositionedImage
+            src={image.url}
             alt={product.name}
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            desktopSettings={image.desktopSettings}
+            mobileSettings={image.mobileSettings}
+            className="transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (
           <PlaceholderImage label="Em breve" />

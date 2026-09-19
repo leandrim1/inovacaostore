@@ -1,4 +1,4 @@
-import type { Product, ProductVariant } from "../data/types";
+import type { Product, ProductImageDetail, ProductVariant } from "../data/types";
 
 export interface ProductDTO {
   id: string;
@@ -21,7 +21,7 @@ export interface ProductDTO {
   category: { slug: string; name: string };
   categoryId: string;
   images: string[];
-  imageDetails: { id: string; url: string; order: number }[];
+  imageDetails: ProductImageDetail[];
   colors: { name: string; hex: string }[];
   sizes: string[];
   variants: ProductVariant[];
@@ -42,6 +42,7 @@ export function adaptProduct(dto: ProductDTO): Product {
     price: dto.price,
     compareAtPrice: dto.compareAtPrice,
     images: dto.images,
+    imageDetails: dto.imageDetails,
     colors: dto.colors,
     sizes: dto.sizes,
     description: dto.description,
