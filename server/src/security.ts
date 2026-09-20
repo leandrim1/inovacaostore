@@ -172,6 +172,14 @@ export const loginLimiter = rateLimit({
   message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
 });
 
+/** Ações sensíveis de conta já autenticada (troca de senha, etc.). */
+export const accountActionLimiter = rateLimit({
+  ...baseLimiter,
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  message: { error: "Muitas tentativas. Aguarde alguns minutos." },
+});
+
 export const accountEmailLimiter = rateLimit({
   ...baseLimiter,
   windowMs: 60 * 60 * 1000,

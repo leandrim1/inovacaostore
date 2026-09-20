@@ -40,6 +40,7 @@ const AdminCouponsPage = lazy(() => import("./pages/admin/AdminCouponsPage"));
 const AdminCouponFormPage = lazy(() => import("./pages/admin/AdminCouponFormPage"));
 const AdminTestimonialsPage = lazy(() => import("./pages/admin/AdminTestimonialsPage"));
 const AdminSettingsPage = lazy(() => import("./pages/admin/AdminSettingsPage"));
+const AdminPasswordPage = lazy(() => import("./pages/admin/AdminPasswordPage"));
 const AdminShippingPage = lazy(() => import("./pages/admin/AdminShippingPage"));
 const AdminFinanceSettingsPage = lazy(() => import("./pages/admin/AdminFinanceSettingsPage"));
 
@@ -126,6 +127,7 @@ function AdminApp() {
           <Route path="pedidos" element={<AdminOrdersPage />} />
           <Route path="pedidos/:id" element={<AdminOrderDetailPage />} />
           <Route path="configuracoes" element={<AdminSettingsPage />} />
+          <Route path="senha" element={<AdminPasswordPage />} />
           <Route path="frete" element={<AdminShippingPage />} />
           <Route path="financeiro" element={<AdminFinanceSettingsPage />} />
         </Route>

@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Ticket, MessageSquareQuote, Settings, Truck, Wallet } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Ticket, MessageSquareQuote, Settings, Truck, Wallet, KeyRound } from "lucide-react";
 import { Logo } from "../../components/ui/Logo";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: "/admin/frete", label: "Frete", icon: Truck },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
+  { to: "/admin/senha", label: "Alterar senha", icon: KeyRound },
 ];
 
 export default function AdminLayout() {
@@ -105,7 +106,14 @@ export default function AdminLayout() {
         </nav>
 
         <div className="flex items-center justify-end gap-2 px-6 pt-4 text-sm text-neutral-500">
-          Olá, <strong className="text-brand-ink">{admin.name}</strong>
+          Olá,{" "}
+          <NavLink
+            to="/admin/senha"
+            title="Alterar senha"
+            className="font-bold text-brand-ink underline-offset-4 hover:underline"
+          >
+            {admin.name}
+          </NavLink>
         </div>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
