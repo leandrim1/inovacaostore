@@ -1,9 +1,4 @@
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET não definido. Configure a variável de ambiente antes de iniciar o servidor.");
-}
+import { signToken, verifyToken } from "./tokens.js";
 
 export const ADMIN_COOKIE_NAME = "admin_session";
 
@@ -13,20 +8,16 @@ export interface AdminTokenPayload {
   name: string;
 }
 
-export const signAdminToken = (payload: AdminTokenPayload) =>
-  jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+export const signAdminToken = (payload: AdminTokenPayload) => signToken("admin", payload, "7d");
 
-export const verifyAdminToken = (token: string): AdminTokenPayload | null => {
-  try {
-    return jwt.verify(token, JWT_SECRET) as unknown as AdminTokenPayload;
-  } catch {
-    return null;
-  }
-};
+export const verifyAdminToken = (token: string) => verifyToken<AdminTokenPayload>("admin", token);
 
 export const cookieOptions = {
   httpOnly: true,
-  sameSite: "lax" as const,
+  // `strict` no admin: o painel nunca é aberto a partir de outro site, então
+  // não há fluxo legítimo que precise do cookie numa navegação cross-site.
+  // É uma camada a mais contra CSRF, além do checkForgedOrigin.
+  sameSite: "strict" as const,
   secure: process.env.NODE_ENV === "production",
   maxAge: 7 * 24 * 60 * 60 * 1000,
   path: "/",

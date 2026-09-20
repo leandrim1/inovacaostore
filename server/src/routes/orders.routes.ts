@@ -5,6 +5,7 @@ import { prisma } from "../db.js";
 import { calculateShipping } from "../shipping.js";
 import { validateCoupon } from "../coupons.js";
 import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
+import { publicWriteLimiter } from "../security.js";
 
 export const ordersRouter = Router();
 
@@ -46,7 +47,7 @@ function generateOrderNumber() {
   return `IS${Date.now().toString().slice(-9)}`;
 }
 
-ordersRouter.post("/", requireVerifiedCustomer, async (req, res) => {
+ordersRouter.post("/", publicWriteLimiter, requireVerifiedCustomer, async (req, res) => {
   const parsed = orderSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Dados do pedido inválidos.", details: parsed.error.flatten() });

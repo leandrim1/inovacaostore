@@ -14,6 +14,28 @@ model AdminUser {
   email        String   @unique
   passwordHash String
   createdAt    DateTime @default(now())
+  /// Sessões emitidas antes deste instante são rejeitadas. É o que permite
+  /// revogar um JWT roubado — sem isso, um token vazado vale até expirar.
+  sessionsValidFrom DateTime?
+  auditLogs    AdminAuditLog[]
+}
+
+/// Trilha de auditoria das ações administrativas (quem fez o quê, quando e
+/// de onde). Guarda apenas metadados — nunca senhas, tokens ou segredos.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  admin      AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  adminEmail String
+  action     String
+  resource   String
+  resourceId String?
+  detail     String   @default("")
+  ip         String   @default("")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adminId, createdAt])
 }
 
 model Category {
@@ -85,6 +107,9 @@ model Customer {
   phone              String              @default("")
   passwordHash       String?
   emailVerified      Boolean             @default(false)
+  /// Ver AdminUser.sessionsValidFrom. Atualizado na troca/redefinição de
+  /// senha, para que a sessão de quem roubou o acesso morra junto.
+  sessionsValidFrom  DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   orders             Order[]

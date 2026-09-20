@@ -2,7 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import type { Testimonial } from "@prisma/client";
-import { CUSTOMER_COOKIE_NAME, verifyCustomerToken } from "../customerAuth.js";
+import { attachCustomerIfPresent } from "../middleware/requireCustomer.js";
+import { publicWriteLimiter } from "../security.js";
 import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
 import { APPROVED_STATUS, DELIVERED_ORDER_STATUS, PENDING_STATUS } from "../testimonialStatus.js";
 
@@ -41,9 +42,8 @@ testimonialsRouter.get("/", async (_req, res) => {
  * depois de escrever tudo. Autenticação opcional: visitante deslogado recebe
  * `nao_logado` em vez de 401.
  */
-testimonialsRouter.get("/eligibility", async (req, res) => {
-  const token = req.cookies?.[CUSTOMER_COOKIE_NAME];
-  const payload = token ? verifyCustomerToken(token) : null;
+testimonialsRouter.get("/eligibility", attachCustomerIfPresent, async (req, res) => {
+  const payload = req.customer;
 
   if (!payload) {
     res.json({ canSubmit: false, reason: "nao_logado", suggestedName: null });
@@ -95,7 +95,7 @@ const testimonialSchema = z.object({
     .max(500, "Seu depoimento deve ter no máximo 500 caracteres."),
 });
 
-testimonialsRouter.post("/", requireVerifiedCustomer, async (req, res) => {
+testimonialsRouter.post("/", publicWriteLimiter, requireVerifiedCustomer, async (req, res) => {
   const parsed = testimonialSchema.safeParse(req.body);
   if (!parsed.success) {
     const firstIssue = parsed.error.issues[0]?.message ?? "Dados inválidos.";

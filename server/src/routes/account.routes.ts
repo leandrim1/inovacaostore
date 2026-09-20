@@ -13,6 +13,7 @@ import {
 } from "../customerAuth.js";
 import { requireCustomerAuth } from "../middleware/requireCustomer.js";
 import { sendEmail } from "../email.js";
+import { accountEmailLimiter, loginLimiter as ipAndAccountLoginLimiter, publicBaseUrl } from "../security.js";
 import { passwordResetEmail, verificationCodeEmail } from "../emailTemplates.js";
 
 export const accountRouter = Router();
@@ -125,14 +126,6 @@ const registerLimiter = rateLimit({
   message: { error: "Muitas tentativas. Aguarde alguns minutos." },
 });
 
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: "Muitas tentativas de login. Tente novamente em alguns minutos." },
-});
-
 const accountActionLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 30,
@@ -141,7 +134,7 @@ const accountActionLimiter = rateLimit({
   message: { error: "Você atingiu o limite de tentativas. Aguarde alguns minutos." },
 });
 
-accountRouter.post("/register", registerLimiter, async (req, res) => {
+accountRouter.post("/register", registerLimiter, accountEmailLimiter, async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos." });
@@ -184,7 +177,7 @@ accountRouter.post("/register", registerLimiter, async (req, res) => {
   res.status(201).json({ user: toPublicUser(customer) });
 });
 
-accountRouter.post("/login", loginLimiter, async (req, res) => {
+accountRouter.post("/login", ipAndAccountLoginLimiter, async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "E-mail ou senha incorretos." });
@@ -209,7 +202,7 @@ accountRouter.post("/login", loginLimiter, async (req, res) => {
 });
 
 accountRouter.post("/logout", (_req, res) => {
-  res.clearCookie(CUSTOMER_COOKIE_NAME, { path: "/" });
+  res.clearCookie(CUSTOMER_COOKIE_NAME, { ...customerCookieOptions, maxAge: undefined });
   res.json({ ok: true });
 });
 
@@ -300,7 +293,7 @@ accountRouter.post("/resend-code", accountActionLimiter, requireCustomerAuth, as
   res.json({ ok: true });
 });
 
-accountRouter.post("/forgot-password", accountActionLimiter, async (req, res) => {
+accountRouter.post("/forgot-password", accountEmailLimiter, accountActionLimiter, async (req, res) => {
   const schema = z.object({ email: z.string().trim().toLowerCase().email() });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
@@ -329,8 +322,11 @@ accountRouter.post("/forgot-password", accountActionLimiter, async (req, res) =>
         },
       });
 
-      const origin = `${req.protocol}://${req.get("host")}`;
-      const link = `${origin}/redefinir-senha?token=${token}`;
+      // Base vinda da configuração do servidor, NUNCA do header Host da
+      // requisição: senão um atacante pede a redefinição da conta da vítima
+      // com `Host: site-dele.com` e o e-mail da vítima chega com um link
+      // legítimo, token válido, apontando para o site do atacante.
+      const link = `${publicBaseUrl()}/redefinir-senha?token=${token}`;
       try {
         const { subject, html } = passwordResetEmail(link, RESET_TTL_MINUTES);
         await sendEmail({ to: customer.email, subject, html });
@@ -369,8 +365,19 @@ accountRouter.post("/reset-password", accountActionLimiter, async (req, res) => 
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   await prisma.$transaction([
-    prisma.customer.update({ where: { id: reset.customerId }, data: { passwordHash } }),
+    // `sessionsValidFrom` derruba TODAS as sessões abertas da conta. Numa
+    // redefinição de senha isso é o ponto principal: quem invadiu a conta
+    // perde o acesso na hora, em vez de continuar logado por 30 dias.
+    prisma.customer.update({
+      where: { id: reset.customerId },
+      data: { passwordHash, sessionsValidFrom: new Date() },
+    }),
     prisma.passwordReset.update({ where: { id: reset.id }, data: { usedAt: new Date() } }),
+    // Qualquer outro link de redefinição pendente também deixa de valer.
+    prisma.passwordReset.updateMany({
+      where: { customerId: reset.customerId, usedAt: null },
+      data: { usedAt: new Date() },
+    }),
   ]);
 
   res.json({ ok: true });
@@ -397,7 +404,13 @@ accountRouter.put("/password", accountActionLimiter, requireCustomerAuth, async 
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.newPassword, 10);
-  await prisma.customer.update({ where: { id: customer.id }, data: { passwordHash } });
+  const updated = await prisma.customer.update({
+    where: { id: customer.id },
+    data: { passwordHash, sessionsValidFrom: new Date() },
+  });
+  // Derruba as outras sessões e reemite a desta aba, para quem trocou a senha
+  // não ser deslogado pelo próprio corte.
+  setCustomerSession(res, updated);
   res.json({ ok: true });
 });
 

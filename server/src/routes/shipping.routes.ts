@@ -2,6 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { calculateShipping } from "../shipping.js";
 
+import { publicWriteLimiter } from "../security.js";
+
 export const shippingRouter = Router();
 
 const quoteSchema = z.object({
@@ -17,7 +19,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   no_items: "Informe ao menos um item para calcular o frete.",
 };
 
-shippingRouter.post("/quote", async (req, res) => {
+shippingRouter.post("/quote", publicWriteLimiter, async (req, res) => {
   const parsed = quoteSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });

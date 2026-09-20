@@ -4,8 +4,8 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
 import { serializeAdminProduct } from "../../utils/serialize.js";
 import { uniqueSlug } from "../../utils/slug.js";
-import { upload, randomUploadName } from "../../upload.js";
-import { saveUpload, deleteUpload } from "../../storage.js";
+import { upload, saveValidatedImage } from "../../upload.js";
+import { deleteUpload } from "../../storage.js";
 import { imageSettingsPatchSchema } from "../../imageSettings.js";
 
 export const adminProductsRouter = Router();
@@ -248,7 +248,7 @@ adminProductsRouter.post("/:id/images", upload.array("images", 8), async (req, r
 
   const currentCount = await prisma.productImage.count({ where: { productId } });
   const urls = await Promise.all(
-    files.map((file) => saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype)),
+    files.map((file) => saveValidatedImage(file.buffer)),
   );
 
   await prisma.productImage.createMany({

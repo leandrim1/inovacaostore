@@ -2,8 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
-import { upload, randomUploadName } from "../../upload.js";
-import { saveUpload, deleteUpload } from "../../storage.js";
+import { upload, saveValidatedImage } from "../../upload.js";
+import { deleteUpload } from "../../storage.js";
 import { imageSettingsSchema } from "../../imageSettings.js";
 
 export const adminPromotionsRouter = Router();
@@ -123,7 +123,7 @@ adminPromotionsRouter.post("/:id/image", upload.single("image"), async (req, res
 
   if (promotion.imageUrl) await deleteUpload(promotion.imageUrl);
 
-  const url = await saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype);
+  const url = await saveValidatedImage(file.buffer);
   const updated = await prisma.promotion.update({ where: { id: req.params.id }, data: { imageUrl: url } });
   res.status(201).json(updated);
 });

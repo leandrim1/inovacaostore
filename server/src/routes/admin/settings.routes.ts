@@ -2,8 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
-import { upload, randomUploadName } from "../../upload.js";
-import { saveUpload, deleteUpload } from "../../storage.js";
+import { upload, saveValidatedImage } from "../../upload.js";
+import { deleteUpload } from "../../storage.js";
 import { imageSettingsPatchSchema } from "../../imageSettings.js";
 
 export const adminSettingsRouter = Router();
@@ -62,7 +62,7 @@ adminSettingsRouter.post("/hero-images", upload.array("images", 8), async (req, 
 
   const currentCount = await prisma.heroImage.count();
   const urls = await Promise.all(
-    files.map((file) => saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype)),
+    files.map((file) => saveValidatedImage(file.buffer)),
   );
   await prisma.heroImage.createMany({
     data: urls.map((url, i) => ({ url, order: currentCount + i })),
@@ -130,7 +130,7 @@ adminSettingsRouter.post("/gallery-images", upload.array("images", 20), async (r
 
   const currentCount = await prisma.galleryImage.count();
   const urls = await Promise.all(
-    files.map((file) => saveUpload(file.buffer, randomUploadName(file.mimetype), file.mimetype)),
+    files.map((file) => saveValidatedImage(file.buffer)),
   );
   await prisma.galleryImage.createMany({
     data: urls.map((url, i) => ({ url, order: currentCount + i })),

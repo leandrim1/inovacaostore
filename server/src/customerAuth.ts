@@ -1,10 +1,5 @@
 import crypto from "node:crypto";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET não definido. Configure a variável de ambiente antes de iniciar o servidor.");
-}
+import { signToken, verifyToken } from "./tokens.js";
 
 export const CUSTOMER_COOKIE_NAME = "customer_session";
 
@@ -16,15 +11,9 @@ export interface CustomerTokenPayload {
 }
 
 export const signCustomerToken = (payload: CustomerTokenPayload) =>
-  jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
+  signToken("customer", payload, "30d");
 
-export const verifyCustomerToken = (token: string): CustomerTokenPayload | null => {
-  try {
-    return jwt.verify(token, JWT_SECRET) as unknown as CustomerTokenPayload;
-  } catch {
-    return null;
-  }
-};
+export const verifyCustomerToken = (token: string) => verifyToken<CustomerTokenPayload>("customer", token);
 
 export const customerCookieOptions = {
   httpOnly: true,
