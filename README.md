@@ -30,6 +30,7 @@ cp .env.example .env
 
 npm run db:migrate          # aplica as migrations no Postgres
 npm run db:seed             # popula categorias, catálogo inicial e usuário admin
+npm run typecheck           # checa os tipos de TUDO (frontend + servidor)
 
 npm run dev                 # roda frontend (Vite) + backend (Express) juntos
 ```
@@ -71,6 +72,15 @@ npm run preview           # pré-visualiza o build do frontend isoladamente
    ```
    **Esse seed é rodado uma vez só, à mão.** O build da Vercel (`buildCommand` no `vercel.json`) roda apenas `prisma migrate deploy`, nunca o seed: um seed automático a cada deploy recriava tudo que tinha sido excluído pelo painel. Só rode `db:seed` de novo contra produção se o banco estiver realmente vazio.
 6. **Deploy**: `npx vercel --prod`, ou simplesmente faça push no branch conectado — a Vercel builda e publica sozinha a cada push.
+
+> **Por que `npm run build` não checa os tipos do servidor.** O projeto do
+> servidor é `noEmit`: o typecheck dele não gera nada que o deploy use — a
+> Vercel compila `api/index.ts` por conta própria. Quando ele fazia parte do
+> `build`, um erro de tipo (inclusive um que só aparecia no ambiente da
+> Vercel, por diferença de resolução de dependências) derrubava a publicação
+> do site inteiro sem que houvesse nada de errado com o código que ia ao ar.
+> O `build` agora checa o frontend, que é o que de fato vai para o bundle.
+> **Rode `npm run typecheck` antes de commitar** — é ele que cobre o servidor.
 
 Depois disso a loja, o painel admin e a API inteira funcionam no domínio da Vercel, sem servidor separado. Detalhes técnicos de como isso funciona:
 
