@@ -50,6 +50,25 @@ const expenseSchema = z.object({
     .transform((v) => new Date(v)),
 });
 
+/**
+ * Monta o payload do Prisma campo a campo, em vez de repassar `parsed.data`
+ * inteiro.
+ *
+ * O schema acima já garante os valores em tempo de execução, mas o TIPO que o
+ * zod infere para um `.transform()` dentro de objeto varia entre versões —
+ * numa delas `occurredAt` sai como opcional e o Prisma (que o exige) recusa o
+ * objeto na compilação. Sendo explícito aqui, o código compila igual nos dois
+ * casos e o contrato com o banco fica visível.
+ */
+function toExpenseData(data: z.infer<typeof expenseSchema>) {
+  return {
+    category: data.category,
+    description: data.description ?? "",
+    amount: data.amount,
+    occurredAt: data.occurredAt ?? new Date(),
+  };
+}
+
 adminFinanceRouter.get("/expenses", async (_req, res) => {
   const expenses = await prisma.expense.findMany({ orderBy: { occurredAt: "desc" } });
   res.json({ items: expenses });
@@ -61,7 +80,7 @@ adminFinanceRouter.post("/expenses", async (req, res) => {
     res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });
     return;
   }
-  const expense = await prisma.expense.create({ data: parsed.data });
+  const expense = await prisma.expense.create({ data: toExpenseData(parsed.data) });
   res.status(201).json(expense);
 });
 
@@ -76,7 +95,7 @@ adminFinanceRouter.put("/expenses/:id", async (req, res) => {
     res.status(404).json({ error: "Despesa não encontrada." });
     return;
   }
-  const expense = await prisma.expense.update({ where: { id: req.params.id }, data: parsed.data });
+  const expense = await prisma.expense.update({ where: { id: req.params.id }, data: toExpenseData(parsed.data) });
   res.json(expense);
 });
 
