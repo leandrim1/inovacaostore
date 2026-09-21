@@ -220,6 +220,10 @@ model SiteSettings {
   whatsappNumber    String
   whatsappMessage   String
   contactEmail      String
+  addressStreet     String   @default("Rua Ouro Preto, 784")
+  addressCity       String   @default("Patos de Minas")
+  addressState      String   @default("MG")
+  addressZip        String   @default("38700-000")
   announcementItem1 String
   announcementItem2 String
   announcementItem3 String

@@ -4,6 +4,7 @@ import {
   STORE,
   buildMapsLink,
   buildWhatsAppLink,
+  formatCityState,
   formatStoreAddress,
   formatWhatsAppDisplay,
 } from "../data/store";
@@ -13,15 +14,13 @@ import heroImage from "../assets/images/hero-friends.jpg";
 
 export default function AboutPage() {
   const { data: settings } = useSiteSettings();
-  const mapQuery = encodeURIComponent(
-    `${STORE.address.street}, ${STORE.address.city} - ${STORE.address.state}`,
-  );
+  const mapQuery = encodeURIComponent(formatStoreAddress(settings));
 
   return (
     <>
       <Seo
         title="Sobre a loja"
-        description={`Conheça a ${STORE.name}, loja de roupas masculinas nacionais e importadas em ${STORE.address.city} - ${STORE.address.state}.`}
+        description={`Conheça a ${STORE.name}, loja de roupas masculinas nacionais e importadas em ${formatCityState(settings)}.`}
       />
       <div className="relative h-64 overflow-hidden sm:h-80">
         <img src={heroImage} alt="Equipe Inovação Store" className="h-full w-full object-cover" />
@@ -35,7 +34,7 @@ export default function AboutPage() {
         <div className="lg:col-span-2">
           <p className="text-lg leading-relaxed text-neutral-700">
             A <strong>{STORE.name}</strong> nasceu com o propósito de trazer moda
-            masculina de qualidade para {STORE.address.city}, unindo peças
+            masculina de qualidade para {settings.addressCity}, unindo peças
             nacionais e importadas com estilo urbano, sofisticado e acessível.
           </p>
           <p className="mt-4 leading-relaxed text-neutral-600">
@@ -54,19 +53,19 @@ export default function AboutPage() {
 
         <div className="flex flex-col gap-4 rounded-2xl border border-brand-ink/10 bg-brand-cream p-6">
           <a
-            href={buildMapsLink()}
+            href={buildMapsLink(settings)}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Ver no Google Maps: ${formatStoreAddress()}`}
+            aria-label={`Ver no Google Maps: ${formatStoreAddress(settings)}`}
             className="flex items-start gap-3 transition-colors hover:text-brand-yellow-dark"
           >
             <MapPin size={20} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
             <div>
               <p className="font-medium text-brand-ink">Endereço</p>
               <p className="text-sm text-neutral-600">
-                {STORE.address.street}
+                {settings.addressStreet}
                 <br />
-                {STORE.address.city} - {STORE.address.state}
+                {formatCityState(settings)}
               </p>
             </div>
           </a>

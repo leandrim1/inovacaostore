@@ -10,6 +10,7 @@ import {
   buildMailtoLink,
   buildMapsLink,
   buildWhatsAppLink,
+  formatCityState,
   formatStoreAddress,
   formatWhatsAppDisplay,
 } from "../../data/store";
@@ -101,17 +102,17 @@ function FooterCard() {
               <ul className="flex flex-col gap-3.5 text-[15px] font-medium text-brand-ink/75">
                 <li>
                   <a
-                    href={buildMapsLink()}
+                    href={buildMapsLink(settings)}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={`Ver no Google Maps: ${formatStoreAddress()}`}
+                    aria-label={`Ver no Google Maps: ${formatStoreAddress(settings)}`}
                     className={`${CONTACT_LINK_CLASS} items-start`}
                   >
                     <MapPin size={16} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
                     <span>
-                      {STORE.address.street}
+                      {settings.addressStreet}
                       <br />
-                      {STORE.address.city} - {STORE.address.state}
+                      {formatCityState(settings)}
                     </span>
                   </a>
                 </li>
@@ -161,9 +162,7 @@ function FooterCard() {
               Política de privacidade
             </Link>
             <div className="h-4 w-px bg-brand-ink/10" aria-hidden />
-            <span>
-              {STORE.address.city} - {STORE.address.state}
-            </span>
+            <span>{formatCityState(settings)}</span>
           </div>
         </div>
       </div>

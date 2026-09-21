@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import type { ImageSettings } from "../lib/imageSettings";
+import { STORE } from "../data/store";
 
 export interface HeroImage {
   id: string;
@@ -21,6 +22,10 @@ export interface SiteSettings {
   whatsappNumber: string;
   whatsappMessage: string;
   contactEmail: string;
+  addressStreet: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
   announcementItem1: string;
   announcementItem2: string;
   announcementItem3: string;
@@ -42,6 +47,10 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   whatsappNumber: "5534996576357",
   whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
   contactEmail: "inovacaostoretiktok@gmail.com",
+  addressStreet: STORE.address.street,
+  addressCity: STORE.address.city,
+  addressState: STORE.address.state,
+  addressZip: STORE.address.zip,
   announcementItem1: "Frete grátis acima de R$ 299",
   announcementItem2: "Troca fácil em até 30 dias",
   announcementItem3: "Pagamento 100% seguro",

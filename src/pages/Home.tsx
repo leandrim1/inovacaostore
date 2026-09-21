@@ -9,8 +9,11 @@ import { Gallery } from "../components/home/Gallery";
 import { InstagramFeed } from "../components/home/InstagramFeed";
 import { Newsletter } from "../components/home/Newsletter";
 import { STORE } from "../data/store";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 
 export default function Home() {
+  const { data: settings } = useSiteSettings();
+
   return (
     <>
       <Seo
@@ -21,9 +24,10 @@ export default function Home() {
           description: STORE.seoDefaultDescription,
           address: {
             "@type": "PostalAddress",
-            streetAddress: STORE.address.street,
-            addressLocality: STORE.address.city,
-            addressRegion: STORE.address.state,
+            streetAddress: settings.addressStreet,
+            addressLocality: settings.addressCity,
+            addressRegion: settings.addressState,
+            postalCode: settings.addressZip,
             addressCountry: "BR",
           },
           sameAs: [STORE.social.instagram],

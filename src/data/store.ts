@@ -4,6 +4,11 @@ export const STORE = {
   tagline: "Moda masculina nacional e importada",
   description:
     "Loja de roupas masculinas com peças nacionais e importadas. Camisetas, camisas, calças, bermudas, jaquetas e acessórios com estilo urbano e premium.",
+  /**
+   * Valor inicial do endereço. A partir daqui quem manda é o painel
+   * (Configurações › Endereço da loja); isto só é usado enquanto a primeira
+   * resposta da API não chega.
+   */
   address: {
     street: "Rua Ouro Preto, 784",
     city: "Patos de Minas",
@@ -42,18 +47,35 @@ export function formatWhatsAppDisplay(phone: string) {
   return `(${match[1]}) ${match[2]}-${match[3]}`;
 }
 
+/**
+ * O endereço mora nas Configurações do painel (SiteSettings). Estas funções
+ * recebem as configurações inteiras para que nenhuma tela precise remontar o
+ * endereço por conta própria — e para que trocar a loja de lugar seja uma
+ * edição só, no painel.
+ */
+export interface AddressSource {
+  addressStreet: string;
+  addressCity: string;
+  addressState: string;
+  addressZip: string;
+}
+
 /** Endereço completo em uma linha, como se escreve num envelope. */
-export function formatStoreAddress() {
-  const { street, city, state, zip } = STORE.address;
-  return `${street}, ${city} - ${state}, ${zip}`;
+export function formatStoreAddress(a: AddressSource) {
+  return `${a.addressStreet}, ${a.addressCity} - ${a.addressState}, ${a.addressZip}`;
+}
+
+/** "Patos de Minas - MG" — o jeito curto, usado no rodapé e nos textos. */
+export function formatCityState(a: AddressSource) {
+  return `${a.addressCity} - ${a.addressState}`;
 }
 
 /**
  * Link universal do Google Maps. No celular o próprio sistema abre o
  * aplicativo do Maps; no computador abre o site com o endereço já buscado.
  */
-export function buildMapsLink(address = formatStoreAddress()) {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+export function buildMapsLink(a: AddressSource) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatStoreAddress(a))}`;
 }
 
 /** Abre o aplicativo de e-mail do aparelho já com destinatário e assunto. */

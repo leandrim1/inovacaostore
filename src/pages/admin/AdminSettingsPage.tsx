@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Crop, Upload, X } from "lucide-react";
 import {
   useAdminGalleryImages,
@@ -37,6 +38,10 @@ export default function AdminSettingsPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [whatsappMessage, setWhatsappMessage] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [addressZip, setAddressZip] = useState("");
   const [announcementItem1, setAnnouncementItem1] = useState("");
   const [announcementItem2, setAnnouncementItem2] = useState("");
   const [announcementItem3, setAnnouncementItem3] = useState("");
@@ -57,6 +62,10 @@ export default function AdminSettingsPage() {
     setWhatsappNumber(settings.whatsappNumber);
     setWhatsappMessage(settings.whatsappMessage);
     setContactEmail(settings.contactEmail);
+    setAddressStreet(settings.addressStreet);
+    setAddressCity(settings.addressCity);
+    setAddressState(settings.addressState);
+    setAddressZip(settings.addressZip);
     setAnnouncementItem1(settings.announcementItem1);
     setAnnouncementItem2(settings.announcementItem2);
     setAnnouncementItem3(settings.announcementItem3);
@@ -77,6 +86,10 @@ export default function AdminSettingsPage() {
       whatsappNumber: whatsappNumber.replace(/\D/g, ""),
       whatsappMessage,
       contactEmail,
+      addressStreet,
+      addressCity,
+      addressState,
+      addressZip,
       announcementItem1,
       announcementItem2,
       announcementItem3,
@@ -374,6 +387,70 @@ export default function AdminSettingsPage() {
                 />
               </label>
             </div>
+          </section>
+
+          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <h2 className="mb-1 font-display text-sm tracking-widest text-neutral-500">ENDEREÇO DA LOJA</h2>
+            <p className="mb-4 text-xs leading-relaxed text-neutral-500">
+              Aparece no rodapé, na página “Sobre a loja” e no texto de retirada. Ao clicar, o cliente
+              abre este endereço no Google Maps.
+            </p>
+            <div className="grid grid-cols-1 gap-3">
+              <label className="text-xs font-medium text-neutral-500">
+                Rua e número
+                <input
+                  required
+                  placeholder="Rua Ouro Preto, 784"
+                  value={addressStreet}
+                  onChange={(e) => setAddressStreet(e.target.value)}
+                  className="mt-1 w-full admin-input px-3 py-2"
+                />
+              </label>
+              <label className="text-xs font-medium text-neutral-500">
+                Cidade
+                <input
+                  required
+                  placeholder="Patos de Minas"
+                  value={addressCity}
+                  onChange={(e) => setAddressCity(e.target.value)}
+                  className="mt-1 w-full admin-input px-3 py-2"
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="text-xs font-medium text-neutral-500">
+                  Estado (sigla)
+                  <input
+                    required
+                    maxLength={2}
+                    placeholder="MG"
+                    value={addressState}
+                    onChange={(e) => setAddressState(e.target.value.toUpperCase())}
+                    className="mt-1 w-full admin-input px-3 py-2 uppercase"
+                  />
+                </label>
+                <label className="text-xs font-medium text-neutral-500">
+                  CEP
+                  <input
+                    required
+                    inputMode="numeric"
+                    maxLength={9}
+                    placeholder="38700-000"
+                    value={addressZip}
+                    onChange={(e) => setAddressZip(e.target.value)}
+                    className="mt-1 w-full admin-input px-3 py-2"
+                  />
+                </label>
+              </div>
+            </div>
+            <p className="mt-3 rounded-xl bg-brand-yellow/10 px-3 py-2.5 text-xs leading-relaxed text-neutral-600 ring-1 ring-brand-yellow/30">
+              Este endereço é o que o cliente vê. O ponto de partida do{" "}
+              <strong className="font-medium text-brand-ink">cálculo de frete</strong> é separado — se a
+              loja mudar de lugar, ajuste também em{" "}
+              <Link to="/admin/frete" className="font-medium text-brand-ink underline">
+                Frete
+              </Link>
+              .
+            </p>
           </section>
 
           <section className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">

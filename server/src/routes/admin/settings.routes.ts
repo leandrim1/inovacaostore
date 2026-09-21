@@ -17,6 +17,10 @@ const settingsSchema = z.object({
   whatsappNumber: z.string().regex(/^\d{10,15}$/, "Use apenas números, com DDI e DDD (ex: 5534999998888)."),
   whatsappMessage: z.string().min(1),
   contactEmail: z.string().email("E-mail inválido."),
+  addressStreet: z.string().min(1, "Informe a rua e o número.").max(120),
+  addressCity: z.string().min(1, "Informe a cidade.").max(80),
+  addressState: z.string().regex(/^\s*[A-Za-z]{2}\s*$/, "Use a sigla do estado com 2 letras (ex: MG)."),
+  addressZip: z.string().regex(/^\s*\d{5}-?\d{3}\s*$/, "CEP inválido. Use o formato 38700-000."),
   announcementItem1: z.string().min(1),
   announcementItem2: z.string().min(1),
   announcementItem3: z.string().min(1),
@@ -38,7 +42,14 @@ adminSettingsRouter.put("/", async (req, res) => {
     res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });
     return;
   }
-  const data = parsed.data;
+  const data = {
+    ...parsed.data,
+    addressStreet: parsed.data.addressStreet.trim(),
+    addressCity: parsed.data.addressCity.trim(),
+    addressState: parsed.data.addressState.trim().toUpperCase(),
+    // Guarda sempre no formato 00000-000, venha com hífen ou sem.
+    addressZip: parsed.data.addressZip.replace(/\D/g, "").replace(/^(\d{5})(\d{3})$/, "$1-$2"),
+  };
 
   const settings = await prisma.siteSettings.upsert({
     where: { id: "singleton" },
