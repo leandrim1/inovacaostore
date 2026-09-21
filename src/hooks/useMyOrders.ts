@@ -7,6 +7,8 @@ export interface MyOrderItem {
   color: string;
   size: string;
   price: number;
+  originalPrice?: number | null;
+  promotionTitle?: string | null;
   quantity: number;
 }
 
@@ -15,6 +17,7 @@ export interface MyOrder {
   orderNumber: string;
   items: MyOrderItem[];
   subtotal: number;
+  promotionDiscount?: number;
   discount: number;
   shippingPrice: number;
   total: number;

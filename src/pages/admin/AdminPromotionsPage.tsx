@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { formatBRL } from "../../lib/format";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { useAdminPromotions, useDeletePromotion, useUpdatePromotion } from "../../hooks/admin/useAdminPromotions";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -53,6 +54,7 @@ export default function AdminPromotionsPage() {
             <tr className="border-b border-black/5 text-xs uppercase text-neutral-400">
               <th className="py-3 pl-5 pr-4">Promoção</th>
               <th className="py-3 pr-4">Destaque</th>
+              <th className="py-3 pr-4">Desconto</th>
               <th className="py-3 pr-4">Termina em</th>
               <th className="py-3 pr-4">Status</th>
               <th className="py-3 pr-5 text-right">Ações</th>
@@ -61,13 +63,13 @@ export default function AdminPromotionsPage() {
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-neutral-400">
+                <td colSpan={6} className="py-8 text-center text-neutral-400">
                   Carregando…
                 </td>
               </tr>
             ) : promotions.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-8 text-center text-neutral-400">
+                <td colSpan={6} className="py-8 text-center text-neutral-400">
                   Nenhuma promoção cadastrada. Sem promoções ativas, essa seção some da home automaticamente.
                 </td>
               </tr>
@@ -81,6 +83,26 @@ export default function AdminPromotionsPage() {
                     <p className="font-medium text-brand-ink">{p.title}</p>
                   </td>
                   <td className="py-3 pr-4 text-neutral-600">{p.highlight}</td>
+                  <td className="py-3 pr-4">
+                    {p.discountValue > 0 ? (
+                      <span className="inline-flex flex-col">
+                        <span className="font-medium text-brand-ink">
+                          {p.discountType === "percent"
+                            ? `-${p.discountValue}%`
+                            : `-${formatBRL(p.discountValue)}`}
+                        </span>
+                        <span className="text-xs text-neutral-500">
+                          {p.discountScope === "all"
+                            ? "Toda a loja"
+                            : p.discountScope === "category"
+                              ? (p.category?.name ?? "Categoria")
+                              : `${p.productIds.length} produto(s)`}
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-neutral-400">Só banner</span>
+                    )}
+                  </td>
                   <td className="py-3 pr-4 text-neutral-500">
                     {p.endsAt ? new Date(p.endsAt).toLocaleString("pt-BR") : "Sem prazo"}
                   </td>

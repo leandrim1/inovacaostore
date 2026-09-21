@@ -46,7 +46,7 @@ function generateBoletoNumber() {
 }
 
 export default function CheckoutPage() {
-  const { items, subtotal, discount, coupon, clearCart } = useCart();
+  const { items, subtotal, grossSubtotal, promotionDiscount, discount, coupon, clearCart } = useCart();
   const { data: settings } = useSiteSettings();
   const { user } = useAuth();
 
@@ -367,11 +367,17 @@ export default function CheckoutPage() {
             <div className="flex flex-col gap-2 border-t border-black/10 pt-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-neutral-500">Subtotal</span>
-                <span>{formatBRL(subtotal)}</span>
+                <span>{formatBRL(grossSubtotal)}</span>
               </div>
+              {promotionDiscount > 0 && (
+                <div className="flex justify-between text-green-700">
+                  <span>Desconto (promoção)</span>
+                  <span>-{formatBRL(promotionDiscount)}</span>
+                </div>
+              )}
               {discount > 0 && (
                 <div className="flex justify-between text-green-700">
-                  <span>Desconto {coupon ? `(${coupon.code})` : ""}</span>
+                  <span>Cupom {coupon ? `(${coupon.code})` : ""}</span>
                   <span>-{formatBRL(discount)}</span>
                 </div>
               )}

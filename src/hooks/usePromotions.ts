@@ -12,9 +12,16 @@ export interface Promotion {
   imageUrl: string | null;
   desktopSettings: ImageSettings | null;
   mobileSettings: ImageSettings | null;
+  startsAt: string | null;
   endsAt: string | null;
   active: boolean;
   order: number;
+  discountType: "percent" | "fixed";
+  discountValue: number;
+  discountScope: "all" | "category" | "products";
+  category: { slug: string; name: string } | null;
+  /** true quando a promoção está de fato mexendo em preço (não só banner). */
+  discounting: boolean;
 }
 
 export function usePromotions() {

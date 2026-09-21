@@ -160,8 +160,22 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
 }
 
 export function PromotionsBanner() {
-  const { data: promotions = [] } = usePromotions();
+  const { data: todas = [] } = usePromotions();
   const [index, setIndex] = useState(0);
+  // A API já filtra pela janela, mas a resposta fica em cache. Um relógio de
+  // um segundo garante que, quando a contagem regressiva chega a zero, o
+  // banner sai da tela no mesmo instante em que o desconto deixa de valer.
+  const [agora, setAgora] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const promotions = todas.filter((p) => {
+    if (p.startsAt && new Date(p.startsAt).getTime() > agora) return false;
+    if (p.endsAt && new Date(p.endsAt).getTime() <= agora) return false;
+    return true;
+  });
 
   const count = promotions.length;
   const safeIndex = index < count ? index : 0;

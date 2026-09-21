@@ -133,7 +133,19 @@ export default function AdminProductsPage() {
                     </div>
                   </td>
                   <td className="py-3 pr-4 text-neutral-600">{p.category.name}</td>
-                  <td className="py-3 pr-4">{formatBRL(p.price)}</td>
+                  <td className="py-3 pr-4">
+                    {p.promotion && p.promotionalPrice != null ? (
+                      <span className="flex flex-col">
+                        <span className="text-xs text-neutral-400 line-through">{formatBRL(p.price)}</span>
+                        <span className="font-medium text-brand-ink">{formatBRL(p.promotionalPrice)}</span>
+                        <span className="text-[11px] text-green-700">
+                          {p.promotion.title} · -{p.promotion.percentOff}%
+                        </span>
+                      </span>
+                    ) : (
+                      formatBRL(p.price)
+                    )}
+                  </td>
                   <td className="py-3 pr-4">{p.stock}</td>
                   <td className="py-3 pr-4">
                     <span
@@ -230,7 +242,19 @@ export default function AdminProductsPage() {
               </div>
               <div className="flex items-center justify-between text-sm text-neutral-600">
                 <span>{p.category.name}</span>
-                <span>{formatBRL(p.price)}</span>
+                <span className="text-right">
+                  {p.promotion && p.promotionalPrice != null ? (
+                    <>
+                      <span className="mr-1.5 text-xs text-neutral-400 line-through">{formatBRL(p.price)}</span>
+                      <span className="font-medium">{formatBRL(p.promotionalPrice)}</span>
+                      <span className="block text-[11px] text-green-700">
+                        {p.promotion.title} · -{p.promotion.percentOff}%
+                      </span>
+                    </>
+                  ) : (
+                    formatBRL(p.price)
+                  )}
+                </span>
                 <span>{p.stock} un.</span>
               </div>
               <div className="flex items-center justify-end gap-1.5 border-t border-black/5 pt-2">

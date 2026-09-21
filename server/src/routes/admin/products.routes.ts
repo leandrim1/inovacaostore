@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { prisma } from "../../db.js";
 import { serializeAdminProduct } from "../../utils/serialize.js";
+import { loadActivePromotions } from "../../promotions.js";
 import { uniqueSlug } from "../../utils/slug.js";
 import { upload, saveValidatedImage } from "../../upload.js";
 import { deleteUpload } from "../../storage.js";
@@ -58,7 +59,8 @@ adminProductsRouter.get("/", async (req, res) => {
     include,
     orderBy: { createdAt: "desc" },
   });
-  res.json({ items: products.map(serializeAdminProduct) });
+  const promotions = await loadActivePromotions();
+  res.json({ items: products.map((p) => serializeAdminProduct(p, promotions)) });
 });
 
 adminProductsRouter.get("/:id", async (req, res) => {
@@ -67,7 +69,7 @@ adminProductsRouter.get("/:id", async (req, res) => {
     res.status(404).json({ error: "Produto não encontrado." });
     return;
   }
-  res.json(serializeAdminProduct(product));
+  res.json(serializeAdminProduct(product, await loadActivePromotions()));
 });
 
 adminProductsRouter.post("/", async (req, res) => {
@@ -112,7 +114,7 @@ adminProductsRouter.post("/", async (req, res) => {
       include,
     });
 
-    res.status(201).json(serializeAdminProduct(product));
+    res.status(201).json(serializeAdminProduct(product, await loadActivePromotions()));
   } catch (err) {
     handlePrismaError(err, res, "produto");
   }
@@ -203,7 +205,7 @@ adminProductsRouter.patch("/:id", async (req, res) => {
     });
 
     const product = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-    res.json(serializeAdminProduct(product));
+    res.json(serializeAdminProduct(product, await loadActivePromotions()));
   } catch (err) {
     handlePrismaError(err, res, "produto");
   }
@@ -260,7 +262,7 @@ adminProductsRouter.post("/:id/images", upload.array("images", 8), async (req, r
   });
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-  res.status(201).json(serializeAdminProduct(updated));
+  res.status(201).json(serializeAdminProduct(updated, await loadActivePromotions()));
 });
 
 adminProductsRouter.delete("/:id/images/:imageId", async (req, res) => {
@@ -275,7 +277,7 @@ adminProductsRouter.delete("/:id/images/:imageId", async (req, res) => {
   await deleteUpload(image.url);
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-  res.json(serializeAdminProduct(updated));
+  res.json(serializeAdminProduct(updated, await loadActivePromotions()));
 });
 
 adminProductsRouter.patch("/:id/images/:imageId", async (req, res) => {
@@ -306,7 +308,7 @@ adminProductsRouter.patch("/:id/images/:imageId", async (req, res) => {
   });
 
   const updated = await prisma.product.findUniqueOrThrow({ where: { id: productId }, include });
-  res.json(serializeAdminProduct(updated));
+  res.json(serializeAdminProduct(updated, await loadActivePromotions()));
 });
 
 function handlePrismaError(err: unknown, res: import("express").Response, label: string) {

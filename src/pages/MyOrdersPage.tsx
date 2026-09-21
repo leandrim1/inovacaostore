@@ -70,8 +70,18 @@ export default function MyOrdersPage() {
                         <p className="text-xs text-neutral-500">
                           {item.color} · {item.size} · {item.quantity}x
                         </p>
+                        {item.promotionTitle && (
+                          <p className="mt-0.5 text-xs font-medium text-green-700">{item.promotionTitle}</p>
+                        )}
                       </div>
-                      <span className="font-medium">{formatBRL(item.price * item.quantity)}</span>
+                      <span className="text-right">
+                        {item.originalPrice != null && item.originalPrice > item.price && (
+                          <span className="block text-xs text-neutral-400 line-through">
+                            {formatBRL(item.originalPrice * item.quantity)}
+                          </span>
+                        )}
+                        <span className="font-medium">{formatBRL(item.price * item.quantity)}</span>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -79,6 +89,11 @@ export default function MyOrdersPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 pt-3 text-sm">
                   <span className="text-xs uppercase tracking-wide text-neutral-400">
                     {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
+                    {(order.promotionDiscount ?? 0) > 0 && (
+                      <span className="ml-2 normal-case tracking-normal text-green-700">
+                        Você economizou {formatBRL(order.promotionDiscount ?? 0)}
+                      </span>
+                    )}
                   </span>
                   <span className="font-display text-lg">{formatBRL(order.total)}</span>
                 </div>

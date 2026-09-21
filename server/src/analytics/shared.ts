@@ -7,6 +7,7 @@ export interface OrderFinancialRow {
   id: string;
   createdAt: Date;
   total: number;
+  /** Cupom + promoções: tudo que a loja abriu mão no pedido. */
   discount: number;
   shippingPrice: number;
   paymentMethod: string;
@@ -45,6 +46,7 @@ export async function loadOrderFinancialRows(range: PeriodRange, rules: SalesRul
         createdAt: true,
         total: true,
         discount: true,
+        promotionDiscount: true,
         shippingPrice: true,
         shippingDistanceKm: true,
         paymentMethod: true,
@@ -87,7 +89,7 @@ export async function loadOrderFinancialRows(range: PeriodRange, rules: SalesRul
       id: order.id,
       createdAt: order.createdAt,
       total: order.total,
-      discount: order.discount,
+      discount: order.discount + order.promotionDiscount,
       shippingPrice: order.shippingPrice,
       paymentMethod: order.paymentMethod,
       state: order.state,

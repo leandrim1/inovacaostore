@@ -45,6 +45,7 @@ model Category {
   description String    @default("")
   order       Int       @default(0)
   products    Product[]
+  promotions  Promotion[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -70,6 +71,7 @@ model Product {
   category       Category         @relation(fields: [categoryId], references: [id])
   images         ProductImage[]
   variants       ProductVariant[]
+  promotions     PromotionProduct[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -173,6 +175,10 @@ model Order {
   customer      Customer    @relation(fields: [customerId], references: [id])
   items         OrderItem[]
   subtotal      Float
+  /// Soma de (preço de tabela - preço promocional) x quantidade. É apenas
+  /// informativo: `subtotal` já é a soma dos itens COM a promoção aplicada,
+  /// então `total` continua sendo max(0, subtotal - discount) + frete.
+  promotionDiscount Float   @default(0)
   discount      Float       @default(0)
   couponCode    String?
   shippingPrice      Float       @default(0)
@@ -205,7 +211,13 @@ model OrderItem {
   productName String
   color       String
   size        String
+  /// Preço realmente cobrado por unidade (já com a promoção aplicada).
   price       Float
+  /// Preço de tabela no momento do pedido. Só é preenchido quando havia
+  /// promoção — null significa "não estava em promoção".
+  originalPrice  Float?
+  promotionId    String?
+  promotionTitle String?
   unitCost    Float          @default(0) // snapshot de Product.costPrice no momento do pedido
   quantity    Int
 }
@@ -260,11 +272,38 @@ model Promotion {
   imageUrl    String?
   desktopSettings Json?
   mobileSettings  Json?
+  startsAt    DateTime?
   endsAt      DateTime?
   active      Boolean   @default(true)
   order       Int       @default(0)
+
+  // --- Desconto de verdade sobre os produtos ---
+  // discountValue = 0 significa "promoção só de banner": era assim que todas
+  // as promoções funcionavam antes, então o default mantém o comportamento.
+  discountType  String  @default("percent") // "percent" | "fixed"
+  discountValue Float   @default(0)
+  discountScope String  @default("all") // "all" | "category" | "products"
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  products      PromotionProduct[]
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([active, startsAt, endsAt])
+}
+
+/// Produtos escolhidos a dedo por uma promoção (discountScope = "products").
+/// Tabela de ligação explícita em vez da relação implícita do Prisma: o
+/// nome e as chaves ficam previsíveis na migration escrita à mão.
+model PromotionProduct {
+  promotionId String
+  productId   String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, productId])
+  @@index([productId])
 }
 
 model Coupon {

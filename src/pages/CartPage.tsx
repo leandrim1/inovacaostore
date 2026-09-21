@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, ShoppingBag, Ticket, Truck } from "lucide-react";
+import { Trash2, ShoppingBag, Tag, Ticket, Truck } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
@@ -8,7 +8,7 @@ import { formatBRL } from "../lib/format";
 import { formatCep, isValidCep, quoteShipping, type ShippingQuote } from "../lib/shipping";
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, subtotal, discount, coupon, applyCoupon, removeCoupon } =
+  const { items, removeItem, updateQuantity, subtotal, grossSubtotal, promotionDiscount, discount, coupon, applyCoupon, removeCoupon } =
     useCart();
   const navigate = useNavigate();
 
@@ -95,6 +95,12 @@ export default function CartPage() {
                           <p className="mt-0.5 text-sm text-neutral-500">
                             {item.color} · {item.size}
                           </p>
+                          {item.promotion && (
+                            <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-2 py-0.5 text-[11px] font-medium text-brand-ink">
+                              <Tag size={11} /> {item.promotion.title}
+                              {item.promotion.percentOff > 0 && ` · -${item.promotion.percentOff}%`}
+                            </p>
+                          )}
                           {item.stock <= 0 ? (
                             <p className="mt-0.5 text-xs font-medium text-red-600">Sem estoque disponível</p>
                           ) : item.quantity >= item.stock ? (
@@ -118,9 +124,16 @@ export default function CartPage() {
                           onChange={(q) => updateQuantity(item.key, q)}
                           max={Math.max(1, item.stock)}
                         />
-                        <span className="font-display text-base">
-                          {formatBRL(item.price * item.quantity)}
-                        </span>
+                        <div className="text-right">
+                          {item.originalPrice && item.originalPrice > item.price && (
+                            <span className="block text-xs text-neutral-400 line-through">
+                              {formatBRL(item.originalPrice * item.quantity)}
+                            </span>
+                          )}
+                          <span className="font-display text-base">
+                            {formatBRL(item.price * item.quantity)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -194,11 +207,17 @@ export default function CartPage() {
               <div className="flex flex-col gap-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-neutral-500">Subtotal</span>
-                  <span>{formatBRL(subtotal)}</span>
+                  <span>{formatBRL(grossSubtotal)}</span>
                 </div>
+                {promotionDiscount > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Desconto (promoção)</span>
+                    <span>-{formatBRL(promotionDiscount)}</span>
+                  </div>
+                )}
                 {discount > 0 && (
                   <div className="flex justify-between text-green-700">
-                    <span>Desconto</span>
+                    <span>Cupom {coupon ? `(${coupon.code})` : ""}</span>
                     <span>-{formatBRL(discount)}</span>
                   </div>
                 )}

@@ -30,13 +30,26 @@ export interface ProductImageDetail {
   mobileSettings: ImageSettings | null;
 }
 
+/** Promoção que está valendo para um produto agora (null = preço normal). */
+export interface ProductPromotion {
+  id: string;
+  title: string;
+  discountType: "percent" | "fixed";
+  discountValue: number;
+  percentOff: number;
+  endsAt: string | null;
+}
+
 export interface Product {
   id: string;
   slug: string;
   name: string;
   category: string;
+  /** Preço que o cliente paga hoje — já com a promoção aplicada. */
   price: number;
+  /** Preço de tabela, para o riscado. */
   compareAtPrice?: number;
+  promotion: ProductPromotion | null;
   images: string[];
   imageDetails: ProductImageDetail[];
   colors: ColorOption[];

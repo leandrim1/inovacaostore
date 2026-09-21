@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { priceProduct, serializePromotionRef, type ActivePromotion } from "../promotions.js";
 
 const productWithRelations = Prisma.validator<Prisma.ProductDefaultArgs>()({
   include: { images: { orderBy: { order: "asc" } }, variants: true, category: true },
@@ -15,8 +16,20 @@ function safeParseArray(value: string): string[] {
   }
 }
 
-export function serializeProduct(product: ProductWithRelations) {
+/**
+ * Produto para a vitrine. `price` já é o preço COM promoção e
+ * `compareAtPrice` vira o preço de tabela — é assim que os cards e a página
+ * de produto, que já liam esses dois campos, passam a mostrar o riscado e o
+ * selo "-20%" sem nenhuma mudança neles.
+ *
+ * Quando a promoção manda no preço, ela substitui o "de/por" manual do
+ * produto: o selo precisa refletir o desconto que está realmente valendo, e
+ * não a soma de dois descontos diferentes.
+ */
+export function serializeProduct(product: ProductWithRelations, promotions: ActivePromotion[] = []) {
   const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+  const pricing = priceProduct(product, promotions);
+  const emPromocao = pricing.promotion !== null;
 
   return {
     id: product.id,
@@ -25,8 +38,11 @@ export function serializeProduct(product: ProductWithRelations) {
     description: product.description,
     features: safeParseArray(product.features),
     tags: safeParseArray(product.tags),
-    price: product.price,
-    compareAtPrice: product.compareAtPrice ?? undefined,
+    price: pricing.price,
+    compareAtPrice: emPromocao ? pricing.originalPrice : (product.compareAtPrice ?? undefined),
+    promotion: pricing.promotion
+      ? { ...serializePromotionRef(pricing.promotion), percentOff: pricing.percentOff }
+      : null,
     weightKg: product.weightKg,
     volumeM3: product.volumeM3,
     sku: product.sku,
@@ -63,9 +79,25 @@ export function serializeProduct(product: ProductWithRelations) {
   };
 }
 
-/** Inclui o custo de aquisição — nunca exposto na API pública, só no admin. */
-export function serializeAdminProduct(product: ProductWithRelations) {
-  return { ...serializeProduct(product), costPrice: product.costPrice };
+/**
+ * Produto para o painel. Diferença crucial para a vitrine: `price` continua
+ * sendo o PREÇO DE TABELA. O formulário de produto lê esse campo, e devolver
+ * o preço promocional aqui faria o admin salvar o desconto como se fosse o
+ * novo preço do produto — exatamente o que o pedido proíbe. O valor com
+ * desconto vem à parte, só para exibição.
+ */
+export function serializeAdminProduct(product: ProductWithRelations, promotions: ActivePromotion[] = []) {
+  const pricing = priceProduct(product, promotions);
+  return {
+    ...serializeProduct(product),
+    price: product.price,
+    compareAtPrice: product.compareAtPrice ?? undefined,
+    costPrice: product.costPrice,
+    promotion: pricing.promotion
+      ? { ...serializePromotionRef(pricing.promotion), percentOff: pricing.percentOff }
+      : null,
+    promotionalPrice: pricing.promotion ? pricing.price : null,
+  };
 }
 
 function dedupeColors(variants: ProductWithRelations["variants"]) {

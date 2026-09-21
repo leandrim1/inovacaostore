@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ChevronRight, MessageCircle, ShieldCheck, Truck, RefreshCw } from "lucide-react";
+import { ChevronRight, MessageCircle, RefreshCw, ShieldCheck, Tag, Truck } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { useProduct } from "../hooks/useProduct";
 import { useProducts } from "../hooks/useProducts";
@@ -160,6 +160,24 @@ export default function ProductPage() {
               <p className="mt-1.5 text-sm text-neutral-500">
                 ou {formatInstallments(product.price, product.installmentsMax)}
               </p>
+              {/* O PriceTag já mostra o riscado e o selo. Aqui dizemos QUAL
+                  promoção está valendo e até quando — a informação que decide
+                  a compra por impulso. */}
+              {product.promotion && (
+                <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl bg-brand-yellow/15 px-3 py-2 text-sm text-brand-ink ring-1 ring-brand-yellow/40">
+                  <Tag size={14} className="text-brand-yellow-dark" aria-hidden />
+                  <span className="font-medium">{product.promotion.title}</span>
+                  {product.promotion.endsAt && (
+                    <span className="text-xs text-neutral-600">
+                      até {new Date(product.promotion.endsAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
 
             {product.comingSoon ? (

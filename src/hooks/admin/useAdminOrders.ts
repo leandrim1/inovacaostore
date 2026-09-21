@@ -7,6 +7,9 @@ export interface AdminOrderItem {
   color: string;
   size: string;
   price: number;
+  /** Preço de tabela; só vem quando o item foi vendido em promoção. */
+  originalPrice?: number | null;
+  promotionTitle?: string | null;
   quantity: number;
 }
 
@@ -14,6 +17,7 @@ export interface AdminOrder {
   id: string;
   orderNumber: string;
   subtotal: number;
+  promotionDiscount: number;
   discount: number;
   couponCode?: string | null;
   shippingPrice: number;

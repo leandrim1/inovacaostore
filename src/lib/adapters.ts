@@ -1,4 +1,4 @@
-import type { Product, ProductImageDetail, ProductVariant } from "../data/types";
+import type { Product, ProductImageDetail, ProductPromotion, ProductVariant } from "../data/types";
 
 export interface ProductDTO {
   id: string;
@@ -9,6 +9,10 @@ export interface ProductDTO {
   tags: string[];
   price: number;
   compareAtPrice?: number;
+  promotion?: ProductPromotion | null;
+  /** Só vem na API do painel: o preço já com a promoção. Na resposta pública
+   *  esse valor já está em `price`, então lá o campo não existe. */
+  promotionalPrice?: number | null;
   costPrice: number;
   weightKg: number;
   volumeM3: number;
@@ -41,6 +45,7 @@ export function adaptProduct(dto: ProductDTO): Product {
     category: dto.category.slug,
     price: dto.price,
     compareAtPrice: dto.compareAtPrice,
+    promotion: dto.promotion ?? null,
     images: dto.images,
     imageDetails: dto.imageDetails,
     colors: dto.colors,

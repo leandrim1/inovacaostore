@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { calculateShipping } from "../shipping.js";
 import { validateCoupon } from "../coupons.js";
+import { loadActivePromotions, priceProduct } from "../promotions.js";
 import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
 import { publicWriteLimiter } from "../security.js";
 
@@ -77,15 +78,25 @@ ordersRouter.post("/", publicWriteLimiter, requireVerifiedCustomer, async (req, 
     };
   }
 
+  // As promoções são lidas do banco, JAMAIS do corpo da requisição: o preço
+  // final é sempre recalculado aqui, então mexer no preço pelo DevTools ou
+  // por um POST forjado não muda nada — o cliente só escolhe variação e
+  // quantidade.
+  const promotions = await loadActivePromotions();
+
   try {
     const order = await prisma.$transaction(async (tx) => {
       let subtotal = 0;
+      let promotionDiscount = 0;
       const itemsData: {
         variantId: string;
         productName: string;
         color: string;
         size: string;
         price: number;
+        originalPrice: number | null;
+        promotionId: string | null;
+        promotionTitle: string | null;
         unitCost: number;
         quantity: number;
       }[] = [];
@@ -112,18 +123,25 @@ ordersRouter.post("/", publicWriteLimiter, requireVerifiedCustomer, async (req, 
           );
         }
 
-        const price = variant.product.price;
-        subtotal += price * item.quantity;
+        const pricing = priceProduct(variant.product, promotions);
+        subtotal += pricing.price * item.quantity;
+        promotionDiscount += pricing.discountAmount * item.quantity;
         itemsData.push({
           variantId: variant.id,
           productName: variant.product.name,
           color: variant.color,
           size: variant.size,
-          price,
+          price: pricing.price,
+          originalPrice: pricing.promotion ? pricing.originalPrice : null,
+          promotionId: pricing.promotion?.id ?? null,
+          promotionTitle: pricing.promotion?.title ?? null,
           unitCost: variant.product.costPrice,
           quantity: item.quantity,
         });
       }
+
+      subtotal = Math.round(subtotal * 100) / 100;
+      promotionDiscount = Math.round(promotionDiscount * 100) / 100;
 
       if (coupon) {
         // Reserva o uso do cupom de forma atômica dentro da transação —
@@ -159,6 +177,7 @@ ordersRouter.post("/", publicWriteLimiter, requireVerifiedCustomer, async (req, 
           orderNumber: generateOrderNumber(),
           customerId: customer.id,
           subtotal,
+          promotionDiscount,
           discount,
           couponCode: coupon?.code,
           shippingPrice: shippingQuote.price,

@@ -111,11 +111,19 @@ export default function AdminOrderDetailPage() {
             <div className="flex flex-col gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-neutral-500">Subtotal</span>
-                <span>{formatBRL(order.subtotal)}</span>
+                {/* O `subtotal` gravado já é líquido das promoções; somamos de
+                    volta para mostrar de quanto o pedido partiu. */}
+                <span>{formatBRL(order.subtotal + (order.promotionDiscount ?? 0))}</span>
               </div>
+              {(order.promotionDiscount ?? 0) > 0 && (
+                <div className="flex justify-between text-green-700">
+                  <span>Desconto (promoção)</span>
+                  <span>-{formatBRL(order.promotionDiscount)}</span>
+                </div>
+              )}
               {order.discount > 0 && (
                 <div className="flex justify-between text-green-700">
-                  <span>Desconto {order.couponCode ? `(${order.couponCode})` : ""}</span>
+                  <span>Cupom {order.couponCode ? `(${order.couponCode})` : ""}</span>
                   <span>-{formatBRL(order.discount)}</span>
                 </div>
               )}

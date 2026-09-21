@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { serializeProduct } from "../utils/serialize.js";
+import { loadActivePromotions } from "../promotions.js";
 
 export const productsRouter = Router();
 
@@ -83,7 +84,9 @@ productsRouter.get("/", async (req, res) => {
     include: { images: { orderBy: { order: "asc" } }, variants: true, category: true },
   });
 
-  res.json({ items: products.map(serializeProduct) });
+  // Uma consulta só de promoções para a listagem inteira.
+  const promotions = await loadActivePromotions();
+  res.json({ items: products.map((p) => serializeProduct(p, promotions)) });
 });
 
 productsRouter.get("/:slug", async (req, res) => {
@@ -97,5 +100,6 @@ productsRouter.get("/:slug", async (req, res) => {
     return;
   }
 
-  res.json(serializeProduct(product));
+  const promotions = await loadActivePromotions();
+  res.json(serializeProduct(product, promotions));
 });

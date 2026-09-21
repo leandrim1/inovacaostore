@@ -7,7 +7,7 @@ import { QuantityStepper } from "../ui/QuantityStepper";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 
 export function CartDrawer() {
-  const { isOpen, closeCart, items, removeItem, updateQuantity, subtotal, itemCount } =
+  const { isOpen, closeCart, items, removeItem, updateQuantity, subtotal, promotionDiscount, itemCount } =
     useCart();
   useBodyScrollLock(isOpen);
 
@@ -99,6 +99,11 @@ export function CartDrawer() {
                             onChange={(q) => updateQuantity(item.key, q)}
                           />
                           <span className="font-display text-sm">
+                            {item.originalPrice && item.originalPrice > item.price && (
+                              <span className="mr-1.5 text-xs text-neutral-400 line-through">
+                                {formatBRL(item.originalPrice * item.quantity)}
+                              </span>
+                            )}
                             {formatBRL(item.price * item.quantity)}
                           </span>
                         </div>
@@ -112,7 +117,14 @@ export function CartDrawer() {
             {items.length > 0 && (
               <footer className="border-t border-brand-ink/10 px-5 py-5">
                 <div className="mb-4 flex items-center justify-between text-sm">
-                  <span className="text-neutral-500">Subtotal</span>
+                  <span className="text-neutral-500">
+                    Subtotal
+                    {promotionDiscount > 0 && (
+                      <span className="ml-1.5 text-xs font-medium text-green-700">
+                        (-{formatBRL(promotionDiscount)} em promoções)
+                      </span>
+                    )}
+                  </span>
                   <span className="font-display text-lg">{formatBRL(subtotal)}</span>
                 </div>
                 <Link
