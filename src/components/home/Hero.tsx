@@ -38,6 +38,11 @@ export function Hero() {
   const customSettings = isMobile ? currentSlide.mobileSettings : currentSlide.desktopSettings;
   const effectiveSettings = customSettings ?? DEFAULT_IMAGE_SETTINGS;
   const zoomFactor = totalScale(effectiveSettings, aspect);
+  const imgClassName = customSettings
+    ? "absolute inset-0 h-full w-full object-cover"
+    : isMobile
+      ? "absolute inset-0 h-full w-full object-contain object-top"
+      : "absolute inset-0 h-[120%] w-full object-cover object-[center_82%]";
 
   useEffect(() => {
     if (count < 2) return;
@@ -49,63 +54,30 @@ export function Hero() {
     <section className="relative flex min-h-[92svh] items-end overflow-hidden bg-brand-ink sm:min-h-[95svh] lg:min-h-[90vh]">
       <div ref={ref} className="absolute inset-0" aria-hidden>
         <AnimatePresence>
-          {customSettings ? (
-            // Enquadramento escolhido no painel: preenche o palco com o recorte
-            // que o lojista definiu, com o zoom lento de sempre.
-            <motion.img
-              key={currentSlide.id}
-              src={currentSlide.url}
-              alt="Amigos vestindo peças da Inovação Store"
-              initial={{ opacity: 0, scale: (isMobile ? 1 : 1.02) * zoomFactor, rotate: effectiveSettings.rotation }}
-              animate={{
-                opacity: 0.95,
-                scale: (prefersReducedMotion || isMobile ? 1 : 1.18) * zoomFactor,
-                rotate: effectiveSettings.rotation,
-              }}
-              exit={{ opacity: 0 }}
-              transition={{
-                opacity: { duration: 0.9, ease: "easeInOut" },
-                scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
-              }}
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{
-                y: offset,
-                objectPosition: `${customSettings.positionX}% ${customSettings.positionY}%`,
-              }}
-              fetchPriority={safeIndex === 0 ? "high" : undefined}
-            />
-          ) : (
-            // Sem enquadramento salvo, a arte aparece INTEIRA e igual nas duas
-            // telas. O zoom lento e o parallax passam para o fundo desfocado:
-            // são eles que empurram a imagem para fora da moldura, que é
-            // exatamente o que cortaria a peça.
-            <motion.div
-              key={currentSlide.id}
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.9, ease: "easeInOut" }}
-            >
-              {/* Opacidade mais alta que a do PositionedImage: aqui a sobra é
-                  grande (o palco é quase uma tela inteira) e sobre o preto do
-                  `bg-brand-ink` um fundo fraco deixaria uma emenda dura na
-                  borda da foto. */}
-              <motion.div
-                className="absolute inset-0 bg-cover bg-center opacity-70 blur-3xl"
-                style={{ backgroundImage: `url(${currentSlide.url})`, y: offset }}
-                initial={{ scale: 1.08 }}
-                animate={{ scale: prefersReducedMotion || isMobile ? 1.08 : 1.25 }}
-                transition={{ duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" }}
-              />
-              <img
-                src={currentSlide.url}
-                alt="Amigos vestindo peças da Inovação Store"
-                className="absolute inset-0 h-full w-full object-contain object-top opacity-95"
-                fetchPriority={safeIndex === 0 ? "high" : undefined}
-              />
-            </motion.div>
-          )}
+          <motion.img
+            key={currentSlide.id}
+            src={currentSlide.url}
+            alt="Amigos vestindo peças da Inovação Store"
+            initial={{ opacity: 0, scale: (isMobile ? 1 : 1.02) * zoomFactor, rotate: effectiveSettings.rotation }}
+            animate={{
+              opacity: 0.95,
+              scale: (prefersReducedMotion || isMobile ? 1 : 1.18) * zoomFactor,
+              rotate: effectiveSettings.rotation,
+            }}
+            exit={{ opacity: 0 }}
+            transition={{
+              opacity: { duration: 0.9, ease: "easeInOut" },
+              scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
+            }}
+            className={imgClassName}
+            style={{
+              y: offset,
+              ...(customSettings
+                ? { objectPosition: `${customSettings.positionX}% ${customSettings.positionY}%` }
+                : {}),
+            }}
+            fetchPriority={safeIndex === 0 ? "high" : undefined}
+          />
         </AnimatePresence>
         {/* Duotone + vinheta no lugar do degradê plano — dá profundidade e mantém o texto legível */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15" />

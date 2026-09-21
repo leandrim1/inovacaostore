@@ -115,8 +115,6 @@ export default function ProductPage() {
                   alt={product.name}
                   desktopSettings={product.imageDetails[activeImage].desktopSettings}
                   mobileSettings={product.imageDetails[activeImage].mobileSettings}
-                  uncropped
-                  fallbackClassName="h-full w-full object-contain"
                 />
               ) : (
                 <PlaceholderImage label="Em breve" />
@@ -138,8 +136,6 @@ export default function ProductPage() {
                       alt=""
                       desktopSettings={img.desktopSettings}
                       mobileSettings={img.mobileSettings}
-                      uncropped
-                      fallbackClassName="h-full w-full object-contain"
                     />
                   </button>
                 ))}

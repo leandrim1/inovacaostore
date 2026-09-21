@@ -56,10 +56,6 @@ export function ProductCard({ product }: { product: Product }) {
             loading="lazy"
             desktopSettings={image.desktopSettings}
             mobileSettings={image.mobileSettings}
-            // A foto do produto aparece inteira: cortar para caber no card
-            // esconde justamente a peça que o cliente quer ver.
-            uncropped
-            fallbackClassName="h-full w-full object-contain"
             className="transition-transform duration-500 ease-out group-hover:scale-105"
           />
         ) : (

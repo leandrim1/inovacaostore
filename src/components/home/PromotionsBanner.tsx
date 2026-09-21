@@ -93,17 +93,31 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
       }`}
     >
       {promotion.imageUrl ? (
-        <PositionedImage
-          src={promotion.imageUrl}
-          alt=""
-          desktopSettings={promotion.desktopSettings}
-          mobileSettings={promotion.mobileSettings}
-          uncropped={arteMandaNaAltura}
-          wrapperClassName={arteMandaNaAltura ? "block w-full" : "absolute inset-0 h-full w-full"}
-          fallbackClassName={
-            arteMandaNaAltura ? "h-auto max-h-[70vh] w-full object-contain" : "object-cover"
-          }
-        />
+        <>
+          {/* Sobras preenchidas com a própria arte desfocada, para a peça
+              aparecer inteira sem tarjas pretas quando a proporção dela não
+              bate com a da tela. */}
+          {arteMandaNaAltura && (
+            <img
+              src={promotion.imageUrl}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+            />
+          )}
+          <PositionedImage
+            src={promotion.imageUrl}
+            alt=""
+            desktopSettings={promotion.desktopSettings}
+            mobileSettings={promotion.mobileSettings}
+            wrapperClassName={
+              arteMandaNaAltura ? "relative block w-full" : "absolute inset-0 h-full w-full"
+            }
+            fallbackClassName={
+              arteMandaNaAltura ? "h-auto max-h-[70vh] object-contain" : "object-cover"
+            }
+          />
+        </>
       ) : (
         <div className="absolute inset-0 bg-brand-ink">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_0%,rgba(245,196,0,0.35),transparent_65%)]" />
