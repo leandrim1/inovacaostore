@@ -5,12 +5,26 @@ import { MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { InstagramIcon } from "../ui/InstagramIcon";
 import logoImage from "../../assets/images/logo.jpg";
-import { STORE, buildWhatsAppLink, formatWhatsAppDisplay } from "../../data/store";
+import {
+  STORE,
+  buildMailtoLink,
+  buildMapsLink,
+  buildWhatsAppLink,
+  formatStoreAddress,
+  formatWhatsAppDisplay,
+} from "../../data/store";
 import { useCategories } from "../../hooks/useCategories";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
 
 const SOCIAL_BUTTON_CLASS =
   "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-ink/10 bg-white text-brand-ink shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all hover:bg-neutral-50 active:scale-95";
+
+// Mesma aparência de antes; o hover amarelo é o que avisa que a linha
+// inteira (ícone + texto) agora é clicável. O "py-1 -my-1" aumenta a área
+// de toque no celular sem afastar as linhas: a margem negativa devolve ao
+// layout exatamente o que o padding tomou.
+const CONTACT_LINK_CLASS =
+  "-my-1 flex gap-2.5 py-1 transition-colors hover:text-brand-yellow-dark";
 
 function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -85,21 +99,46 @@ function FooterCard() {
             <div className="flex flex-col gap-5">
               <h3 className="font-display text-xs tracking-[0.3em] text-neutral-400">Contato</h3>
               <ul className="flex flex-col gap-3.5 text-[15px] font-medium text-brand-ink/75">
-                <li className="flex items-start gap-2.5">
-                  <MapPin size={16} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
-                  <span>
-                    {STORE.address.street}
-                    <br />
-                    {STORE.address.city} - {STORE.address.state}
-                  </span>
+                <li>
+                  <a
+                    href={buildMapsLink()}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Ver no Google Maps: ${formatStoreAddress()}`}
+                    className={`${CONTACT_LINK_CLASS} items-start`}
+                  >
+                    <MapPin size={16} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
+                    <span>
+                      {STORE.address.street}
+                      <br />
+                      {STORE.address.city} - {STORE.address.state}
+                    </span>
+                  </a>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <MessageCircle size={16} className="shrink-0 text-brand-yellow-dark" />
-                  <span>{formatWhatsAppDisplay(settings.whatsappNumber)}</span>
+                <li>
+                  <a
+                    href={buildWhatsAppLink(
+                      settings.whatsappNumber,
+                      "Olá! Vim pelo site e quero falar com a loja.",
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Falar no WhatsApp: ${formatWhatsAppDisplay(settings.whatsappNumber)}`}
+                    className={`${CONTACT_LINK_CLASS} items-center`}
+                  >
+                    <MessageCircle size={16} className="shrink-0 text-brand-yellow-dark" />
+                    <span>{formatWhatsAppDisplay(settings.whatsappNumber)}</span>
+                  </a>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <Mail size={16} className="shrink-0 text-brand-yellow-dark" />
-                  <span className="break-all">{settings.contactEmail}</span>
+                <li>
+                  <a
+                    href={buildMailtoLink(settings.contactEmail)}
+                    aria-label={`Enviar e-mail para ${settings.contactEmail}`}
+                    className={`${CONTACT_LINK_CLASS} items-center`}
+                  >
+                    <Mail size={16} className="shrink-0 text-brand-yellow-dark" />
+                    <span className="break-all">{settings.contactEmail}</span>
+                  </a>
                 </li>
               </ul>
               <ul className="flex flex-col gap-1 text-xs text-neutral-400">

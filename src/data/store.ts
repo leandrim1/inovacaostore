@@ -41,3 +41,22 @@ export function formatWhatsAppDisplay(phone: string) {
   if (!match) return phone;
   return `(${match[1]}) ${match[2]}-${match[3]}`;
 }
+
+/** Endereço completo em uma linha, como se escreve num envelope. */
+export function formatStoreAddress() {
+  const { street, city, state, zip } = STORE.address;
+  return `${street}, ${city} - ${state}, ${zip}`;
+}
+
+/**
+ * Link universal do Google Maps. No celular o próprio sistema abre o
+ * aplicativo do Maps; no computador abre o site com o endereço já buscado.
+ */
+export function buildMapsLink(address = formatStoreAddress()) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+}
+
+/** Abre o aplicativo de e-mail do aparelho já com destinatário e assunto. */
+export function buildMailtoLink(email: string, subject = `Contato pelo site da ${STORE.name}`) {
+  return `mailto:${email}?subject=${encodeURIComponent(subject)}`;
+}

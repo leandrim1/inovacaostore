@@ -1,6 +1,12 @@
 import { MapPin, MessageCircle, Clock } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
-import { STORE, buildWhatsAppLink, formatWhatsAppDisplay } from "../data/store";
+import {
+  STORE,
+  buildMapsLink,
+  buildWhatsAppLink,
+  formatStoreAddress,
+  formatWhatsAppDisplay,
+} from "../data/store";
 import { InstagramIcon } from "../components/ui/InstagramIcon";
 import { useSiteSettings } from "../hooks/useSiteSettings";
 import heroImage from "../assets/images/hero-friends.jpg";
@@ -47,7 +53,13 @@ export default function AboutPage() {
         </div>
 
         <div className="flex flex-col gap-4 rounded-2xl border border-brand-ink/10 bg-brand-cream p-6">
-          <div className="flex items-start gap-3">
+          <a
+            href={buildMapsLink()}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Ver no Google Maps: ${formatStoreAddress()}`}
+            className="flex items-start gap-3 transition-colors hover:text-brand-yellow-dark"
+          >
             <MapPin size={20} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
             <div>
               <p className="font-medium text-brand-ink">Endereço</p>
@@ -57,7 +69,7 @@ export default function AboutPage() {
                 {STORE.address.city} - {STORE.address.state}
               </p>
             </div>
-          </div>
+          </a>
           <div className="flex items-start gap-3">
             <Clock size={20} className="mt-0.5 shrink-0 text-brand-yellow-dark" />
             <div>
