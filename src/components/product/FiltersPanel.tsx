@@ -18,6 +18,9 @@ export function FiltersPanel({
   availableColors,
   colors,
   toggleColor,
+  availableBrands,
+  brands,
+  toggleBrand,
   priceBounds,
   minPrice,
   maxPrice,
@@ -57,6 +60,29 @@ export function FiltersPanel({
                   className="h-4 w-4 accent-brand-ink focus-visible:outline-offset-4"
                 />
                 {cat.name}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {/* Só aparece quando existe marca preenchida nos produtos da tela — numa
+          categoria sem marcas, um filtro vazio seria só ruído. */}
+      {availableBrands.length > 0 && (
+        <fieldset>
+          <legend className="mb-3 font-display text-sm tracking-widest text-neutral-500">
+            Marca
+          </legend>
+          <div className="flex flex-col gap-2">
+            {availableBrands.map((marca) => (
+              <label key={marca} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={brands.includes(marca)}
+                  onChange={() => toggleBrand(marca)}
+                  className="h-4 w-4 accent-brand-ink focus-visible:outline-offset-4"
+                />
+                {marca}
               </label>
             ))}
           </div>

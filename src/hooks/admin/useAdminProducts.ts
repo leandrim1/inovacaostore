@@ -9,6 +9,7 @@ export interface AdminProductInput {
   description: string;
   features: string[];
   tags: string[];
+  brand?: string;
   price: number;
   compareAtPrice?: number | null;
   costPrice?: number;

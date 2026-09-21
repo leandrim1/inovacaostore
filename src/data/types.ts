@@ -45,6 +45,8 @@ export interface Product {
   slug: string;
   name: string;
   category: string;
+  /** Marca do produto. Vazio quando o lojista não preencheu. */
+  brand: string;
   /** Preço que o cliente paga hoje — já com a promoção aplicada. */
   price: number;
   /** Preço de tabela, para o riscado. */

@@ -23,6 +23,7 @@ const querySchema = z.object({
   category: z.unknown().optional(),
   size: z.unknown().optional(),
   color: z.unknown().optional(),
+  brand: z.unknown().optional(),
   minPrice: numericParam,
   maxPrice: numericParam,
   sort: z.enum(["relevancia", "menor-preco", "maior-preco", "avaliacao"]).optional(),
@@ -42,11 +43,12 @@ productsRouter.get("/", async (req, res) => {
     res.status(400).json({ error: "Parâmetros de busca inválidos.", details: parsed.error.flatten() });
     return;
   }
-  const { category, size, color, minPrice, maxPrice, sort, q, featured, limit } = parsed.data;
+  const { category, size, color, brand, minPrice, maxPrice, sort, q, featured, limit } = parsed.data;
 
   const categories = toArray(category);
   const sizes = toArray(size);
   const colors = toArray(color);
+  const brands = toArray(brand);
 
   const where: Prisma.ProductWhereInput = { active: true };
 
@@ -61,6 +63,9 @@ productsRouter.get("/", async (req, res) => {
       ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
       { variants: { some: { color: { in: colors } } } },
     ];
+  }
+  if (brands.length) {
+    where.brand = { in: brands };
   }
   if (minPrice !== undefined) where.price = { ...(where.price as object), gte: minPrice };
   if (maxPrice !== undefined) where.price = { ...(where.price as object), lte: maxPrice };

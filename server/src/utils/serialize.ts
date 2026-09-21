@@ -38,6 +38,7 @@ export function serializeProduct(product: ProductWithRelations, promotions: Acti
     description: product.description,
     features: safeParseArray(product.features),
     tags: safeParseArray(product.tags),
+    brand: product.brand,
     price: pricing.price,
     compareAtPrice: emPromocao ? pricing.originalPrice : (product.compareAtPrice ?? undefined),
     promotion: pricing.promotion

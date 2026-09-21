@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Crop, Plus, Trash2, Upload, X } from "lucide-react";
 import {
   useAdminProduct,
+  useAdminProducts,
   useCreateProduct,
   useDeleteProductImage,
   useUpdateProduct,
@@ -36,6 +37,17 @@ export default function AdminProductFormPage() {
   const navigate = useNavigate();
 
   const { data: product, isLoading: isLoadingProduct } = useAdminProduct(id);
+  const { data: todosOsProdutos = [] } = useAdminProducts();
+
+  // Marcas que já existem no catálogo, para o campo sugerir em vez de o
+  // lojista redigitar (e errar) o nome a cada produto.
+  const marcasExistentes = useMemo(() => {
+    const set = new Set<string>();
+    todosOsProdutos.forEach((p) => {
+      if (p.brand) set.add(p.brand);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [todosOsProdutos]);
   const { data: categories = [] } = useAdminCategories();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
@@ -52,6 +64,7 @@ export default function AdminProductFormPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [price, setPrice] = useState("");
   const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [brand, setBrand] = useState("");
   const [costPrice, setCostPrice] = useState("");
   const [weightKg, setWeightKg] = useState("");
   const [volumeM3, setVolumeM3] = useState("");
@@ -74,6 +87,7 @@ export default function AdminProductFormPage() {
     setTags(product.tags);
     setPrice(String(product.price));
     setCompareAtPrice(product.compareAtPrice ? String(product.compareAtPrice) : "");
+    setBrand(product.brand ?? "");
     setCostPrice(product.costPrice ? String(product.costPrice) : "");
     setWeightKg(product.weightKg ? String(product.weightKg) : "");
     setVolumeM3(product.volumeM3 ? String(product.volumeM3) : "");
@@ -142,6 +156,7 @@ export default function AdminProductFormPage() {
       features: featuresText.split("\n").map((f) => f.trim()).filter(Boolean),
       tags: tags as AdminProductInput["tags"],
       price: Number(price),
+      brand: brand.trim(),
       compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
       costPrice: costPrice ? Number(costPrice) : 0,
       weightKg: weightKg ? Number(weightKg) : 0,
@@ -214,6 +229,26 @@ export default function AdminProductFormPage() {
                 onChange={(e) => setName(e.target.value)}
                 className="col-span-full admin-input px-3 py-2"
               />
+              <label className="col-span-full text-xs font-medium text-neutral-500">
+                Marca (opcional)
+                <input
+                  list="marcas-existentes"
+                  placeholder="Ex: Nike"
+                  value={brand}
+                  onChange={(e) => setBrand(e.target.value)}
+                  className="mt-1 w-full admin-input px-3 py-2"
+                />
+                {/* Sugere o que já existe para não virar "Nike", "nike" e "NIKE"
+                    — três marcas diferentes no filtro da loja. */}
+                <datalist id="marcas-existentes">
+                  {marcasExistentes.map((m) => (
+                    <option key={m} value={m} />
+                  ))}
+                </datalist>
+                <span className="mt-1 block text-[11px] font-normal text-neutral-400">
+                  Aparece como filtro nas categorias. Em branco, o produto não entra em nenhum filtro de marca.
+                </span>
+              </label>
               <input
                 placeholder="Slug (URL) — gerado automaticamente se vazio"
                 value={slug}

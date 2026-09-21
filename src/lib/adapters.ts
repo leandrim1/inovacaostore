@@ -7,6 +7,7 @@ export interface ProductDTO {
   description: string;
   features: string[];
   tags: string[];
+  brand: string;
   price: number;
   compareAtPrice?: number;
   promotion?: ProductPromotion | null;
@@ -43,6 +44,7 @@ export function adaptProduct(dto: ProductDTO): Product {
     slug: dto.slug,
     name: dto.name,
     category: dto.category.slug,
+    brand: dto.brand ?? "",
     price: dto.price,
     compareAtPrice: dto.compareAtPrice,
     promotion: dto.promotion ?? null,

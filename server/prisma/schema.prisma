@@ -57,6 +57,10 @@ model Product {
   description    String           @default("")
   features       String           @default("[]") // JSON string array
   tags           String           @default("[]") // JSON string array: novo, mais-vendido, importado, ultimas-unidades
+  /// Marca do produto, digitada no cadastro. Texto livre em vez de tabela
+  /// própria: evita mais uma tela de CRUD e marcas órfãs; o formulário sugere
+  /// as que já existem para não virar "Nike", "nike" e "NIKE".
+  brand          String           @default("")
   price          Float
   compareAtPrice Float?
   costPrice      Float            @default(0) // custo de aquisição/produção, usado no cálculo de lucro
@@ -69,6 +73,8 @@ model Product {
   reviewCount    Int              @default(0)
   categoryId     String
   category       Category         @relation(fields: [categoryId], references: [id])
+
+  @@index([brand])
   images         ProductImage[]
   variants       ProductVariant[]
   promotions     PromotionProduct[]
