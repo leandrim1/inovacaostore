@@ -91,11 +91,46 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
       {/* Halo amarelo atrás do bloco de texto, dando profundidade ao brilho. */}
       <div className="pointer-events-none absolute -left-32 top-1/2 h-[420px] w-[520px] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(245,196,0,0.22),transparent_70%)] blur-2xl" />
 
+      {/* Quando existe uma arte, o banner inteiro leva ao mesmo destino do
+          botão — é o que a pessoa espera ao clicar numa peça publicitária,
+          ainda mais quando a chamada está desenhada dentro da própria imagem
+          e não existe botão em HTML para acertar. Fica por baixo do bloco de
+          texto (z-10 contra z-20) para não engolir o botão, que continua
+          sendo um link próprio. */}
+      {/* `aria-hidden` + `tabIndex={-1}`: esta camada é um atalho de mouse e de
+          toque, não um segundo destino. Sem isso, um leitor de tela anunciaria
+          dois links para o mesmo lugar e o teclado pararia duas vezes no mesmo
+          banner. Quem navega por teclado ou leitor de tela usa o botão, que
+          continua sendo o link de verdade. */}
+      {promotion.imageUrl &&
+        (isExternal ? (
+          <a
+            href={promotion.ctaUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="absolute inset-0 z-10 cursor-pointer"
+          />
+        ) : (
+          <Link
+            to={promotion.ctaUrl}
+            aria-hidden="true"
+            tabIndex={-1}
+            className="absolute inset-0 z-10 cursor-pointer"
+          />
+        ))}
+
+      {/* `pointer-events-none` deixa o clique atravessar o texto e chegar no
+          link de cima; o botão devolve `pointer-events-auto` para si. Sem
+          isso, clicar no título não faria nada. */}
       <motion.div
         variants={group}
         initial="hidden"
         animate="show"
-        className="container-page relative z-10 flex flex-col gap-4 py-14"
+        className={`container-page relative z-20 flex flex-col gap-4 py-14 ${
+          promotion.imageUrl ? "pointer-events-none" : ""
+        }`}
       >
         {promotion.endsAt && (
           <motion.div variants={rise} className="flex justify-end sm:absolute sm:right-6 sm:top-6">
@@ -145,7 +180,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
           </motion.p>
         )}
 
-        <motion.div variants={rise} className="mt-2 w-fit">
+        <motion.div variants={rise} className="pointer-events-auto mt-2 w-fit">
           {isExternal ? (
             <a
               href={promotion.ctaUrl}
