@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Flame, Zap } from "lucide-react"
 import { usePromotions, type Promotion } from "../../hooks/usePromotions";
 import { useCountdown } from "../../hooks/useCountdown";
 import { PositionedImage } from "../ui/PositionedImage";
+import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 
 const group: Variants = {
   hidden: {},
@@ -67,6 +68,14 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   // aparecer para o teclado e para o leitor de tela.
   const temTexto = Boolean(promotion.title || promotion.highlight || promotion.description);
   const soArte = Boolean(promotion.imageUrl) && !temTexto;
+
+  // Quando a arte manda sozinha e o lojista não recortou nada, é ela quem
+  // decide a altura — assim a peça entra inteira e na proporção original,
+  // tanto no celular quanto no computador. Com texto por cima, a foto continua
+  // sendo fundo e precisa preencher o palco.
+  const isMobile = useIsMobileViewport();
+  const enquadrado = Boolean(isMobile ? promotion.mobileSettings : promotion.desktopSettings);
+  const arteMandaNaAltura = soArte && !enquadrado;
   const cta = (
     <>
       <Zap size={16} className="fill-brand-ink" aria-hidden />
@@ -76,15 +85,39 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   );
 
   return (
-    <div className="relative flex min-h-[420px] items-center overflow-hidden rounded-2xl sm:min-h-[480px]">
+    <div
+      className={`relative overflow-hidden rounded-2xl ${
+        arteMandaNaAltura
+          ? "block w-full bg-brand-ink"
+          : "flex min-h-[420px] items-center sm:min-h-[480px]"
+      }`}
+    >
       {promotion.imageUrl ? (
-        <PositionedImage
-          src={promotion.imageUrl}
-          alt=""
-          desktopSettings={promotion.desktopSettings}
-          mobileSettings={promotion.mobileSettings}
-          wrapperClassName="absolute inset-0 h-full w-full"
-        />
+        <>
+          {/* Sobras preenchidas com a própria arte desfocada, para a peça
+              aparecer inteira sem tarjas pretas quando a proporção dela não
+              bate com a da tela. */}
+          {arteMandaNaAltura && (
+            <img
+              src={promotion.imageUrl}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+            />
+          )}
+          <PositionedImage
+            src={promotion.imageUrl}
+            alt=""
+            desktopSettings={promotion.desktopSettings}
+            mobileSettings={promotion.mobileSettings}
+            wrapperClassName={
+              arteMandaNaAltura ? "relative block w-full" : "absolute inset-0 h-full w-full"
+            }
+            fallbackClassName={
+              arteMandaNaAltura ? "h-auto max-h-[70vh] object-contain" : "object-cover"
+            }
+          />
+        </>
       ) : (
         <div className="absolute inset-0 bg-brand-ink">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_0%,rgba(245,196,0,0.35),transparent_65%)]" />

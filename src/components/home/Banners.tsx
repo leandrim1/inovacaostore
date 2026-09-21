@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSiteSettings, type Banner } from "../../hooks/useSiteSettings";
+import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { PositionedImage } from "../ui/PositionedImage";
 
 /**
@@ -14,17 +15,45 @@ import { PositionedImage } from "../ui/PositionedImage";
  * as duas faixas se lerem como irmãs e não como dois blocos diferentes.
  */
 function BannerSlide({ banner }: { banner: Banner }) {
+  const isMobile = useIsMobileViewport();
+  // O enquadramento é salvo por breakpoint, então a decisão também é: o admin
+  // pode ter recortado só para o computador e deixado o celular no natural.
+  const enquadrado = Boolean(isMobile ? banner.mobileSettings : banner.desktopSettings);
+
   const arte = (
-    <PositionedImage
-      src={banner.url}
-      alt=""
-      desktopSettings={banner.desktopSettings}
-      mobileSettings={banner.mobileSettings}
-      wrapperClassName="absolute inset-0 h-full w-full"
-    />
+    <>
+      {/* A peça quase nunca tem a proporção exata da tela. Em vez de cortar a
+          arte (o que o lojista não quer) ou deixar tarjas pretas, as sobras são
+          preenchidas com a própria imagem desfocada — a peça aparece inteira e
+          o bloco continua parecendo intencional. Com enquadramento salvo não há
+          sobra, então o fundo não entra. */}
+      {!enquadrado && (
+        <img
+          src={banner.url}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+        />
+      )}
+      <PositionedImage
+        src={banner.url}
+        alt=""
+        desktopSettings={banner.desktopSettings}
+        mobileSettings={banner.mobileSettings}
+        // Sem enquadramento salvo, a arte manda na altura: a imagem entra
+        // inteira, na proporção original, seja no celular ou no computador.
+        // Com enquadramento, vale o recorte que o admin escolheu.
+        wrapperClassName={enquadrado ? "absolute inset-0 h-full w-full" : "relative block w-full"}
+        fallbackClassName="h-auto max-h-[70vh] object-contain"
+      />
+    </>
   );
 
-  const caixa = "relative block min-h-[420px] overflow-hidden rounded-2xl bg-brand-ink sm:min-h-[480px]";
+  // A altura fixa só existe quando há um recorte a respeitar. Sem ele, a caixa
+  // encolhe até a imagem — nada de faixa preta sobrando nem arte cortada.
+  const caixa = enquadrado
+    ? "relative block w-full overflow-hidden rounded-2xl bg-brand-ink aspect-[9/10] sm:aspect-[21/9]"
+    : "relative block w-full overflow-hidden rounded-2xl bg-brand-ink";
 
   if (!banner.linkUrl) {
     return <div className={caixa}>{arte}</div>;
