@@ -10,6 +10,17 @@ export interface HeroImage {
   mobileSettings?: ImageSettings | null;
 }
 
+/** Imagem da faixa acima das Categorias. */
+export interface Banner {
+  id: string;
+  url: string;
+  /** Opcional: com link, clicar na imagem leva a essa página. */
+  linkUrl: string | null;
+  desktopSettings?: ImageSettings | null;
+  mobileSettings?: ImageSettings | null;
+  order: number;
+}
+
 export interface SiteSettings {
   id: string;
   heroEyebrow: string;
@@ -19,6 +30,7 @@ export interface SiteSettings {
   heroCtaUrl: string;
   heroImages: HeroImage[];
   galleryImages: HeroImage[];
+  banners: Banner[];
   whatsappNumber: string;
   whatsappMessage: string;
   contactEmail: string;
@@ -44,6 +56,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroCtaUrl: "/busca",
   heroImages: [],
   galleryImages: [],
+  banners: [],
   whatsappNumber: "5534996576357",
   whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
   contactEmail: "inovacaostoretiktok@gmail.com",

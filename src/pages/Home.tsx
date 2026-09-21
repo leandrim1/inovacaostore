@@ -2,6 +2,7 @@ import { Seo } from "../components/seo/Seo";
 import { Hero } from "../components/home/Hero";
 import { PromotionsBanner } from "../components/home/PromotionsBanner";
 import { CategoryGrid } from "../components/home/CategoryGrid";
+import { Banners } from "../components/home/Banners";
 import { FeaturedProducts } from "../components/home/FeaturedProducts";
 import { Benefits } from "../components/home/Benefits";
 import { Testimonials } from "../components/home/Testimonials";
@@ -35,6 +36,7 @@ export default function Home() {
       />
       <Hero />
       <Gallery />
+      <Banners />
       <CategoryGrid />
       <PromotionsBanner />
       <FeaturedProducts />

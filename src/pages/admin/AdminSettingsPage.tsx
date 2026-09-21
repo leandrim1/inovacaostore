@@ -2,18 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Crop, Upload, X } from "lucide-react";
 import {
+  useAdminBanners,
   useAdminGalleryImages,
   useAdminHeroImages,
   useAdminSettings,
+  useDeleteBanner,
   useDeleteGalleryImage,
   useDeleteHeroImage,
+  useUpdateBanner,
   useUpdateHeroImageSettings,
   useUpdateSettings,
+  useUploadBanners,
   useUploadGalleryImages,
   useUploadHeroImages,
   type SiteSettingsInput,
 } from "../../hooks/admin/useAdminSettings";
-import type { HeroImage } from "../../hooks/useSiteSettings";
+import type { Banner, HeroImage } from "../../hooks/useSiteSettings";
 import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
 
 export default function AdminSettingsPage() {
@@ -27,6 +31,16 @@ export default function AdminSettingsPage() {
   const [editingHeroImage, setEditingHeroImage] = useState<HeroImage | null>(null);
   const uploadGalleryImages = useUploadGalleryImages();
   const deleteGalleryImage = useDeleteGalleryImage();
+  const { data: banners = [] } = useAdminBanners();
+  const uploadBanners = useUploadBanners();
+  const deleteBanner = useDeleteBanner();
+  const updateBanner = useUpdateBanner();
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const [editandoBanner, setEditandoBanner] = useState<Banner | null>(null);
+  const [bannerError, setBannerError] = useState<string | null>(null);
+  // Guarda o link enquanto a pessoa digita; só vai para o servidor ao sair do
+  // campo, para não disparar uma requisição por tecla.
+  const [linksEmEdicao, setLinksEmEdicao] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,6 +127,38 @@ export default function AdminSettingsPage() {
       setImageError(err instanceof Error ? err.message : "Não foi possível enviar as imagens.");
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleBannerFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files?.length) return;
+    setBannerError(null);
+    try {
+      await uploadBanners.mutateAsync(Array.from(e.target.files));
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : "Não foi possível enviar as imagens.");
+    } finally {
+      if (bannerInputRef.current) bannerInputRef.current.value = "";
+    }
+  }
+
+  async function handleDeleteBanner(id: string) {
+    setBannerError(null);
+    try {
+      await deleteBanner.mutateAsync(id);
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : "Não foi possível excluir a imagem.");
+    }
+  }
+
+  async function salvarLinkDoBanner(banner: Banner) {
+    const novo = linksEmEdicao[banner.id];
+    if (novo === undefined || novo === (banner.linkUrl ?? "")) return;
+    setBannerError(null);
+    try {
+      await updateBanner.mutateAsync({ id: banner.id, data: { linkUrl: novo } });
+    } catch (err) {
+      setBannerError(err instanceof Error ? err.message : "Não foi possível salvar o link.");
     }
   }
 
@@ -268,6 +314,80 @@ export default function AdminSettingsPage() {
             >
               <Upload size={16} />
               {uploadHeroImages.isPending ? "Enviando…" : "Enviar imagens"}
+            </label>
+          </section>
+
+          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <h2 className="mb-1 font-display text-sm tracking-widest text-neutral-500">
+              BANNERS (acima das categorias)
+            </h2>
+            <p className="mb-4 text-xs leading-relaxed text-neutral-400">
+              Um espaço só para arte, do mesmo tamanho do banner de promoção. Suba a peça já pronta —
+              nada de texto é escrito por cima. Com mais de uma imagem, elas giram em carrossel. Sem
+              nenhuma, a faixa some do site.
+            </p>
+            {bannerError && <p className="mb-3 text-sm text-red-600">{bannerError}</p>}
+
+            {banners.length > 0 && (
+              <ul className="mb-4 flex flex-col gap-4">
+                {banners.map((banner) => (
+                  <li key={banner.id} className="rounded-xl ring-1 ring-black/5">
+                    <div className="group relative aspect-[21/9] overflow-hidden rounded-t-xl bg-neutral-100">
+                      <img src={banner.url} alt="" className="h-full w-full object-cover" />
+                      <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => setEditandoBanner(banner)}
+                          className="flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-brand-ink hover:bg-white"
+                        >
+                          <Crop size={11} /> Ajustar enquadramento
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBanner(banner.id)}
+                        aria-label="Excluir banner"
+                        className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <label className="block p-3 text-xs font-medium text-neutral-500">
+                      Link ao clicar (opcional)
+                      <input
+                        type="text"
+                        placeholder="/categoria/camisetas ou https://…"
+                        value={linksEmEdicao[banner.id] ?? banner.linkUrl ?? ""}
+                        onChange={(e) =>
+                          setLinksEmEdicao((atual) => ({ ...atual, [banner.id]: e.target.value }))
+                        }
+                        onBlur={() => salvarLinkDoBanner(banner)}
+                        className="mt-1 w-full admin-input px-3 py-2"
+                      />
+                      <span className="mt-1 block text-[11px] font-normal text-neutral-400">
+                        Em branco, a imagem fica só decorativa. O link é salvo ao sair do campo.
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <input
+              ref={bannerInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleBannerFileChange}
+              className="hidden"
+              id="banner-input"
+            />
+            <label
+              htmlFor="banner-input"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 px-4 py-3 text-sm text-neutral-500 hover:border-brand-ink hover:text-brand-ink"
+            >
+              <Upload size={16} />
+              {uploadBanners.isPending ? "Enviando…" : "Enviar imagens"}
             </label>
           </section>
 
@@ -463,6 +583,19 @@ export default function AdminSettingsPage() {
           </section>
         </div>
       </form>
+
+      {editandoBanner && (
+        <ImagePositionEditor
+          src={editandoBanner.url}
+          alt=""
+          desktopAspect={21 / 9}
+          mobileAspect={9 / 10}
+          initialDesktopSettings={editandoBanner.desktopSettings ?? null}
+          initialMobileSettings={editandoBanner.mobileSettings ?? null}
+          onClose={() => setEditandoBanner(null)}
+          onSave={(data) => updateBanner.mutateAsync({ id: editandoBanner.id, data })}
+        />
+      )}
 
       {editingHeroImage && (
         <ImagePositionEditor

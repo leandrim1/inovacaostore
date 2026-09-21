@@ -25,10 +25,11 @@ const DEFAULT_SETTINGS = {
 };
 
 settingsRouter.get("/", async (_req, res) => {
-  const [settings, heroImages, galleryImages] = await Promise.all([
+  const [settings, heroImages, galleryImages, banners] = await Promise.all([
     prisma.siteSettings.findUnique({ where: { id: "singleton" } }),
     prisma.heroImage.findMany({ orderBy: { order: "asc" } }),
     prisma.galleryImage.findMany({ orderBy: { order: "asc" } }),
+    prisma.banner.findMany({ orderBy: { order: "asc" } }),
   ]);
-  res.json({ ...(settings ?? DEFAULT_SETTINGS), heroImages, galleryImages });
+  res.json({ ...(settings ?? DEFAULT_SETTINGS), heroImages, galleryImages, banners });
 });

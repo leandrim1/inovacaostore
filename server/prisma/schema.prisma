@@ -255,6 +255,19 @@ model HeroImage {
   createdAt DateTime @default(now())
 }
 
+/// Faixa de imagens logo acima das Categorias. É um espaço só de arte: nada
+/// de texto por cima, o lojista sobe a peça pronta. O link é opcional — com
+/// ele a imagem vira um atalho para uma categoria, produto ou página.
+model Banner {
+  id              String   @id @default(cuid())
+  url             String
+  linkUrl         String?
+  desktopSettings Json?
+  mobileSettings  Json?
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+}
+
 model GalleryImage {
   id        String   @id @default(cuid())
   url       String

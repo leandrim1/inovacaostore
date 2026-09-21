@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
-import type { HeroImage, SiteSettings } from "../useSiteSettings";
+import type { Banner, HeroImage, SiteSettings } from "../useSiteSettings";
 import type { ImageSettings } from "../../lib/imageSettings";
 
-export type { HeroImage };
+export type { Banner, HeroImage };
 
-export type SiteSettingsInput = Omit<SiteSettings, "id" | "heroImages" | "galleryImages">;
-export type AdminSiteSettings = Omit<SiteSettings, "heroImages" | "galleryImages">;
+export type SiteSettingsInput = Omit<SiteSettings, "id" | "heroImages" | "galleryImages" | "banners">;
+export type AdminSiteSettings = Omit<SiteSettings, "heroImages" | "galleryImages" | "banners">;
 
 export function useAdminSettings() {
   return useQuery({
@@ -76,6 +76,62 @@ export function useUpdateHeroImageSettings() {
       id: string;
       data: { desktopSettings?: ImageSettings | null; mobileSettings?: ImageSettings | null };
     }) => api.patch<{ items: HeroImage[] }>(`/api/admin/settings/hero-images/${id}`, data),
+    onSuccess: invalidate,
+  });
+}
+
+// --- Banners (faixa acima das Categorias) ---
+
+export function useAdminBanners() {
+  return useQuery({
+    queryKey: ["admin-banners"],
+    queryFn: () => api.get<{ items: Banner[] }>("/api/admin/settings/banners").then((r) => r.items),
+  });
+}
+
+function useInvalidateBanners() {
+  const qc = useQueryClient();
+  return () => {
+    qc.invalidateQueries({ queryKey: ["admin-banners"] });
+    qc.invalidateQueries({ queryKey: ["settings"] });
+  };
+}
+
+export function useUploadBanners() {
+  const invalidate = useInvalidateBanners();
+  return useMutation({
+    mutationFn: (files: File[]) => {
+      const form = new FormData();
+      files.forEach((file) => form.append("images", file));
+      return api.upload<{ items: Banner[] }>("/api/admin/settings/banners", form);
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateBanner() {
+  const invalidate = useInvalidateBanners();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: {
+        linkUrl?: string | null;
+        order?: number;
+        desktopSettings?: ImageSettings | null;
+        mobileSettings?: ImageSettings | null;
+      };
+    }) => api.patch<Banner>(`/api/admin/settings/banners/${id}`, data),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeleteBanner() {
+  const invalidate = useInvalidateBanners();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<{ items: Banner[] }>(`/api/admin/settings/banners/${id}`),
     onSuccess: invalidate,
   });
 }
