@@ -23,8 +23,15 @@ promotionsRouter.get("/", async (_req, res) => {
     orderBy: { order: "asc" },
   });
 
+  // Uma promoção sem imagem E sem nenhum texto não tem o que mostrar — viraria
+  // um retângulo preto na home. Acontece no intervalo entre criar a promoção e
+  // enviar a arte, então filtramos aqui em vez de confiar na ordem das ações.
+  const comConteudo = promotions.filter(
+    (p) => Boolean(p.imageUrl) || Boolean(p.title || p.highlight || p.description),
+  );
+
   res.json({
-    items: promotions.map((p) => ({
+    items: comConteudo.map((p) => ({
       id: p.id,
       title: p.title,
       highlight: p.highlight,

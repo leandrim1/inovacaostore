@@ -166,7 +166,7 @@ export default function ProductPage() {
               {product.promotion && (
                 <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl bg-brand-yellow/15 px-3 py-2 text-sm text-brand-ink ring-1 ring-brand-yellow/40">
                   <Tag size={14} className="text-brand-yellow-dark" aria-hidden />
-                  <span className="font-medium">{product.promotion.title}</span>
+                  <span className="font-medium">{product.promotion.title || "Promoção"}</span>
                   {product.promotion.endsAt && (
                     <span className="text-xs text-neutral-600">
                       até {new Date(product.promotion.endsAt).toLocaleDateString("pt-BR", {

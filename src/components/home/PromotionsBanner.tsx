@@ -61,6 +61,12 @@ function CountdownBadge({ endsAt }: { endsAt: string | null }) {
 
 function PromotionSlide({ promotion }: { promotion: Promotion }) {
   const isExternal = /^https?:\/\//.test(promotion.ctaUrl);
+  // Quando a arte já traz a chamada desenhada, o lojista deixa os textos em
+  // branco e o banner é só a imagem. Aí não existe botão na tela — então a
+  // camada de clique deixa de ser um atalho e passa a ser O link: precisa
+  // aparecer para o teclado e para o leitor de tela.
+  const temTexto = Boolean(promotion.title || promotion.highlight || promotion.description);
+  const soArte = Boolean(promotion.imageUrl) && !temTexto;
   const cta = (
     <>
       <Zap size={16} className="fill-brand-ink" aria-hidden />
@@ -108,15 +114,17 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
             href={promotion.ctaUrl}
             target="_blank"
             rel="noreferrer"
-            aria-hidden="true"
-            tabIndex={-1}
+            {...(soArte
+              ? { "aria-label": promotion.ctaLabel || "Ver a oferta" }
+              : { "aria-hidden": "true" as const, tabIndex: -1 })}
             className="absolute inset-0 z-10 cursor-pointer"
           />
         ) : (
           <Link
             to={promotion.ctaUrl}
-            aria-hidden="true"
-            tabIndex={-1}
+            {...(soArte
+              ? { "aria-label": promotion.ctaLabel || "Ver a oferta" }
+              : { "aria-hidden": "true" as const, tabIndex: -1 })}
             className="absolute inset-0 z-10 cursor-pointer"
           />
         ))}
@@ -130,7 +138,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
         animate="show"
         className={`container-page relative z-20 flex flex-col gap-4 py-14 ${
           promotion.imageUrl ? "pointer-events-none" : ""
-        }`}
+        } ${soArte ? "hidden" : ""}`}
       >
         {promotion.endsAt && (
           <motion.div variants={rise} className="flex justify-end sm:absolute sm:right-6 sm:top-6">
@@ -151,6 +159,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
             espaçadas e um traço amarelo embaixo, como numa arte de banner.
             `w-fit max-w-full` deixa o traço com a largura exata do texto sem
             deixar um título longo vazar da tela no celular. */}
+        {promotion.title && (
         <motion.div variants={rise} className="w-fit max-w-full">
           <p className="font-display text-4xl leading-[0.95] tracking-[0.06em] text-white break-words [text-shadow:0_2px_0_rgba(0,0,0,0.35),0_6px_24px_rgba(0,0,0,0.75)] sm:text-5xl md:text-[3.25rem]">
             {promotion.title}
@@ -160,16 +169,19 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
             aria-hidden
           />
         </motion.div>
+        )}
 
         {/* Sem `w-fit` aqui: `fit-content` deixa o parágrafo com a largura do
             texto inteiro e um destaque longo ("20% DESCONTO") vaza da borda no
             celular. O brilho é `drop-shadow`, que segue as letras e não a
             caixa, então a largura total não atrapalha. */}
-        <motion.p variants={punch} className="animate-glow-pulse motion-reduce:animate-none">
-          <span className="promo-highlight block font-display text-5xl leading-none break-words motion-reduce:animate-none sm:text-7xl md:text-8xl">
-            {promotion.highlight}
-          </span>
-        </motion.p>
+        {promotion.highlight && (
+          <motion.p variants={punch} className="animate-glow-pulse motion-reduce:animate-none">
+            <span className="promo-highlight block font-display text-5xl leading-none break-words motion-reduce:animate-none sm:text-7xl md:text-8xl">
+              {promotion.highlight}
+            </span>
+          </motion.p>
+        )}
 
         {promotion.description && (
           <motion.p

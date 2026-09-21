@@ -97,7 +97,7 @@ export default function CartPage() {
                           </p>
                           {item.promotion && (
                             <p className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-brand-yellow/20 px-2 py-0.5 text-[11px] font-medium text-brand-ink">
-                              <Tag size={11} /> {item.promotion.title}
+                              <Tag size={11} /> {item.promotion.title || "Promoção"}
                               {item.promotion.percentOff > 0 && ` · -${item.promotion.percentOff}%`}
                             </p>
                           )}

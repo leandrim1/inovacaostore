@@ -10,9 +10,13 @@ import { DISCOUNT_SCOPES, DISCOUNT_TYPES, findConflictingPromotion } from "../..
 export const adminPromotionsRouter = Router();
 
 const promotionSchema = z.object({
-  title: z.string().min(1),
-  highlight: z.string().min(1),
-  description: z.string().default(""),
+  // Título e destaque deixam de ser obrigatórios: quando a arte enviada já traz
+  // a chamada desenhada, escrever de novo por cima seria repetição. Quem
+  // garante que o banner tem o que mostrar é a rota pública, que descarta
+  // promoção sem texto E sem imagem.
+  title: z.string().max(120).default(""),
+  highlight: z.string().max(120).default(""),
+  description: z.string().max(500).default(""),
   ctaLabel: z.string().min(1).default("Compre agora"),
   ctaUrl: z.string().min(1).default("/"),
   desktopSettings: imageSettingsSchema.nullable().optional(),

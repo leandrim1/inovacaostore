@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Crop, Search, Upload, X } from "lucide-react";
 import {
@@ -61,6 +61,22 @@ export default function AdminPromotionFormPage() {
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [isAdjustingImage, setIsAdjustingImage] = useState(false);
+  // Numa promoção nova ainda não existe id para pendurar o upload, então a
+  // imagem fica guardada aqui e sobe logo depois do "Criar promoção". É o que
+  // permite os textos já serem opcionais na hora de criar.
+  const [imagemEscolhida, setImagemEscolhida] = useState<File | null>(null);
+  const previaImagem = useMemo(
+    () => (imagemEscolhida ? URL.createObjectURL(imagemEscolhida) : null),
+    [imagemEscolhida],
+  );
+
+  // A URL da prévia é um recurso do navegador; sem revogar, ela vaza.
+  useEffect(
+    () => () => {
+      if (previaImagem) URL.revokeObjectURL(previaImagem);
+    },
+    [previaImagem],
+  );
 
   useEffect(() => {
     if (!promotion) return;
@@ -80,9 +96,18 @@ export default function AdminPromotionFormPage() {
     setOrder(promotion.order);
   }, [promotion]);
 
+  // Vale tanto a arte já salva quanto a que acabou de ser escolhida: nos dois
+  // casos o banner vai ter o que mostrar sem depender dos textos.
+  const temImagem = Boolean(promotion?.imageUrl) || Boolean(imagemEscolhida);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!temImagem && !title.trim() && !highlight.trim()) {
+      setError("Sem imagem, preencha pelo menos o título ou o destaque — senão o banner fica vazio.");
+      return;
+    }
 
     const payload: PromotionInput = {
       title,
@@ -107,6 +132,20 @@ export default function AdminPromotionFormPage() {
         navigate("/admin/promocoes");
       } else {
         const created = await createPromotion.mutateAsync(payload);
+        if (imagemEscolhida) {
+          try {
+            await uploadImage.mutateAsync({ id: created.id, file: imagemEscolhida });
+            setImagemEscolhida(null);
+          } catch (err) {
+            // A promoção foi criada; só a arte falhou. Levamos para a edição
+            // com o aviso, em vez de perder o que já foi preenchido.
+            setImageError(
+              err instanceof Error
+                ? err.message
+                : "A promoção foi criada, mas a imagem não subiu. Tente enviar de novo.",
+            );
+          }
+        }
         navigate(`/admin/promocoes/${created.id}`, { replace: true });
       }
     } catch (err) {
@@ -116,8 +155,16 @@ export default function AdminPromotionFormPage() {
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (!id || !file) return;
+    if (!file) return;
     setImageError(null);
+
+    // Promoção nova: guarda e sobe junto com o "Criar promoção".
+    if (!id) {
+      setImagemEscolhida(file);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     try {
       await uploadImage.mutateAsync({ id, file });
     } catch (err) {
@@ -176,24 +223,29 @@ export default function AdminPromotionFormPage() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-            <h2 className="mb-4 font-display text-sm tracking-widest text-neutral-500">CONTEÚDO</h2>
+            <h2 className="mb-1 font-display text-sm tracking-widest text-neutral-500">CONTEÚDO</h2>
+            <p className="mb-4 text-xs leading-relaxed text-neutral-500">
+              {temImagem
+                ? "Como você vai usar uma imagem, estes campos são opcionais. Deixe em branco se a arte já tiver os textos desenhados — o banner mostra só a imagem, e clicar nela leva ao link do botão."
+                : "Sem imagem, o banner é feito destes textos. Preencha ao menos o título ou o destaque."}
+            </p>
             <div className="grid grid-cols-1 gap-3">
               <input
-                required
-                placeholder="Título (ex: PROMOÇÃO IMPERDÍVEL)"
+                required={!temImagem}
+                placeholder={`Título (ex: PROMOÇÃO IMPERDÍVEL)${temImagem ? " — opcional" : ""}`}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="admin-input px-3 py-2"
               />
               <input
-                required
-                placeholder="Destaque (ex: 20% OFF)"
+                required={!temImagem && !title.trim()}
+                placeholder={`Destaque (ex: 20% OFF)${temImagem ? " — opcional" : ""}`}
                 value={highlight}
                 onChange={(e) => setHighlight(e.target.value)}
                 className="admin-input px-3 py-2"
               />
               <textarea
-                placeholder="Descrição (ex: Em toda a loja, por tempo limitado!)"
+                placeholder="Descrição (ex: Em toda a loja, por tempo limitado!) — opcional"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
@@ -370,11 +422,25 @@ export default function AdminPromotionFormPage() {
             )}
           </section>
 
-          {isEditing && (
-            <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
               <h2 className="mb-4 font-display text-sm tracking-widest text-neutral-500">IMAGEM DE FUNDO</h2>
               {imageError && <p className="mb-3 text-sm text-red-600">{imageError}</p>}
-              {promotion?.imageUrl ? (
+              {previaImagem ? (
+                <div className="relative mb-4 aspect-[16/7] overflow-hidden rounded-lg bg-neutral-100 ring-2 ring-brand-yellow">
+                  <img src={previaImagem} alt="" className="h-full w-full object-cover" />
+                  <span className="absolute left-2 top-2 rounded-full bg-brand-yellow px-2.5 py-1 text-[11px] font-medium text-brand-ink">
+                    Sobe ao criar a promoção
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setImagemEscolhida(null)}
+                    aria-label="Remover imagem escolhida"
+                    className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : promotion?.imageUrl ? (
                 <div className="group relative mb-4 aspect-[16/7] overflow-hidden rounded-lg bg-neutral-100">
                   <img src={promotion.imageUrl} alt="" className="h-full w-full object-cover" />
                   <div className="absolute inset-x-0 bottom-0 flex justify-center bg-gradient-to-t from-black/50 to-transparent py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
@@ -396,7 +462,8 @@ export default function AdminPromotionFormPage() {
                 </div>
               ) : (
                 <p className="mb-4 text-xs text-neutral-400">
-                  Sem imagem, a promoção usa um fundo amarelo/preto padrão da loja.
+                  Sem imagem, a promoção usa um fundo amarelo/preto padrão da loja e é montada com os
+                  textos de Conteúdo.
                 </p>
               )}
               <input
@@ -412,10 +479,18 @@ export default function AdminPromotionFormPage() {
                 className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 px-4 py-3 text-sm text-neutral-500 hover:border-brand-ink hover:text-brand-ink"
               >
                 <Upload size={16} />
-                {uploadImage.isPending ? "Enviando…" : promotion?.imageUrl ? "Trocar imagem" : "Enviar imagem"}
+                {uploadImage.isPending
+                  ? "Enviando…"
+                  : promotion?.imageUrl || previaImagem
+                    ? "Trocar imagem"
+                    : "Escolher imagem"}
               </label>
+              {!isEditing && (
+                <p className="mt-2 text-xs text-neutral-400">
+                  O ajuste de enquadramento fica disponível depois de criar a promoção.
+                </p>
+              )}
             </section>
-          )}
         </div>
 
         <div className="flex flex-col gap-6">

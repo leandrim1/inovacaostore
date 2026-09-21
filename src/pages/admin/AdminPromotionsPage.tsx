@@ -80,7 +80,7 @@ export default function AdminPromotionsPage() {
                     <div className="h-12 w-16 shrink-0 overflow-hidden rounded-md bg-neutral-100">
                       {p.imageUrl && <img src={p.imageUrl} alt="" className="h-full w-full object-cover" />}
                     </div>
-                    <p className="font-medium text-brand-ink">{p.title}</p>
+                    <p className="font-medium text-brand-ink">{p.title || p.highlight || "(banner sem texto)"}</p>
                   </td>
                   <td className="py-3 pr-4 text-neutral-600">{p.highlight}</td>
                   <td className="py-3 pr-4">
@@ -166,7 +166,7 @@ export default function AdminPromotionsPage() {
                   {p.imageUrl && <img src={p.imageUrl} alt="" className="h-full w-full object-cover" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-brand-ink">{p.title}</p>
+                  <p className="truncate font-medium text-brand-ink">{p.title || p.highlight || "(banner sem texto)"}</p>
                   <p className="text-xs text-neutral-500">{p.highlight}</p>
                 </div>
                 <span
