@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSiteSettings, type Banner } from "../../hooks/useSiteSettings";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { PositionedImage } from "../ui/PositionedImage";
+import { isDefaultImageSettings } from "../../lib/imageSettings";
 
 /**
  * Faixa de imagens logo acima das Categorias.
@@ -18,7 +19,9 @@ function BannerSlide({ banner }: { banner: Banner }) {
   const isMobile = useIsMobileViewport();
   // O enquadramento é salvo por breakpoint, então a decisão também é: o admin
   // pode ter recortado só para o computador e deixado o celular no natural.
-  const enquadrado = Boolean(isMobile ? banner.mobileSettings : banner.desktopSettings);
+  const enquadrado = !isDefaultImageSettings(
+    isMobile ? banner.mobileSettings : banner.desktopSettings,
+  );
 
   const arte = (
     <>

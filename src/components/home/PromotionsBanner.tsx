@@ -6,6 +6,7 @@ import { usePromotions, type Promotion } from "../../hooks/usePromotions";
 import { useCountdown } from "../../hooks/useCountdown";
 import { PositionedImage } from "../ui/PositionedImage";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
+import { isDefaultImageSettings } from "../../lib/imageSettings";
 
 const group: Variants = {
   hidden: {},
@@ -74,7 +75,9 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   // tanto no celular quanto no computador. Com texto por cima, a foto continua
   // sendo fundo e precisa preencher o palco.
   const isMobile = useIsMobileViewport();
-  const enquadrado = Boolean(isMobile ? promotion.mobileSettings : promotion.desktopSettings);
+  const enquadrado = !isDefaultImageSettings(
+    isMobile ? promotion.mobileSettings : promotion.desktopSettings,
+  );
   const arteMandaNaAltura = soArte && !enquadrado;
   const cta = (
     <>

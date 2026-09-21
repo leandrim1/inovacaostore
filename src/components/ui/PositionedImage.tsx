@@ -1,5 +1,10 @@
 import { useRef, type ImgHTMLAttributes } from "react";
-import { DEFAULT_IMAGE_SETTINGS, totalScale, type ImageSettings } from "../../lib/imageSettings";
+import {
+  DEFAULT_IMAGE_SETTINGS,
+  effectiveImageSettings,
+  totalScale,
+  type ImageSettings,
+} from "../../lib/imageSettings";
 import { useElementAspectRatio } from "../../hooks/useElementAspectRatio";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 
@@ -36,7 +41,9 @@ export function PositionedImage({
   const aspect = useElementAspectRatio(scaleRef, 1);
   const isMobile = useIsMobileViewport();
 
-  const settings = isMobile ? mobileSettings : desktopSettings;
+  // Enquadramento salvo igual ao padrão não recorta nada — vale como se não
+  // existisse, senão um "Salvar" sem mexer em nada mudaria o layout.
+  const settings = effectiveImageSettings(isMobile ? mobileSettings : desktopSettings);
 
   if (!settings) {
     return <img {...imgProps} className={`${wrapperClassName} ${fallbackClassName} ${className}`} />;

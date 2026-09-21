@@ -9,6 +9,7 @@ import {
   ZOOM_MAX,
   ZOOM_MIN,
   clampImageSettings,
+  effectiveImageSettings,
   type ImageSettings,
 } from "../../lib/imageSettings";
 
@@ -23,7 +24,10 @@ interface ImagePositionEditorProps {
   initialDesktopSettings: ImageSettings | null;
   initialMobileSettings: ImageSettings | null;
   onClose: () => void;
-  onSave: (settings: { desktopSettings: ImageSettings; mobileSettings: ImageSettings }) => Promise<unknown> | void;
+  onSave: (settings: {
+    desktopSettings: ImageSettings | null;
+    mobileSettings: ImageSettings | null;
+  }) => Promise<unknown> | void;
 }
 
 export function ImagePositionEditor({
@@ -92,7 +96,14 @@ export function ImagePositionEditor({
   async function handleSave() {
     setIsSaving(true);
     try {
-      await onSave({ desktopSettings, mobileSettings });
+      // Salva `null` no breakpoint que ficou no padrão, em vez de gravar um
+      // enquadramento que não recorta nada. Sem isso, ajustar só o desktop
+      // marcava o celular como "recortado" e trocava a arte inteira do banner
+      // por um quadro fixo — e o "Resetar" nunca conseguia desfazer.
+      await onSave({
+        desktopSettings: effectiveImageSettings(desktopSettings),
+        mobileSettings: effectiveImageSettings(mobileSettings),
+      });
       onClose();
     } finally {
       setIsSaving(false);
@@ -211,6 +222,7 @@ export function ImagePositionEditor({
                 type="button"
                 onClick={() => setSettings(DEFAULT_IMAGE_SETTINGS)}
                 className="rounded-lg border border-black/10 px-3 py-2 text-xs font-medium text-neutral-600 hover:border-brand-ink hover:text-brand-ink"
+                title="Volta esta versão ao padrão: ao salvar, a imagem deixa de ser recortada aqui."
               >
                 Resetar
               </button>

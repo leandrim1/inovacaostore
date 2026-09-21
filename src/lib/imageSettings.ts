@@ -27,6 +27,37 @@ export const ZOOM_MAX = 3;
 export const ROTATION_MIN = -45;
 export const ROTATION_MAX = 45;
 
+/**
+ * Um enquadramento igual ao padrão — centralizado, sem zoom e sem rotação —
+ * não recorta nada: é o mesmo que não ter enquadramento nenhum.
+ *
+ * A distinção importa porque o editor do painel salva SEMPRE os dois
+ * breakpoints, preenchendo com o padrão aquele que o lojista nem abriu. Sem
+ * esta checagem, mexer só no desktop gravava um "enquadramento" no celular e
+ * os banners trocavam a arte inteira por um quadro fixo que corta.
+ */
+export function isDefaultImageSettings(settings: ImageSettings | null | undefined): boolean {
+  if (!settings) return true;
+  const s = clampImageSettings(settings);
+  const d = DEFAULT_IMAGE_SETTINGS;
+  // Tolerância pequena: os controles são contínuos e um 1.0000001 vindo do
+  // slider não é uma escolha de recorte.
+  const igual = (a: number, b: number) => Math.abs(a - b) < 0.005;
+  return (
+    igual(s.positionX, d.positionX) &&
+    igual(s.positionY, d.positionY) &&
+    igual(s.zoom, d.zoom) &&
+    igual(s.rotation, d.rotation)
+  );
+}
+
+/** O enquadramento que de fato muda alguma coisa — `null` quando é o padrão. */
+export function effectiveImageSettings(
+  settings: ImageSettings | null | undefined,
+): ImageSettings | null {
+  return isDefaultImageSettings(settings) ? null : (settings ?? null);
+}
+
 export function clampImageSettings(settings: Partial<ImageSettings>): ImageSettings {
   return {
     positionX: clamp(settings.positionX ?? DEFAULT_IMAGE_SETTINGS.positionX, 0, 100),
