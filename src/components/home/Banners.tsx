@@ -21,32 +21,18 @@ function BannerSlide({ banner }: { banner: Banner }) {
   const enquadrado = Boolean(isMobile ? banner.mobileSettings : banner.desktopSettings);
 
   const arte = (
-    <>
-      {/* A peça quase nunca tem a proporção exata da tela. Em vez de cortar a
-          arte (o que o lojista não quer) ou deixar tarjas pretas, as sobras são
-          preenchidas com a própria imagem desfocada — a peça aparece inteira e
-          o bloco continua parecendo intencional. Com enquadramento salvo não há
-          sobra, então o fundo não entra. */}
-      {!enquadrado && (
-        <img
-          src={banner.url}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
-        />
-      )}
-      <PositionedImage
-        src={banner.url}
-        alt=""
-        desktopSettings={banner.desktopSettings}
-        mobileSettings={banner.mobileSettings}
-        // Sem enquadramento salvo, a arte manda na altura: a imagem entra
-        // inteira, na proporção original, seja no celular ou no computador.
-        // Com enquadramento, vale o recorte que o admin escolheu.
-        wrapperClassName={enquadrado ? "absolute inset-0 h-full w-full" : "relative block w-full"}
-        fallbackClassName="h-auto max-h-[70vh] object-contain"
-      />
-    </>
+    <PositionedImage
+      src={banner.url}
+      alt=""
+      desktopSettings={banner.desktopSettings}
+      mobileSettings={banner.mobileSettings}
+      // Sem enquadramento salvo, a arte manda na altura: a imagem entra
+      // inteira, na proporção original, seja no celular ou no computador.
+      // Com enquadramento, vale o recorte que o admin escolheu.
+      uncropped
+      wrapperClassName={enquadrado ? "absolute inset-0 h-full w-full" : "block w-full"}
+      fallbackClassName="h-auto max-h-[70vh] w-full object-contain"
+    />
   );
 
   // A altura fixa só existe quando há um recorte a respeitar. Sem ele, a caixa

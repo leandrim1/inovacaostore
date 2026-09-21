@@ -16,6 +16,13 @@ interface PositionedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>,
   fallbackClassName?: string;
   /** Classes do elemento mais externo (ex: "absolute inset-0" quando a imagem é um fundo). */
   wrapperClassName?: string;
+  /**
+   * Mostra a imagem INTEIRA, sem cortar, e preenche as sobras com a própria
+   * arte desfocada. É o que garante que o que o lojista subiu apareça igual no
+   * celular e no computador. Só vale quando não há enquadramento salvo: se ele
+   * recortou de propósito, o recorte é respeitado.
+   */
+  uncropped?: boolean;
 }
 
 /**
@@ -29,6 +36,7 @@ export function PositionedImage({
   mobileSettings,
   fallbackClassName = "object-cover",
   wrapperClassName = "h-full w-full",
+  uncropped = false,
   className = "",
   ...imgProps
 }: PositionedImageProps) {
@@ -39,7 +47,23 @@ export function PositionedImage({
   const settings = isMobile ? mobileSettings : desktopSettings;
 
   if (!settings) {
-    return <img {...imgProps} className={`${wrapperClassName} ${fallbackClassName} ${className}`} />;
+    if (!uncropped) {
+      return <img {...imgProps} className={`${wrapperClassName} ${fallbackClassName} ${className}`} />;
+    }
+
+    // A arte quase nunca tem a proporção exata da caixa. Cortar destruiria a
+    // peça; tarja preta pareceria defeito. A própria imagem desfocada preenche
+    // a sobra e o bloco continua parecendo intencional.
+    return (
+      <span className={`relative block overflow-hidden ${wrapperClassName}`}>
+        <span
+          aria-hidden
+          className="absolute inset-0 scale-110 bg-cover bg-center opacity-40 blur-2xl"
+          style={{ backgroundImage: `url(${imgProps.src})` }}
+        />
+        <img {...imgProps} className={`relative ${fallbackClassName} ${className}`} />
+      </span>
+    );
   }
 
   const scale = totalScale(settings, aspect);
