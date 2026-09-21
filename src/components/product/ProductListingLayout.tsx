@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import type { Product } from "../../data/types";
 import { useProductFilters, type SortOption } from "../../hooks/useProductFilters";
 import { FiltersPanel } from "./FiltersPanel";
@@ -69,18 +69,31 @@ export function ProductListingLayout({
               {filters.filtered.length} produto(s)
             </p>
 
-            <select
-              value={filters.sort}
-              onChange={(e) => filters.setSort(e.target.value as SortOption)}
-              className="rounded-full border border-brand-ink/15 bg-white px-4 py-2 text-sm text-brand-ink outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
-              aria-label="Ordenar por"
-            >
-              {Object.entries(SORT_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  Ordenar: {label}
-                </option>
-              ))}
-            </select>
+            {/* A seta nativa do <select> é desenhada colada na borda e ignora o
+                padding, o que fica torto dentro de uma pílula arredondada.
+                `appearance-none` desliga a seta do navegador e desenhamos a
+                nossa, com `pr-10` reservando o espaço dela para o texto nunca
+                passar por baixo. `pointer-events-none` mantém o clique na seta
+                abrindo a lista. */}
+            <div className="relative">
+              <select
+                value={filters.sort}
+                onChange={(e) => filters.setSort(e.target.value as SortOption)}
+                className="w-full appearance-none rounded-full border border-brand-ink/15 bg-white py-2 pl-4 pr-10 text-sm text-brand-ink outline-none transition-colors focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5"
+                aria-label="Ordenar por"
+              >
+                {Object.entries(SORT_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    Ordenar: {label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={16}
+                aria-hidden
+                className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+              />
+            </div>
           </div>
 
           <p className="mb-4 text-sm text-neutral-500 lg:hidden">
