@@ -112,12 +112,19 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
           </span>
         </motion.div>
 
-        <motion.p
-          variants={rise}
-          className="font-display text-3xl tracking-wide text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] sm:text-4xl"
-        >
-          {promotion.title}
-        </motion.p>
+        {/* O título é o que chama a atenção primeiro, então ganha corpo, letras
+            espaçadas e um traço amarelo embaixo, como numa arte de banner.
+            `w-fit max-w-full` deixa o traço com a largura exata do texto sem
+            deixar um título longo vazar da tela no celular. */}
+        <motion.div variants={rise} className="w-fit max-w-full">
+          <p className="font-display text-4xl leading-[0.95] tracking-[0.06em] text-white break-words [text-shadow:0_2px_0_rgba(0,0,0,0.35),0_6px_24px_rgba(0,0,0,0.75)] sm:text-5xl md:text-[3.25rem]">
+            {promotion.title}
+          </p>
+          <span
+            className="mt-2.5 block h-[3px] rounded-full bg-gradient-to-r from-brand-yellow via-brand-yellow to-transparent shadow-[0_0_14px_-2px_rgba(245,196,0,0.9)]"
+            aria-hidden
+          />
+        </motion.div>
 
         {/* Sem `w-fit` aqui: `fit-content` deixa o parágrafo com a largura do
             texto inteiro e um destaque longo ("20% DESCONTO") vaza da borda no
