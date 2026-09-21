@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import heroImage from "../../assets/images/hero-friends.jpg";
+import heroImage from "../../assets/images/otimizadas/hero-friends.webp";
 import { Logo } from "../ui/Logo";
 
 interface AuthLayoutProps {

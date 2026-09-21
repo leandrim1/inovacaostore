@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import heroImageFallback from "../../assets/images/hero-friends.jpg";
+import heroImageFallback from "../../assets/images/otimizadas/hero-friends.webp";
 import { useParallax } from "../../hooks/useParallax";
 import { useSiteSettings, type HeroImage } from "../../hooks/useSiteSettings";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";

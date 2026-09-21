@@ -4,6 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "../db.js";
 import { serializeProduct } from "../utils/serialize.js";
 import { loadActivePromotions } from "../promotions.js";
+import { cacheLeituraPublica } from "../security.js";
 
 export const productsRouter = Router();
 
@@ -37,7 +38,7 @@ const querySchema = z.object({
     .optional(),
 });
 
-productsRouter.get("/", async (req, res) => {
+productsRouter.get("/", cacheLeituraPublica(60), async (req, res) => {
   const parsed = querySchema.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: "Parâmetros de busca inválidos.", details: parsed.error.flatten() });
@@ -85,7 +86,11 @@ productsRouter.get("/", async (req, res) => {
   const products = await prisma.product.findMany({
     where,
     orderBy,
-    take: limit,
+    // Teto padrão: sem ele a rota devolvia o catálogo inteiro, com imagens e
+    // variações de cada produto, em toda chamada. Hoje são 8 produtos, mas a
+    // resposta cresce sem limite junto com a loja — e é a vitrine, a rota mais
+    // chamada do site.
+    take: limit ?? 60,
     include: { images: { orderBy: { order: "asc" } }, variants: true, category: true },
   });
 
@@ -94,7 +99,7 @@ productsRouter.get("/", async (req, res) => {
   res.json({ items: products.map((p) => serializeProduct(p, promotions)) });
 });
 
-productsRouter.get("/:slug", async (req, res) => {
+productsRouter.get("/:slug", cacheLeituraPublica(60), async (req, res) => {
   const product = await prisma.product.findUnique({
     where: { slug: req.params.slug },
     include: { images: { orderBy: { order: "asc" } }, variants: true, category: true },

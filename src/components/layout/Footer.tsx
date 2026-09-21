@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { InstagramIcon } from "../ui/InstagramIcon";
-import logoImage from "../../assets/images/logo.jpg";
+import logoImage from "../../assets/images/otimizadas/logo.webp";
 import {
   STORE,
   buildMailtoLink,

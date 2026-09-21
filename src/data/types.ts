@@ -6,6 +6,8 @@ export interface Category {
   name: string;
   description: string;
   image?: string;
+  /** Foto de capa escolhida pelo servidor — evita a home baixar o catálogo só para achar uma imagem. */
+  coverImage?: string | null;
 }
 
 export interface ColorOption {

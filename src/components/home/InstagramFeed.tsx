@@ -3,14 +3,17 @@ import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
 import { InstagramIcon } from "../ui/InstagramIcon";
 
-import insta01 from "../../assets/images/insta-01.jpg";
-import insta02 from "../../assets/images/insta-02.jpg";
-import insta03 from "../../assets/images/insta-03.jpg";
-import insta04 from "../../assets/images/insta-04.jpg";
-import insta05 from "../../assets/images/insta-05.jpg";
-import camiseta01 from "../../assets/images/product-camiseta-01.jpg";
-import camiseta03 from "../../assets/images/product-camiseta-03.jpg";
-import bermuda02 from "../../assets/images/product-bermuda-02.jpg";
+// Versões de 400 px geradas por scripts/otimizar-imagens.mjs: a grade é um
+// quadrado de ~114 px no celular, então os arquivos de 1200 px baixavam
+// dez vezes mais pixel do que a tela mostra.
+import insta01 from "../../assets/images/otimizadas/insta-01.webp";
+import insta02 from "../../assets/images/otimizadas/insta-02.webp";
+import insta03 from "../../assets/images/otimizadas/insta-03.webp";
+import insta04 from "../../assets/images/otimizadas/insta-04.webp";
+import insta05 from "../../assets/images/otimizadas/insta-05.webp";
+import camiseta01 from "../../assets/images/otimizadas/product-camiseta-01.webp";
+import camiseta03 from "../../assets/images/otimizadas/product-camiseta-03.webp";
+import bermuda02 from "../../assets/images/otimizadas/product-bermuda-02.webp";
 
 const IMAGES = [
   insta01,
@@ -57,6 +60,7 @@ export function InstagramFeed() {
                   src={src}
                   alt="Publicação da Inovação Store no Instagram"
                   loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
                 />
                 <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/50">

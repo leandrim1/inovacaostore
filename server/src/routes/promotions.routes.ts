@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
 import { isDiscountingNow, toActivePromotion } from "../promotions.js";
+import { cacheLeituraPublica } from "../security.js";
 
 export const promotionsRouter = Router();
 
@@ -9,7 +10,7 @@ export const promotionsRouter = Router();
  * respeita também a data de início: anunciar "20% OFF" antes de o desconto
  * valer seria prometer ao cliente um preço que a loja ainda não pratica.
  */
-promotionsRouter.get("/", async (_req, res) => {
+promotionsRouter.get("/", cacheLeituraPublica(60), async (_req, res) => {
   const now = new Date();
   const promotions = await prisma.promotion.findMany({
     where: {

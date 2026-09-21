@@ -10,7 +10,7 @@ import {
 } from "../data/store";
 import { InstagramIcon } from "../components/ui/InstagramIcon";
 import { useSiteSettings } from "../hooks/useSiteSettings";
-import heroImage from "../assets/images/hero-friends.jpg";
+import heroImage from "../assets/images/otimizadas/hero-friends.webp";
 
 export default function AboutPage() {
   const { data: settings } = useSiteSettings();

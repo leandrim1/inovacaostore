@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logoImage from "../../assets/images/logo.jpg";
+import logoImage from "../../assets/images/otimizadas/logo.webp";
 
 interface LogoProps {
   size?: number;

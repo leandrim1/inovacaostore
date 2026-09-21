@@ -39,8 +39,9 @@ export function publicBaseUrl(): string {
 /**
  * Cabeçalhos de segurança.
  *
- * A CSP precisa liberar o Google Fonts (CSS + arquivos), imagens vindas do
- * Vercel Blob e estilos inline (o framer-motion anima via atributo `style`).
+ * Com as fontes autohospedadas, a CSP não precisa mais liberar domínio de
+ * terceiro nenhum para estilo ou fonte — só imagens do Vercel Blob e estilos
+ * inline (o framer-motion anima via atributo `style`).
  * `frame-ancestors 'none'` é a proteção contra clickjacking; `object-src
  * 'none'` corta plugins legados.
  */
@@ -53,8 +54,8 @@ export const securityHeaders = helmet({
       objectSrc: ["'none'"],
       formAction: ["'self'"],
       scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      fontSrc: ["'self'", "data:"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
       connectSrc: ["'self'", "https://viacep.com.br", "https://nominatim.openstreetmap.org"],
       upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
@@ -123,6 +124,39 @@ export function blockForgedOrigin(req: Request, res: Response, next: NextFunctio
     return;
   }
   next();
+}
+
+/**
+ * Cache de borda para leituras públicas.
+ *
+ * Estas respostas são IDÊNTICAS para todo visitante e não dependem de sessão
+ * nenhuma. Sem `Cache-Control` a CDN da Vercel não guarda nada, então toda
+ * visita de todo mundo acordava a função serverless, abria conexão com o
+ * Postgres e repetia a mesma consulta — nove vezes só para montar a home.
+ *
+ * `max-age=0` mantém o NAVEGADOR sempre revalidando (o ETag que o Express já
+ * emite resolve isso num 304 de poucos bytes), enquanto `s-maxage` deixa a
+ * CDN responder sozinha. O `stale-while-revalidate` evita que a expiração
+ * jogue todos os visitantes no banco ao mesmo tempo.
+ *
+ * Consequência a ter em mente: uma alteração no painel leva até
+ * `segundos` para aparecer na loja. O preço cobrado NÃO depende disso — ele é
+ * sempre recalculado no servidor na hora de fechar o pedido.
+ */
+export function cacheLeituraPublica(segundos = 60) {
+  return (_req: Request, res: Response, next: NextFunction) => {
+    // `CDN-Cache-Control` fala SÓ com a borda da Vercel: ela guarda e serve a
+    // resposta, e o cabeçalho não chega ao navegador. Deliberadamente não
+    // mandamos `Cache-Control`, para o comportamento do navegador continuar
+    // exatamente o de hoje — o ganho que interessa é tirar a função
+    // serverless e o Postgres do caminho da maioria das visitas, não guardar
+    // JSON no aparelho do cliente.
+    res.setHeader(
+      "CDN-Cache-Control",
+      `public, s-maxage=${segundos}, stale-while-revalidate=60`,
+    );
+    next();
+  };
 }
 
 /** Conta tentativas por IP + alvo, para um atacante não diluir o limite trocando de conta. */

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { Reveal } from "../ui/Reveal";
-import newsletterBg from "../../assets/images/newsletter-bg.webp";
+import newsletterBg from "../../assets/images/otimizadas/newsletter-bg.webp";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -16,9 +16,14 @@ export function Newsletter() {
 
   return (
     <section className="relative min-h-[420px] overflow-hidden bg-brand-ink py-16 text-white sm:min-h-[460px] sm:py-24">
+      {/* Fica no rodapé de uma página de ~7.400 px e carregava junto com o
+          resto: 251 KB gastos antes de o visitante rolar. A altura mínima da
+          seção já reserva o espaço, então adiar não desloca nada na tela. */}
       <img
         src={newsletterBg}
         alt=""
+        loading="lazy"
+        decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-[38%_center] sm:object-[50%_40%]"
       />
       <div className="absolute inset-0 bg-black/55" />

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { prisma } from "../db.js";
+import { cacheLeituraPublica } from "../security.js";
 
 export const settingsRouter = Router();
 
@@ -24,7 +25,7 @@ const DEFAULT_SETTINGS = {
   announcementItem4: "Atendimento rápido pelo WhatsApp",
 };
 
-settingsRouter.get("/", async (_req, res) => {
+settingsRouter.get("/", cacheLeituraPublica(60), async (_req, res) => {
   const [settings, heroImages, galleryImages, banners] = await Promise.all([
     prisma.siteSettings.findUnique({ where: { id: "singleton" } }),
     prisma.heroImage.findMany({ orderBy: { order: "asc" } }),

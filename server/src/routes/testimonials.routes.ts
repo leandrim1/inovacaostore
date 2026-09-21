@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../db.js";
 import type { Testimonial } from "@prisma/client";
 import { attachCustomerIfPresent } from "../middleware/requireCustomer.js";
-import { publicWriteLimiter } from "../security.js";
+import { cacheLeituraPublica, publicWriteLimiter } from "../security.js";
 import { requireVerifiedCustomer } from "../middleware/requireCustomer.js";
 import { APPROVED_STATUS, DELIVERED_ORDER_STATUS, PENDING_STATUS } from "../testimonialStatus.js";
 
@@ -22,7 +22,7 @@ function serializePublic(t: Testimonial) {
   };
 }
 
-testimonialsRouter.get("/", async (_req, res) => {
+testimonialsRouter.get("/", cacheLeituraPublica(120), async (_req, res) => {
   const items = await prisma.testimonial.findMany({
     where: { status: APPROVED_STATUS },
     orderBy: [{ featured: "desc" }, { order: "asc" }, { createdAt: "desc" }],
