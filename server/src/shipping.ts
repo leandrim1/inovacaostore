@@ -1,5 +1,6 @@
 import { prisma } from "./db.js";
 import { geocodeCep } from "./geocoding.js";
+import { loadActivePromotions, priceProduct } from "./promotions.js";
 import { haversineKm } from "./distance.js";
 
 const CEP_PATTERN = /^\d{5}-?\d{3}$/;
@@ -53,10 +54,13 @@ function matchesFreeRegion(regions: FreeRegion[], city: string, state: string) {
 
 async function loadCartTotals(items: ShippingItemInput[]) {
   if (items.length === 0) return null;
-  const variants = await prisma.productVariant.findMany({
-    where: { id: { in: items.map((i) => i.variantId) } },
-    include: { product: true },
-  });
+  const [variants, promotions] = await Promise.all([
+    prisma.productVariant.findMany({
+      where: { id: { in: items.map((i) => i.variantId) } },
+      include: { product: true },
+    }),
+    loadActivePromotions(),
+  ]);
 
   let subtotal = 0;
   let totalWeightKg = 0;
@@ -64,7 +68,13 @@ async function loadCartTotals(items: ShippingItemInput[]) {
   for (const item of items) {
     const variant = variants.find((v) => v.id === item.variantId);
     if (!variant) continue;
-    subtotal += variant.product.price * item.quantity;
+    // O limiar de "frete grátis acima de R$ X" precisa olhar o valor que o
+    // cliente REALMENTE paga. Usando o preço de tabela, uma promoção de 20%
+    // liberava frete grátis num carrinho que não alcança o mínimo — a loja
+    // pagava a entrega de um pedido menor do que a regra dela permite.
+    // `priceProduct` é o mesmo motor usado na criação do pedido, então frete
+    // e cobrança enxergam exatamente o mesmo preço.
+    subtotal += priceProduct(variant.product, promotions).price * item.quantity;
     totalWeightKg += variant.product.weightKg * item.quantity;
     totalVolumeM3 += variant.product.volumeM3 * item.quantity;
   }
