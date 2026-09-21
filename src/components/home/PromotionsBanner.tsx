@@ -79,6 +79,12 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
     isMobile ? promotion.mobileSettings : promotion.desktopSettings,
   );
   const arteMandaNaAltura = soArte && !enquadrado;
+  // Mesmo COM recorte salvo, quem é só arte manda na proporção da caixa: o
+  // quadro fixo é retrato no celular e deitado no computador, então ele
+  // decapita qualquer peça larga antes de o zoom do lojista sequer entrar. Com
+  // a caixa na proporção do arquivo, zoom 1 mostra a peça inteira e um zoom de
+  // verdade amplia dentro dela — igual nas duas telas.
+  const arteMandaNaCaixa = soArte;
   const cta = (
     <>
       <Zap size={16} className="fill-brand-ink" aria-hidden />
@@ -90,7 +96,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   return (
     <div
       className={`relative overflow-hidden rounded-2xl ${
-        arteMandaNaAltura
+        arteMandaNaCaixa
           ? "block w-full bg-brand-ink"
           : "flex min-h-[420px] items-center sm:min-h-[480px]"
       }`}
@@ -106,6 +112,18 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+            />
+          )}
+          {/* Com recorte salvo a imagem vira camada absoluta e não empurra mais
+              a caixa. Esta cópia invisível fica no fluxo só para dar à caixa a
+              proporção do arquivo — é o que mantém celular e computador com o
+              mesmo formato. */}
+          {arteMandaNaCaixa && !arteMandaNaAltura && (
+            <img
+              src={promotion.imageUrl}
+              alt=""
+              aria-hidden
+              className="invisible block h-auto max-h-[70vh] w-full"
             />
           )}
           <PositionedImage

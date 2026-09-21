@@ -38,6 +38,13 @@ function BannerSlide({ banner }: { banner: Banner }) {
           className="absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
         />
       )}
+      {/* Com recorte salvo a imagem vira camada absoluta e não empurra mais a
+          caixa. Esta cópia invisível fica no fluxo só para dar à caixa a
+          proporção do arquivo: o quadro fixo (retrato no celular, deitado no
+          computador) decapitaria a peça antes de o zoom do lojista entrar. */}
+      {enquadrado && (
+        <img src={banner.url} alt="" aria-hidden className="invisible block h-auto max-h-[70vh] w-full" />
+      )}
       <PositionedImage
         src={banner.url}
         alt=""
@@ -52,11 +59,10 @@ function BannerSlide({ banner }: { banner: Banner }) {
     </>
   );
 
-  // A altura fixa só existe quando há um recorte a respeitar. Sem ele, a caixa
-  // encolhe até a imagem — nada de faixa preta sobrando nem arte cortada.
-  const caixa = enquadrado
-    ? "relative block w-full overflow-hidden rounded-2xl bg-brand-ink aspect-[9/10] sm:aspect-[21/9]"
-    : "relative block w-full overflow-hidden rounded-2xl bg-brand-ink";
+  // A caixa sempre encolhe até a arte — sem recorte é a própria imagem que a
+  // define; com recorte, a cópia invisível acima. Nada de quadro fixo: era ele
+  // que mudava o formato entre celular e computador e cortava a peça.
+  const caixa = "relative block w-full overflow-hidden rounded-2xl bg-brand-ink";
 
   if (!banner.linkUrl) {
     return <div className={caixa}>{arte}</div>;
