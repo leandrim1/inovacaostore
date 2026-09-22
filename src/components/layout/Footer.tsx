@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Mail, MapPin } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { InstagramIcon } from "../ui/InstagramIcon";
+import { PaymentStrip } from "./PaymentStrip";
 import logoImage from "../../assets/images/otimizadas/logo.webp";
 import {
   STORE,
@@ -153,7 +154,9 @@ function FooterCard() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center gap-4 px-6 py-5 text-center text-sm sm:flex-row sm:justify-between sm:px-10 sm:text-left lg:px-12">
+        <PaymentStrip />
+
+        <div className="flex flex-col items-center gap-4 border-t border-brand-ink/[0.07] px-6 py-5 text-center text-sm sm:flex-row sm:justify-between sm:px-10 sm:text-left lg:px-12">
           <p className="font-medium text-neutral-500">
             © {new Date().getFullYear()} {STORE.name}. Todos os direitos reservados.
           </p>
