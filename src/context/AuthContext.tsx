@@ -12,7 +12,17 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  /** Só dígitos (ex.: "34996576357"); string vazia quando nunca foi informado. */
+  phone: string;
   emailVerified: boolean;
+  /** ISO — vira o "Cliente desde" da área do cliente. */
+  createdAt: string;
+}
+
+/** Campos que o próprio cliente pode editar — o e-mail é a identidade da conta e fica fora. */
+export interface ProfileInput {
+  name?: string;
+  phone?: string;
 }
 
 type AuthResult = { ok: true } | { ok: false; error: string };
@@ -30,6 +40,7 @@ interface AuthContextValue {
   forgotPassword: (email: string) => Promise<AuthResult>;
   resetPassword: (token: string, password: string) => Promise<AuthResult>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>;
+  updateProfile: (data: ProfileInput) => Promise<AuthUserResult>;
   refresh: () => Promise<void>;
 }
 
@@ -137,6 +148,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const updateProfile = useCallback(async (data: ProfileInput): Promise<AuthUserResult> => {
+    try {
+      const { user: updated } = await api.patch<{ user: User }>("/api/account/me", data);
+      setUser(updated);
+      return { ok: true, user: updated };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível salvar seus dados.") };
+    }
+  }, []);
+
   const value: AuthContextValue = {
     user,
     isAuthenticated: Boolean(user),
@@ -149,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     forgotPassword,
     resetPassword,
     changePassword,
+    updateProfile,
     refresh,
   };
 

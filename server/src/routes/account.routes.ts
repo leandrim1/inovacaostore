@@ -41,12 +41,26 @@ const loginSchema = z.object({
   password: z.string().min(1, "Informe sua senha."),
 });
 
-function toPublicUser(customer: { id: string; name: string; email: string; emailVerified: boolean }) {
+/**
+ * Recorte do cadastro que pode sair do servidor. É uma lista explícita, não
+ * um `...customer`: assim um campo novo no schema (hash de senha, token,
+ * `sessionsValidFrom`) nunca vaza para o cliente por esquecimento.
+ */
+function toPublicUser(customer: {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  emailVerified: boolean;
+  createdAt: Date;
+}) {
   return {
     id: customer.id,
     name: customer.name,
     email: customer.email,
+    phone: customer.phone,
     emailVerified: customer.emailVerified,
+    createdAt: customer.createdAt,
   };
 }
 
@@ -212,6 +226,51 @@ accountRouter.get("/me", requireCustomerAuth, async (req, res) => {
     res.status(401).json({ error: "Sessão inválida." });
     return;
   }
+  res.json({ user: toPublicUser(customer) });
+});
+
+/**
+ * Edição dos próprios dados ("Editar dados" da área do cliente).
+ *
+ * Só nome e telefone: o e-mail é a identidade da conta e trocá-lo exigiria
+ * reverificação (e abriria caminho para tomar a conta de outra pessoa
+ * passando o e-mail dela). A identidade vem da sessão, nunca do corpo — o
+ * cliente não escolhe qual cadastro está editando.
+ */
+accountRouter.patch("/me", accountActionLimiter, requireCustomerAuth, async (req, res) => {
+  const schema = z.object({
+    name: z.string().trim().min(2, "Informe seu nome completo.").max(80).optional(),
+    // Só dígitos: guardar "(34) 99657-6357" e "34996576357" como coisas
+    // diferentes atrapalharia na hora de achar o cliente pelo telefone.
+    phone: z
+      .string()
+      .trim()
+      .max(20)
+      .transform((v) => v.replace(/\D/g, ""))
+      .refine((v) => v === "" || (v.length >= 10 && v.length <= 13), "Telefone inválido.")
+      .optional(),
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos." });
+    return;
+  }
+
+  const { name, phone } = parsed.data;
+  if (name === undefined && phone === undefined) {
+    res.status(400).json({ error: "Nada para atualizar." });
+    return;
+  }
+
+  const customer = await prisma.customer.update({
+    where: { id: req.customer!.sub },
+    data: {
+      ...(name !== undefined ? { name } : {}),
+      ...(phone !== undefined ? { phone } : {}),
+    },
+  });
+
   res.json({ user: toPublicUser(customer) });
 });
 

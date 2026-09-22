@@ -1,13 +1,8 @@
 import { usePaymentMethodBreakdown } from "../../../hooks/admin/useAdminAnalytics";
 import type { PeriodFilter } from "../../../lib/dateRanges";
 import { formatBRL } from "../../../lib/format";
+import { paymentMethodLabel } from "../../../lib/paymentMethods";
 import { paymentMethodColor } from "./chartColors";
-
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  pix: "Pix",
-  cartao: "Cartão",
-  boleto: "Boleto",
-};
 
 interface PaymentMethodsPanelProps {
   period: PeriodFilter;
@@ -35,7 +30,7 @@ export function PaymentMethodsPanel({ period }: PaymentMethodsPanelProps) {
                 <div className="mb-1 flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2 font-medium text-brand-ink">
                     <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
-                    {PAYMENT_METHOD_LABELS[item.method] ?? item.method}
+                    {paymentMethodLabel(item.method)}
                   </span>
                   <span className="text-neutral-500">
                     {pct.toFixed(0)}% · {formatBRL(item.revenue)} · {item.orderCount} pedido(s)

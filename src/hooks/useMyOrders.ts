@@ -23,6 +23,14 @@ export interface MyOrder {
   total: number;
   paymentMethod: string;
   status: string;
+  /** Endereço informado na finalização daquele pedido (o cadastro não guarda endereço fixo). */
+  cep: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
   createdAt: string;
 }
 

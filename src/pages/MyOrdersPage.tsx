@@ -3,21 +3,8 @@ import { PackageSearch } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { useMyOrders } from "../hooks/useMyOrders";
 import { formatBRL } from "../lib/format";
-
-const STATUS_LABELS: Record<string, string> = {
-  pendente: "Pendente",
-  pago: "Pago",
-  separacao: "Em separação",
-  enviado: "Enviado",
-  entregue: "Entregue",
-  cancelado: "Cancelado",
-};
-
-const PAYMENT_LABELS: Record<string, string> = {
-  pix: "Pix",
-  cartao: "Cartão de crédito",
-  boleto: "Boleto",
-};
+import { STATUS_LABELS, STATUS_STYLES } from "../lib/orderStatus";
+import { paymentMethodLabel } from "../lib/paymentMethods";
 
 export default function MyOrdersPage() {
   const { data: orders = [], isLoading } = useMyOrders();
@@ -57,7 +44,11 @@ export default function MyOrdersPage() {
                       })}
                     </p>
                   </div>
-                  <span className="rounded-full bg-brand-cream px-3 py-1 text-xs font-medium text-brand-ink">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      STATUS_STYLES[order.status] ?? "bg-brand-cream text-brand-ink"
+                    }`}
+                  >
                     {STATUS_LABELS[order.status] ?? order.status}
                   </span>
                 </div>
@@ -88,7 +79,7 @@ export default function MyOrdersPage() {
 
                 <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/5 pt-3 text-sm">
                   <span className="text-xs uppercase tracking-wide text-neutral-400">
-                    {PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod}
+                    {paymentMethodLabel(order.paymentMethod)}
                     {(order.promotionDiscount ?? 0) > 0 && (
                       <span className="ml-2 normal-case tracking-normal text-green-700">
                         Você economizou {formatBRL(order.promotionDiscount ?? 0)}
