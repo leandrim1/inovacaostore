@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Seo } from "../components/seo/Seo";
 import { AuthLayout } from "../components/layout/AuthLayout";
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +11,15 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirect = searchParams.get("redirect") || "/";
+  const location = useLocation();
+  /**
+   * Vem do cadastro quando a conta foi criada mas o e-mail não saiu. Fica em
+   * estado local (não só no `location.state`) para sumir assim que um
+   * reenvio der certo — aí a frase "enviamos um código" volta a ser verdade.
+   */
+  const [emailNotSent, setEmailNotSent] = useState(
+    (location.state as { emailNotSent?: boolean } | null)?.emailNotSent === true,
+  );
 
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +71,7 @@ export default function VerifyEmailPage() {
       setError(result.error);
       return;
     }
+    setEmailNotSent(false);
     setInfo("Enviamos um novo código para o seu e-mail.");
     setCooldown(RESEND_COOLDOWN_SECONDS);
   }
@@ -77,9 +87,22 @@ export default function VerifyEmailPage() {
         eyebrow="Última etapa"
         title="Confirme seu e-mail"
         subtitle={
-          <>Enviamos um código de verificação para <strong className="text-brand-ink">{user?.email}</strong>.</>
+          emailNotSent ? (
+            <>
+              Sua conta foi criada, mas <strong className="text-brand-ink">não conseguimos enviar o código</strong>{" "}
+              para {user?.email} agora.
+            </>
+          ) : (
+            <>Enviamos um código de verificação para <strong className="text-brand-ink">{user?.email}</strong>.</>
+          )
         }
       >
+        {emailNotSent && (
+          <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Toque em <strong>Reenviar código</strong> abaixo para tentar de novo. Se continuar sem chegar, fale com a
+            loja pelo WhatsApp.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
             type="text"
@@ -112,6 +135,14 @@ export default function VerifyEmailPage() {
         >
           {cooldown > 0 ? `Reenviar código (${cooldown}s)` : isResending ? "Reenviando…" : "Reenviar código"}
         </button>
+
+        {/* E-mail de remetente novo costuma ir para o spam ou para a aba
+            Promoções do Gmail — é a causa mais comum de "não chegou". */}
+        {!emailNotSent && (
+          <p className="mt-2 text-center text-xs text-neutral-400">
+            Não chegou em alguns minutos? Confira a caixa de spam e a aba Promoções.
+          </p>
+        )}
 
         <button
           type="button"

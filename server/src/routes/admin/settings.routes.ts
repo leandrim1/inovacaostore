@@ -5,6 +5,7 @@ import { prisma } from "../../db.js";
 import { upload, saveValidatedImage } from "../../upload.js";
 import { deleteUpload } from "../../storage.js";
 import { imageSettingsPatchSchema } from "../../imageSettings.js";
+import { classifyEmailError, describeEmailConfig, sendEmail } from "../../email.js";
 
 export const adminSettingsRouter = Router();
 
@@ -318,4 +319,47 @@ adminSettingsRouter.delete("/gallery-images/:id", async (req, res) => {
 
   const galleryImages = await prisma.galleryImage.findMany({ orderBy: { order: "asc" } });
   res.json({ items: galleryImages });
+});
+
+/**
+ * Diagnóstico do envio de e-mail (código de verificação, redefinição de
+ * senha). Existe porque a configuração mora nas variáveis de ambiente da
+ * Vercel, que o lojista não enxerga pelo site: sem isto, "o código não chega"
+ * não tem como ser investigado sem acesso ao log do servidor.
+ */
+const EMAIL_HINTS: Record<string, string> = {
+  nao_configurado:
+    "As variáveis SMTP_USER e/ou SMTP_PASSWORD não estão definidas na Vercel. Cadastre as duas em Settings › Environment Variables e faça um novo deploy.",
+  autenticacao:
+    "O servidor de e-mail recusou o login. No Gmail, SMTP_PASSWORD precisa ser uma senha de app (16 letras, gerada em myaccount.google.com/apppasswords com a verificação em duas etapas ativa) — a senha normal da conta não funciona.",
+  conexao:
+    "Não foi possível conectar ao servidor de e-mail. Confira SMTP_HOST e SMTP_PORT — para Gmail: smtp.gmail.com e 465.",
+  tempo_esgotado:
+    "O servidor de e-mail não respondeu em 10 segundos. Confira SMTP_HOST e SMTP_PORT (para Gmail: smtp.gmail.com e 465).",
+  destinatario: "O servidor de e-mail recusou o destinatário. Confira o e-mail do administrador.",
+  desconhecido: "Falha inesperada. O detalhe abaixo é a resposta do servidor de e-mail.",
+};
+
+adminSettingsRouter.get("/email", (_req, res) => {
+  res.json(describeEmailConfig());
+});
+
+adminSettingsRouter.post("/email/test", async (req, res) => {
+  // Vai para o próprio admin logado: a rota não aceita destinatário no
+  // corpo, então não serve para disparar e-mail para terceiros.
+  const destino = req.admin!.email;
+  try {
+    await sendEmail({
+      to: destino,
+      subject: "Teste de envio — Inovação Store",
+      html: `<p>Se este e-mail chegou, o envio da loja está funcionando: os clientes vão receber o código de verificação.</p>`,
+    });
+    res.json({ ok: true, to: destino });
+  } catch (err) {
+    const falha = classifyEmailError(err);
+    console.error(`[email] teste do painel falhou (${falha.reason}): ${falha.detail}`);
+    // 200 com ok:false, não 5xx: a rota funcionou, quem falhou foi o SMTP.
+    // É um resultado de diagnóstico, não um erro da API.
+    res.json({ ok: false, to: destino, reason: falha.reason, hint: EMAIL_HINTS[falha.reason], detail: falha.detail });
+  }
 });

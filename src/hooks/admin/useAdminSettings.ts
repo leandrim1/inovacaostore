@@ -226,3 +226,31 @@ export function useDeleteGalleryImage() {
     onSuccess: invalidate,
   });
 }
+
+/** Configuração de envio de e-mail vista pelo painel — sem a senha. */
+export interface EmailConfigSummary {
+  configured: boolean;
+  host: string;
+  port: number;
+  /** Conta mascarada ("le•••••@gmail.com"); `null` se SMTP_USER não existe. */
+  user: string | null;
+  hasPassword: boolean;
+  fromName: string;
+}
+
+export type EmailTestResult =
+  | { ok: true; to: string }
+  | { ok: false; to: string; reason: string; hint: string; detail: string };
+
+export function useEmailConfig() {
+  return useQuery({
+    queryKey: ["admin-email-config"],
+    queryFn: () => api.get<EmailConfigSummary>("/api/admin/settings/email"),
+  });
+}
+
+export function useSendTestEmail() {
+  return useMutation({
+    mutationFn: () => api.post<EmailTestResult>("/api/admin/settings/email/test"),
+  });
+}

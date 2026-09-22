@@ -26,7 +26,12 @@ export interface ProfileInput {
 }
 
 type AuthResult = { ok: true } | { ok: false; error: string };
-type AuthUserResult = { ok: true; user: User } | { ok: false; error: string };
+/**
+ * `emailNotSent`: a conta foi criada, mas o código de verificação não saiu.
+ * O servidor responde 201 mesmo assim (a conta existe), e sem este sinal a
+ * tela seguinte afirmava "enviamos um código" para quem não recebeu nada.
+ */
+type AuthUserResult = { ok: true; user: User; emailNotSent?: boolean } | { ok: false; error: string };
 
 interface AuthContextValue {
   user: User | null;
@@ -81,13 +86,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (name: string, email: string, password: string): Promise<AuthUserResult> => {
       try {
-        const { user: created } = await api.post<{ user: User }>("/api/account/register", {
-          name,
-          email,
-          password,
-        });
+        const { user: created, warning } = await api.post<{ user: User; warning?: string }>(
+          "/api/account/register",
+          { name, email, password },
+        );
         setUser(created);
-        return { ok: true, user: created };
+        return { ok: true, user: created, emailNotSent: Boolean(warning) };
       } catch (err) {
         return { ok: false, error: errorMessage(err, "Não foi possível criar sua conta.") };
       }

@@ -50,7 +50,10 @@ export default function RegisterPage() {
       setError(result.error);
       return;
     }
-    navigate(`/verificar-email?redirect=${encodeURIComponent(redirect)}`, { replace: true });
+    navigate(`/verificar-email?redirect=${encodeURIComponent(redirect)}`, {
+      replace: true,
+      state: { emailNotSent: result.emailNotSent === true },
+    });
   }
 
   return (

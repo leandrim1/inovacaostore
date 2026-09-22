@@ -12,7 +12,7 @@ import {
   signCustomerToken,
 } from "../customerAuth.js";
 import { requireCustomerAuth } from "../middleware/requireCustomer.js";
-import { sendEmail } from "../email.js";
+import { classifyEmailError, sendEmail } from "../email.js";
 import { accountEmailLimiter, loginLimiter as ipAndAccountLoginLimiter, publicBaseUrl } from "../security.js";
 import { passwordResetEmail, verificationCodeEmail } from "../emailTemplates.js";
 import { customerAddressesRouter } from "./addresses.routes.js";
@@ -118,7 +118,7 @@ async function issueVerificationCode(customerId: string, email: string, name: st
   }
 
   const code = generateVerificationCode();
-  await prisma.emailVerification.create({
+  const registro = await prisma.emailVerification.create({
     data: {
       customerId,
       codeHash: hashSecret(code),
@@ -130,8 +130,15 @@ async function issueVerificationCode(customerId: string, email: string, name: st
     const { subject, html } = verificationCodeEmail(code, CODE_TTL_MINUTES);
     await sendEmail({ to: email, subject, html });
   } catch (err) {
-    console.error(`Falha ao enviar e-mail de verificação para ${email}:`, err);
-    throw new AccountError(502, "Não foi possível enviar o código. Tente novamente.");
+    // Desfaz o registro do código: um código que não saiu não pode contar
+    // para o intervalo de reenvio. Sem isto, o cliente clicava em "Reenviar"
+    // e ouvia "aguarde 60 segundos" por um e-mail que nunca foi enviado.
+    await prisma.emailVerification.delete({ where: { id: registro.id } }).catch(() => undefined);
+    const falha = classifyEmailError(err);
+    // O motivo classificado vai para o log da Vercel; o cliente recebe uma
+    // mensagem genérica — "senha SMTP recusada" não é assunto dele.
+    console.error(`[email] código de verificação não enviado (${falha.reason}): ${falha.detail}`);
+    throw new AccountError(502, "Não foi possível enviar o código agora. Tente reenviar em instantes.");
   }
 
   void name; // reservado para personalização futura do e-mail
@@ -458,7 +465,7 @@ accountRouter.post("/forgot-password", accountEmailLimiter, accountActionLimiter
 
     if (!onCooldown) {
       const token = generateResetToken();
-      await prisma.passwordReset.create({
+      const registro = await prisma.passwordReset.create({
         data: {
           customerId: customer.id,
           tokenHash: hashSecret(token),
@@ -475,7 +482,12 @@ accountRouter.post("/forgot-password", accountEmailLimiter, accountActionLimiter
         const { subject, html } = passwordResetEmail(link, RESET_TTL_MINUTES);
         await sendEmail({ to: customer.email, subject, html });
       } catch (err) {
-        console.error(`Falha ao enviar e-mail de redefinição de senha para ${customer.email}:`, err);
+        // Mesmo motivo do código de verificação: um link que não saiu não
+        // pode travar o próximo pedido no intervalo de 60 segundos. A
+        // resposta ao cliente continua genérica (não revela se a conta existe).
+        await prisma.passwordReset.delete({ where: { id: registro.id } }).catch(() => undefined);
+        const falha = classifyEmailError(err);
+        console.error(`[email] link de redefinição não enviado (${falha.reason}): ${falha.detail}`);
       }
     }
   }

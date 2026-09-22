@@ -23,6 +23,7 @@ import {
 } from "../../hooks/admin/useAdminSettings";
 import type { Banner, HeroImage, PaymentMethod } from "../../hooks/useSiteSettings";
 import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
+import { EmailDiagnostic } from "../../components/admin/EmailDiagnostic";
 
 export default function AdminSettingsPage() {
   const { data: settings, isLoading } = useAdminSettings();
@@ -249,6 +250,10 @@ export default function AdminSettingsPage() {
         Textos e contatos usados na página inicial e em todo o site. Alterações aqui aparecem
         para os clientes assim que salvar.
       </p>
+
+      {/* Fora do <form>: é uma ferramenta de diagnóstico, não um campo que o
+          botão "Salvar" grava. */}
+      <EmailDiagnostic />
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
