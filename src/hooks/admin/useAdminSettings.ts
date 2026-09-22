@@ -5,9 +5,12 @@ import type { ImageSettings } from "../../lib/imageSettings";
 
 export type { Banner, HeroImage, PaymentMethod };
 
+/** Campos da faixa de benefícios — salvos pela página Benefícios, à parte. */
+export type BenefitsInput = Pick<SiteSettings, `benefit${1 | 2 | 3 | 4}${"Icon" | "Title" | "Text"}`>;
+
 export type SiteSettingsInput = Omit<
   SiteSettings,
-  "id" | "heroImages" | "galleryImages" | "banners" | "paymentMethods"
+  "id" | "heroImages" | "galleryImages" | "banners" | "paymentMethods" | keyof BenefitsInput
 >;
 export type AdminSiteSettings = Omit<
   SiteSettings,
@@ -34,6 +37,14 @@ export function useUpdateSettings() {
   const invalidate = useInvalidateSettings();
   return useMutation({
     mutationFn: (data: SiteSettingsInput) => api.put<AdminSiteSettings>("/api/admin/settings", data),
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdateBenefits() {
+  const invalidate = useInvalidateSettings();
+  return useMutation({
+    mutationFn: (data: BenefitsInput) => api.put<AdminSiteSettings>("/api/admin/settings/benefits", data),
     onSuccess: invalidate,
   });
 }

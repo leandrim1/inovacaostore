@@ -10,13 +10,6 @@ import { BENEFIT_ICON_KEYS } from "../../benefitIcons.js";
 
 export const adminSettingsRouter = Router();
 
-// Faixa de benefícios da home. Os limites vêm do layout: a faixa tem 2
-// colunas no celular, e um título maior que isso quebra em várias linhas e
-// desalinha os quatro itens.
-const benefitIcon = z.enum(BENEFIT_ICON_KEYS);
-const benefitTitle = z.string().trim().min(1, "Informe o título do benefício.").max(40);
-const benefitText = z.string().trim().min(1, "Informe o texto do benefício.").max(140);
-
 const settingsSchema = z.object({
   heroEyebrow: z.string().min(1),
   heroTitle: z.string().min(1),
@@ -34,6 +27,20 @@ const settingsSchema = z.object({
   announcementItem2: z.string().min(1),
   announcementItem3: z.string().min(1),
   announcementItem4: z.string().min(1),
+});
+
+// Faixa de benefícios da home — página própria no painel (Benefícios), com
+// rota própria: salvar lá nunca reescreve as outras configurações, e salvar
+// em Configurações nunca mexe nos benefícios (o schema acima nem os conhece,
+// e o zod descarta campos que não declarou).
+//
+// Os limites vêm do layout: a faixa tem 2 colunas no celular, e um título
+// maior que isso quebra em várias linhas e desalinha os quatro itens.
+const benefitIcon = z.enum(BENEFIT_ICON_KEYS);
+const benefitTitle = z.string().trim().min(1, "Informe o título do benefício.").max(40);
+const benefitText = z.string().trim().min(1, "Informe o texto do benefício.").max(140);
+
+const benefitsSchema = z.object({
   benefit1Icon: benefitIcon,
   benefit1Title: benefitTitle,
   benefit1Text: benefitText,
@@ -78,6 +85,29 @@ adminSettingsRouter.put("/", async (req, res) => {
     create: { id: "singleton", ...data },
   });
   res.json(settings);
+});
+
+adminSettingsRouter.put("/benefits", async (req, res) => {
+  const parsed = benefitsSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });
+    return;
+  }
+  try {
+    // `update`, não `upsert`: criar a linha exigiria inventar o resto das
+    // configurações. Ela sempre existe depois do seed.
+    const settings = await prisma.siteSettings.update({
+      where: { id: "singleton" },
+      data: parsed.data,
+    });
+    res.json(settings);
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      res.status(404).json({ error: "Configurações ainda não inicializadas." });
+      return;
+    }
+    throw err;
+  }
 });
 
 adminSettingsRouter.get("/hero-images", async (_req, res) => {

@@ -1,5 +1,5 @@
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Ticket, MessageSquareQuote, Settings, Truck, Users, Wallet, KeyRound } from "lucide-react";
+import { LayoutDashboard, Package, Tags, ShoppingCart, LogOut, ExternalLink, Megaphone, Ticket, MessageSquareQuote, Settings, Truck, Users, Wallet, KeyRound, BadgeCheck } from "lucide-react";
 import { Logo } from "../../components/ui/Logo";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: "/admin/clientes", label: "Clientes", icon: Users },
   { to: "/admin/frete", label: "Frete", icon: Truck },
   { to: "/admin/financeiro", label: "Financeiro", icon: Wallet },
+  { to: "/admin/beneficios", label: "Benefícios", icon: BadgeCheck },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
   { to: "/admin/senha", label: "Alterar senha", icon: KeyRound },
 ];
