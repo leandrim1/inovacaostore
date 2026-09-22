@@ -19,7 +19,17 @@ const SLIDE_DURATION = 6000;
 export function Hero() {
   const { ref, offset } = useParallax(0.15);
   const aspect = useElementAspectRatio(ref, 16 / 9);
-  const { data: settings } = useSiteSettings();
+  /**
+   * `isPlaceholderData`: as configurações ainda não chegaram e `settings` são
+   * os valores padrão de código. Nesse intervalo a lista de imagens é vazia,
+   * e antes o hero concluía "nenhuma imagem cadastrada" e pintava a foto
+   * padrão — trocando pela do painel só quando a API respondia. Com a função
+   * fria da Vercel isso durava segundos: parecia que a imagem cadastrada era
+   * ignorada. Agora o hero espera; a foto padrão só aparece quando o painel
+   * realmente não tem imagem, ou quando a API falhou de vez (aí o hook
+   * devolve os padrões com `isPlaceholderData` falso).
+   */
+  const { data: settings, isPlaceholderData: carregando } = useSiteSettings();
   const { data: testimonials } = useTestimonials();
   const averageRating = testimonials?.averageRating ?? null;
   const [index, setIndex] = useState(0);
@@ -54,6 +64,7 @@ export function Hero() {
     <section className="relative flex min-h-[92svh] items-end overflow-hidden bg-brand-ink sm:min-h-[95svh] lg:min-h-[90vh]">
       <div ref={ref} className="absolute inset-0" aria-hidden>
         <AnimatePresence>
+          {!carregando && (
           <motion.img
             key={currentSlide.id}
             src={currentSlide.url}
@@ -78,6 +89,7 @@ export function Hero() {
             }}
             fetchPriority={safeIndex === 0 ? "high" : undefined}
           />
+          )}
         </AnimatePresence>
         {/* Duotone + vinheta no lugar do degradê plano — dá profundidade e mantém o texto legível */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15" />
@@ -86,6 +98,10 @@ export function Hero() {
       </div>
 
       <div className="container-page relative z-10 pb-16 pt-36 sm:pb-24 sm:pt-40">
+        {/* O texto espera junto com a imagem: título e descrição padrão de
+            código também não são os que o lojista escreveu. A altura mínima da
+            seção segura o layout, então nada pula quando o conteúdo entra. */}
+        {!carregando && (
         <div className="max-w-3xl border-l-2 border-brand-yellow pl-5 sm:pl-7">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -137,6 +153,7 @@ export function Hero() {
             )}
           </motion.div>
         </div>
+        )}
       </div>
 
       {/* Cartão flutuante de prova social — quebra o limite da foto para dar profundidade.

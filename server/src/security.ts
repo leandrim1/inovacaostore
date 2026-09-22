@@ -143,7 +143,7 @@ export function blockForgedOrigin(req: Request, res: Response, next: NextFunctio
  * `segundos` para aparecer na loja. O preço cobrado NÃO depende disso — ele é
  * sempre recalculado no servidor na hora de fechar o pedido.
  */
-export function cacheLeituraPublica(segundos = 60) {
+export function cacheLeituraPublica(segundos = 60, staleSegundos = 60) {
   return (_req: Request, res: Response, next: NextFunction) => {
     // `CDN-Cache-Control` fala SÓ com a borda da Vercel: ela guarda e serve a
     // resposta, e o cabeçalho não chega ao navegador. Deliberadamente não
@@ -153,7 +153,7 @@ export function cacheLeituraPublica(segundos = 60) {
     // JSON no aparelho do cliente.
     res.setHeader(
       "CDN-Cache-Control",
-      `public, s-maxage=${segundos}, stale-while-revalidate=60`,
+      `public, s-maxage=${segundos}, stale-while-revalidate=${staleSegundos}`,
     );
     next();
   };
