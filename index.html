@@ -18,6 +18,12 @@
          todo visitante brasileiro precisa; latin-ext entra sob demanda. -->
     <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/bebas-neue-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- As configurações decidem a imagem do hero. Sem este preload o pedido só
+         saía depois de todo o JavaScript baixar e iniciar; com ele, sai junto
+         com o HTML e costuma chegar antes de o React precisar. O
+         `use-credentials` casa com o fetch do app (credentials: "include") —
+         sem casar, o navegador baixaria duas vezes. -->
+    <link rel="preload" href="/api/settings" as="fetch" crossorigin="use-credentials" />
   </head>
   <body>
     <div id="root"></div>

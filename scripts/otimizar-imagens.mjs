@@ -6,11 +6,10 @@
  * 114 px — 10,5x mais resolução do que a tela mostra. Redimensionar na origem
  * é a maior economia isolada do site.
  *
- * Não faz parte do `npm run build`: estes assets mudam raramente e colocar o
- * sharp (~30 MB) na árvore de dependências só encareceria o deploy. Para
- * regerar:
+ * Não faz parte do `npm run build`: estes assets mudam raramente. O sharp já
+ * é dependência do projeto (o servidor usa para otimizar as imagens enviadas
+ * pelo painel — ver server/src/upload.ts), então para regerar basta:
  *
- *   npm install --no-save sharp
  *   node scripts/otimizar-imagens.mjs
  *
  * As saídas ficam em src/assets/images/otimizadas/ e são versionadas.

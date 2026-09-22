@@ -81,11 +81,100 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   announcementItem4: "Atendimento rápido pelo WhatsApp",
 };
 
+/**
+ * Última configuração recebida, guardada no aparelho do visitante.
+ *
+ * O hero não aparece antes de saber quais imagens o painel tem. Sem cache
+ * local, quem voltava ao site esperava tudo de novo, como na primeira visita
+ * (medido: 6,2 s até a imagem aparecer no celular). Com ele, o hero já nasce
+ * com a imagem da última visita e a resposta nova só confirma ou atualiza.
+ *
+ * São dados públicos (os mesmos de /api/settings), então não há o que
+ * proteger aqui. Todo acesso vai em try/catch: aba anônima e armazenamento
+ * cheio fazem `localStorage` lançar, e isso não pode derrubar a loja.
+ */
+const CACHE_KEY = "inovacao:settings:v1";
+/** Marca de "o lojista acabou de mudar algo" — ver `markSiteSettingsChanged`. */
+const CHANGED_KEY = "inovacao:settings:changed";
+/** Por quanto tempo depois de salvar o navegador do lojista fura o cache da borda. */
+const CHANGED_WINDOW_MS = 5 * 60 * 1000;
+
+interface CachedSettings {
+  savedAt: number;
+  data: SiteSettings;
+}
+
+export function readCachedSiteSettings(): CachedSettings | undefined {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as Partial<CachedSettings> | null;
+    if (!parsed || typeof parsed.savedAt !== "number" || !parsed.data || !Array.isArray(parsed.data.heroImages)) {
+      return undefined;
+    }
+    // Mescla com os padrões: um campo que exista no código mas não num cache
+    // antigo não pode chegar como `undefined` aos componentes.
+    return { savedAt: parsed.savedAt, data: { ...DEFAULT_SITE_SETTINGS, ...parsed.data } };
+  } catch {
+    return undefined;
+  }
+}
+
+function writeCachedSiteSettings(data: SiteSettings) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }));
+  } catch {
+    // Sem espaço ou aba anônima: a loja segue funcionando, só sem o atalho.
+  }
+}
+
+/**
+ * URL das configurações. Logo depois de o lojista salvar algo no painel, ela
+ * ganha `?v=<marca>`: uma URL que a borda da Vercel ainda não guardou, então
+ * a resposta vem fresca da função e ele vê a mudança na hora. Os visitantes
+ * não têm a marca e continuam na URL em cache (rápida).
+ */
+function settingsUrl() {
+  try {
+    const marca = Number(localStorage.getItem(CHANGED_KEY));
+    if (marca && Date.now() - marca < CHANGED_WINDOW_MS) return `/api/settings?v=${marca}`;
+  } catch {
+    // ignora
+  }
+  return "/api/settings";
+}
+
+/**
+ * Chamada pelo painel depois de salvar configurações ou imagens: descarta a
+ * cópia local e marca a mudança. Sem isso, o lojista abria a loja e via a
+ * versão antiga (do cache do navegador ou da borda), achando que não salvou.
+ */
+export function markSiteSettingsChanged() {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.setItem(CHANGED_KEY, String(Date.now()));
+  } catch {
+    // ignora
+  }
+}
+
 export function useSiteSettings() {
   const query = useQuery({
     queryKey: ["settings"],
-    queryFn: () => api.get<SiteSettings>("/api/settings"),
+    queryFn: async () => {
+      const data = await api.get<SiteSettings>(settingsUrl());
+      writeCachedSiteSettings(data);
+      return data;
+    },
     staleTime: 60 * 1000,
+    // Com cópia local: o hero usa na hora (não é placeholder, então não
+    // espera). `initialDataUpdatedAt: 0` marca essa cópia como velha, então a
+    // consulta SEMPRE busca a versão atual em seguida — a cópia é um atalho
+    // de exibição, nunca a palavra final.
+    initialData: () => readCachedSiteSettings()?.data,
+    initialDataUpdatedAt: 0,
+    // Sem cópia local (primeira visita): padrões de código como marcador.
+    // O hero reconhece esse estado por `isPlaceholderData` e espera.
     placeholderData: DEFAULT_SITE_SETTINGS,
   });
   // Garante `data` sempre definido (nunca undefined) — evita checagem

@@ -64,6 +64,54 @@ export async function assertImageContent(buffer: Buffer): Promise<string> {
  */
 export async function saveValidatedImage(buffer: Buffer): Promise<string> {
   const mime = await assertImageContent(buffer);
+  const otimizada = await optimizeImage(buffer, mime);
   const { saveUpload } = await import("./storage.js");
-  return saveUpload(buffer, randomUploadName(mime), mime);
+  return saveUpload(otimizada.buffer, randomUploadName(otimizada.mime), otimizada.mime);
+}
+
+/** Maior lado depois de otimizar. Cobre tela 4K no hero sem desperdício. */
+const MAX_DIMENSION = 2400;
+/** Abaixo disto (e dentro do tamanho máximo) a imagem já está leve: fica como veio. */
+const JA_LEVE_BYTES = 300 * 1024;
+
+/**
+ * Deixa a imagem enviada pelo painel no tamanho de que o site precisa.
+ *
+ * Foto de celular chega com 3-8 MB e 4000px. Antes ela era guardada e servida
+ * assim: o visitante baixava megabytes, e o celular ainda gastava segundos
+ * decodificando 12 milhões de pixels para mostrar numa tela de 400px. Medido:
+ * 3 segundos só entre a imagem entrar na página e aparecer.
+ *
+ * - Redimensiona para caber em 2400px (nunca amplia).
+ * - Converte para WebP, que mantém transparência (logos de bandeira).
+ * - `rotate()` aplica a orientação EXIF antes de descartá-la: sem isso, foto
+ *   de celular tirada em pé apareceria deitada.
+ * - Nunca piora: se o resultado sair maior que o original, fica o original.
+ * - Se o sharp falhar (arquivo estranho mas já validado pelo conteúdo), o
+ *   upload segue com o original em vez de dar erro para o lojista.
+ */
+export async function optimizeImage(buffer: Buffer, mime: string): Promise<{ buffer: Buffer; mime: string }> {
+  try {
+    const { default: sharp } = await import("sharp");
+    const meta = await sharp(buffer).metadata();
+    const dentroDoTamanho = (meta.width ?? 0) <= MAX_DIMENSION && (meta.height ?? 0) <= MAX_DIMENSION;
+    // Orientação diferente de 1 precisa ser aplicada mesmo em arquivo leve:
+    // alguns navegadores antigos ignoram o EXIF e mostrariam a foto deitada.
+    const orientacaoNormal = !meta.orientation || meta.orientation === 1;
+    if (buffer.length <= JA_LEVE_BYTES && dentroDoTamanho && orientacaoNormal) {
+      return { buffer, mime };
+    }
+
+    const saida = await sharp(buffer)
+      .rotate()
+      .resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 82, effort: 4 })
+      .toBuffer();
+
+    if (saida.length >= buffer.length && orientacaoNormal) return { buffer, mime };
+    return { buffer: saida, mime: "image/webp" };
+  } catch (err) {
+    console.error("[upload] otimização falhou, salvando o original:", err instanceof Error ? err.message : err);
+    return { buffer, mime };
+  }
 }

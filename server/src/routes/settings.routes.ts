@@ -25,13 +25,19 @@ const DEFAULT_SETTINGS = {
   announcementItem4: "Atendimento rápido pelo WhatsApp",
 };
 
-// Janela bem mais curta que a dos produtos (10s + 10s em vez de 60s + 60s).
-// Configurações são o que o lojista confere NA HORA depois de salvar: com a
-// janela antiga, trocar as imagens do hero e abrir o site em seguida ainda
-// mostrava a versão anterior por até 2 minutos — parecendo que não salvou. A
-// resposta é pequena e cabe numa consulta; 10s ainda tira quase todas as
-// visitas do banco.
-settingsRouter.get("/", cacheLeituraPublica(10, 10), async (_req, res) => {
+// 10s frescos + 1 dia servindo a cópia anterior enquanto revalida.
+//
+// O hero não aparece antes desta resposta chegar, então ela não pode esperar
+// a função "acordar": com stale-while-revalidate longo a borda da Vercel
+// entrega a última cópia NA HORA e atualiza em segundo plano — a função fria
+// sai do caminho do visitante. (A versão anterior, 10s + 10s, fazia o
+// contrário: quase toda visita caía na função fria, e o hero ficava preto.)
+//
+// E o lojista que acabou de salvar? O painel marca a mudança no navegador
+// dele (markSiteSettingsChanged) e a loja passa a pedir `?v=<marca>` — uma
+// URL que a borda ainda não tem —, então ele vê a mudança na hora. Os demais
+// visitantes recebem a versão nova no máximo uma visita depois dos 10s.
+settingsRouter.get("/", cacheLeituraPublica(10, 86_400), async (_req, res) => {
   const [settings, heroImages, galleryImages, banners, paymentMethods] = await Promise.all([
     prisma.siteSettings.findUnique({ where: { id: "singleton" } }),
     prisma.heroImage.findMany({ orderBy: { order: "asc" } }),

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
-import type { Banner, HeroImage, PaymentMethod, SiteSettings } from "../useSiteSettings";
+import { markSiteSettingsChanged, type Banner, type HeroImage, type PaymentMethod, type SiteSettings } from "../useSiteSettings";
 import type { ImageSettings } from "../../lib/imageSettings";
 
 export type { Banner, HeroImage, PaymentMethod };
@@ -25,6 +25,7 @@ function useInvalidateSettings() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["admin-settings"] });
+    markSiteSettingsChanged();
     qc.invalidateQueries({ queryKey: ["settings"] });
   };
 }
@@ -48,6 +49,7 @@ function useInvalidateHeroImages() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["admin-hero-images"] });
+    markSiteSettingsChanged();
     qc.invalidateQueries({ queryKey: ["settings"] });
   };
 }
@@ -99,6 +101,7 @@ function useInvalidateBanners() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["admin-banners"] });
+    markSiteSettingsChanged();
     qc.invalidateQueries({ queryKey: ["settings"] });
   };
 }
@@ -158,6 +161,7 @@ function useInvalidatePaymentMethods() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["admin-payment-methods"] });
+    markSiteSettingsChanged();
     qc.invalidateQueries({ queryKey: ["settings"] });
   };
 }
@@ -203,6 +207,7 @@ function useInvalidateGalleryImages() {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["admin-gallery-images"] });
+    markSiteSettingsChanged();
     qc.invalidateQueries({ queryKey: ["settings"] });
   };
 }
