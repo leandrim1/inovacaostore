@@ -1,6 +1,5 @@
 import { ShieldCheck } from "lucide-react";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
-import { PAYMENT_BRANDS, PAYMENT_MARK_VIEWBOX } from "../ui/paymentBrands";
 
 /**
  * Faixa de formas de pagamento do rodapé.
@@ -19,10 +18,11 @@ import { PAYMENT_BRANDS, PAYMENT_MARK_VIEWBOX } from "../ui/paymentBrands";
  * 3. O selo de compra segura usa o preto e o amarelo da marca, não o verde
  *    genérico de plataforma — o rodapé continua parecendo desta loja.
  *
- * As bandeiras vêm do painel (Configurações › Formas de pagamento). Enquanto
- * o lojista não tiver enviado nenhuma, vale o conjunto desenhado em código:
- * é o mesmo princípio do hero, que tem uma foto de reserva — a faixa nunca
- * aparece vazia nem quebrada.
+ * As bandeiras vêm inteiramente do painel (Configurações › Formas de
+ * pagamento) — as dez iniciais já vêm cadastradas por migração. Não existe
+ * lista de reserva em código de propósito: se houvesse, excluir uma bandeira
+ * no painel a traria de volta no site, que é o oposto do que o lojista pediu
+ * ao excluir. Sem nenhuma cadastrada, só o selo continua aparecendo.
  */
 /** A pastilha é a mesma nos dois casos: é ela que dá unidade à fileira. */
 const PASTILHA =
@@ -37,6 +37,7 @@ export function PaymentStrip() {
   return (
     <div className="border-t border-brand-ink/[0.07] px-6 py-7 sm:px-10 sm:py-8 lg:px-12">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+        {doPainel.length > 0 && (
         <div className="flex min-w-0 flex-col gap-3.5">
           <h3 className="font-display text-xs tracking-[0.3em] text-neutral-400">
             Formas de pagamento
@@ -45,29 +46,20 @@ export function PaymentStrip() {
           {/* `-mx-* px-*` deixa a primeira e a última pastilha respirarem nas
               pontas quando a fileira rola no celular, sem cortar a sombra. */}
           <ul className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pb-0 [&::-webkit-scrollbar]:hidden">
-            {doPainel.length > 0
-              ? doPainel.map((forma) => (
-                  <li key={forma.id} title={forma.label || undefined} className={PASTILHA}>
-                    <img
-                      src={forma.url}
-                      // A bandeira é informação redundante quando não tem nome:
-                      // o texto ao lado já diz o que a loja aceita. Com nome,
-                      // ele é lido — daí o alt condicional.
-                      alt={forma.label}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-contain"
-                    />
-                  </li>
-                ))
-              : PAYMENT_BRANDS.map((brand) => (
-                  <li key={brand.id} title={brand.label} className={PASTILHA}>
-                    <span className="sr-only">{brand.label}</span>
-                    <svg viewBox={PAYMENT_MARK_VIEWBOX} aria-hidden="true" className="h-full w-full">
-                      {brand.art}
-                    </svg>
-                  </li>
-                ))}
+            {doPainel.map((forma) => (
+              <li key={forma.id} title={forma.label || undefined} className={PASTILHA}>
+                <img
+                  src={forma.url}
+                  // Sem nome cadastrado a bandeira entra como decorativa: o
+                  // texto logo abaixo já diz o que a loja aceita, e anunciar
+                  // um nome inventado seria pior que não anunciar nada.
+                  alt={forma.label}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-contain"
+                />
+              </li>
+            ))}
           </ul>
 
           {/* Só o que o checkout realmente oferece hoje (pix, cartão e boleto).
@@ -77,6 +69,7 @@ export function PaymentStrip() {
             Escolha Pix, cartão ou boleto na finalização da compra
           </p>
         </div>
+        )}
 
         <div className="flex shrink-0 items-center gap-3.5 self-start rounded-2xl bg-brand-ink px-5 py-4 lg:self-auto">
           <ShieldCheck size={28} strokeWidth={1.6} className="shrink-0 text-brand-yellow" aria-hidden />

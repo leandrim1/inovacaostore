@@ -440,10 +440,10 @@ export default function AdminSettingsPage() {
               FORMAS DE PAGAMENTO
             </h2>
             <p className="mb-4 text-xs leading-relaxed text-neutral-400">
-              As bandeirinhas que aparecem no rodapé do site. Envie os logos em PNG com fundo
-              transparente (JPG e WEBP também servem; SVG não é aceito por segurança). Enquanto você
-              não enviar nenhum, o site mostra um conjunto padrão desenhado — a faixa nunca fica
-              vazia.
+              As bandeirinhas que aparecem no rodapé do site. As dez iniciais já vêm prontas —
+              para trocar qualquer uma pelo logo oficial, exclua e envie no lugar. Use PNG com fundo
+              transparente (JPG e WEBP também servem; SVG não é aceito por segurança). Sem nenhuma
+              cadastrada, a fileira some e fica só o selo de compra segura.
             </p>
             {pagamentoError && <p className="mb-3 text-sm text-red-600">{pagamentoError}</p>}
 
@@ -501,7 +501,7 @@ export default function AdminSettingsPage() {
             </label>
             <p className="mt-2 text-[11px] text-neutral-400">
               O nome é o que o leitor de tela anuncia e o que aparece ao passar o mouse. Ele é salvo
-              ao sair do campo. A ordem de exibição é a ordem de envio.
+              ao sair do campo. As que você enviar entram no fim da fileira.
             </p>
           </section>
 

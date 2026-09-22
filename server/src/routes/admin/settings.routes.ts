@@ -271,7 +271,13 @@ adminSettingsRouter.delete("/payment-methods/:id", async (req, res) => {
   }
 
   await prisma.paymentMethod.delete({ where: { id: forma.id } });
-  await deleteUpload(forma.url);
+  // As dez bandeiras iniciais apontam para arquivos do próprio projeto
+  // (/formas-pagamento/…), não para uploads. Apagar o arquivo nesse caso
+  // seria remover um asset versionado — e o `basename` poderia coincidir com
+  // algum upload legítimo. Só limpamos o que de fato foi enviado.
+  if (forma.url.startsWith("/uploads/") || /^https?:\/\//.test(forma.url)) {
+    await deleteUpload(forma.url);
+  }
 
   res.json({ items: await listarFormasDePagamento() });
 });
