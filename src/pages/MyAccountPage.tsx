@@ -156,6 +156,7 @@ function ShortcutStatic(props: ShortcutProps) {
 }
 
 function LastOrderCard({ order }: { order: MyOrder }) {
+  const temTrilha = TRACK.includes(order.status as (typeof TRACK)[number]);
   const units = order.items.reduce((sum, i) => sum + i.quantity, 0);
   const preview = order.items.slice(0, 3);
   const rest = order.items.length - preview.length;
@@ -190,24 +191,41 @@ function LastOrderCard({ order }: { order: MyOrder }) {
         </span>
       </div>
 
-      <div className="py-5">
-        <OrderTrack status={order.status} />
-      </div>
+      {/* O espaçamento vive junto com a trilha: pedido cancelado/reembolsado
+          não tem trilha, e deixar o `py-5` renderizado sozinho criava uma
+          faixa vazia entre duas linhas divisórias no meio do cartão. */}
+      {temTrilha && (
+        <div className="py-5">
+          <OrderTrack status={order.status} />
+        </div>
+      )}
 
-      <ul className="flex flex-col divide-y divide-black/5 border-t border-black/5">
+      {/* Sem trilha, a linha de cima da lista encostaria na de baixo do
+          cabeçalho e viraria uma linha dupla; aí o cabeçalho basta. */}
+      <ul className={`flex flex-col divide-y divide-black/5 ${temTrilha ? "border-t border-black/5" : ""}`}>
         {preview.map((item) => (
           <li key={item.id} className="flex items-center gap-3 py-2.5 text-sm">
             <OrderThumb item={item} />
             <div className="min-w-0 flex-1">
+              {/* Antes era `truncate` num link. Link é elemento de linha: nele o
+                  corte não se aplica, mas o "não quebrar" sim — o nome virava
+                  uma linha única que atravessava o preço e saía da tela no
+                  celular. `line-clamp-2` transforma o link em bloco
+                  (-webkit-box) e limita a duas linhas com reticências; não
+                  somar `block`, que sobrescreve esse display e desliga o
+                  limite. O nome completo fica na página do produto. */}
               {item.productSlug ? (
                 <Link
                   to={`/produto/${item.productSlug}`}
-                  className="truncate font-medium text-brand-ink underline-offset-4 hover:underline"
+                  title={item.productName}
+                  className="line-clamp-2 break-words font-medium text-brand-ink underline-offset-4 hover:underline"
                 >
                   {item.productName}
                 </Link>
               ) : (
-                <p className="truncate font-medium text-brand-ink">{item.productName}</p>
+                <p title={item.productName} className="line-clamp-2 break-words font-medium text-brand-ink">
+                  {item.productName}
+                </p>
               )}
               <p className="text-xs text-neutral-500">
                 {item.color} · {item.size} · {item.quantity}x
