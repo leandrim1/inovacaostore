@@ -475,9 +475,41 @@ accountRouter.put("/password", accountActionLimiter, requireCustomerAuth, async 
 
 accountRouter.get("/orders", requireCustomerAuth, async (req, res) => {
   const orders = await prisma.order.findMany({
+    // O filtro por cliente vem da sessão. Não existe parâmetro de cliente
+    // nesta rota de propósito: se existisse, seria só trocar o id na URL
+    // para ler o histórico de compras de outra pessoa.
     where: { customerId: req.customer!.sub },
-    include: { items: true },
+    include: {
+      items: {
+        include: {
+          variant: {
+            select: {
+              product: {
+                select: {
+                  slug: true,
+                  // Só a capa: puxar a galeria inteira de cada item para
+                  // mostrar uma miniatura seria desperdício de banco.
+                  images: { orderBy: { order: "asc" }, take: 1, select: { url: true } },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
-  res.json({ items: orders });
+
+  // `variant` sai da resposta: ele só entrou na consulta para trazer a capa
+  // e o slug, e devolvê-lo inteiro exporia estoque e SKU sem necessidade.
+  const items = orders.map((order) => ({
+    ...order,
+    items: order.items.map(({ variant, ...item }) => ({
+      ...item,
+      imageUrl: variant?.product?.images[0]?.url ?? null,
+      productSlug: variant?.product?.slug ?? null,
+    })),
+  }));
+
+  res.json({ items });
 });

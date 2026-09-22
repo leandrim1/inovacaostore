@@ -10,6 +10,10 @@ export interface MyOrderItem {
   originalPrice?: number | null;
   promotionTitle?: string | null;
   quantity: number;
+  /** Capa do produto; `null` quando o cadastro não tem foto. */
+  imageUrl: string | null;
+  /** Leva de volta à página do produto — `null` se o produto saiu do catálogo. */
+  productSlug: string | null;
 }
 
 export interface MyOrder {

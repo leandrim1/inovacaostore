@@ -14,6 +14,7 @@ import {
 import { Seo } from "../components/seo/Seo";
 import { PasswordInput } from "../components/ui/PasswordInput";
 import { TestimonialFormModal } from "../components/home/TestimonialFormModal";
+import { OrderThumb } from "../components/account/OrderThumb";
 import { useAuth } from "../context/AuthContext";
 import { useMyOrders, type MyOrder } from "../hooks/useMyOrders";
 import { useSiteSettings } from "../hooks/useSiteSettings";
@@ -298,9 +299,9 @@ function LastOrderCard({ order }: { order: MyOrder }) {
   return (
     <section className="rounded-2xl border border-brand-ink/10 bg-white p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-sm tracking-widest text-neutral-500">SEU ÚLTIMO PEDIDO</h2>
+        <h2 className="font-display text-sm tracking-widest text-neutral-500">RESUMO DO SEU ÚLTIMO PEDIDO</h2>
         <Link to="/meus-pedidos" className="text-xs font-medium text-brand-ink underline-offset-4 hover:underline">
-          Ver todos os pedidos
+          Ir para meus pedidos
         </Link>
       </div>
 
@@ -331,9 +332,19 @@ function LastOrderCard({ order }: { order: MyOrder }) {
 
       <ul className="flex flex-col divide-y divide-black/5 border-t border-black/5">
         {preview.map((item) => (
-          <li key={item.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-            <div className="min-w-0">
-              <p className="truncate font-medium text-brand-ink">{item.productName}</p>
+          <li key={item.id} className="flex items-center gap-3 py-2.5 text-sm">
+            <OrderThumb item={item} />
+            <div className="min-w-0 flex-1">
+              {item.productSlug ? (
+                <Link
+                  to={`/produto/${item.productSlug}`}
+                  className="truncate font-medium text-brand-ink underline-offset-4 hover:underline"
+                >
+                  {item.productName}
+                </Link>
+              ) : (
+                <p className="truncate font-medium text-brand-ink">{item.productName}</p>
+              )}
               <p className="text-xs text-neutral-500">
                 {item.color} · {item.size} · {item.quantity}x
               </p>

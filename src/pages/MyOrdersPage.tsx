@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { PackageSearch } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
+import { OrderThumb } from "../components/account/OrderThumb";
 import { useMyOrders } from "../hooks/useMyOrders";
 import { formatBRL } from "../lib/format";
 import { STATUS_LABELS, STATUS_STYLES } from "../lib/orderStatus";
@@ -55,9 +56,19 @@ export default function MyOrdersPage() {
 
                 <ul className="flex flex-col divide-y divide-black/5">
                   {order.items.map((item) => (
-                    <li key={item.id} className="flex items-center justify-between py-3 text-sm">
-                      <div>
-                        <p className="font-medium text-brand-ink">{item.productName}</p>
+                    <li key={item.id} className="flex items-center gap-3 py-3 text-sm">
+                      <OrderThumb item={item} />
+                      <div className="min-w-0 flex-1">
+                        {item.productSlug ? (
+                          <Link
+                            to={`/produto/${item.productSlug}`}
+                            className="font-medium text-brand-ink underline-offset-4 hover:underline"
+                          >
+                            {item.productName}
+                          </Link>
+                        ) : (
+                          <p className="font-medium text-brand-ink">{item.productName}</p>
+                        )}
                         <p className="text-xs text-neutral-500">
                           {item.color} · {item.size} · {item.quantity}x
                         </p>
@@ -65,7 +76,7 @@ export default function MyOrdersPage() {
                           <p className="mt-0.5 text-xs font-medium text-green-700">{item.promotionTitle}</p>
                         )}
                       </div>
-                      <span className="text-right">
+                      <span className="shrink-0 text-right">
                         {item.originalPrice != null && item.originalPrice > item.price && (
                           <span className="block text-xs text-neutral-400 line-through">
                             {formatBRL(item.originalPrice * item.quantity)}
