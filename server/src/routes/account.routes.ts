@@ -279,6 +279,86 @@ accountRouter.patch("/me", accountActionLimiter, requireCustomerAuth, async (req
   res.json({ user: toPublicUser(customer) });
 });
 
+/**
+ * Exclusão da conta pelo próprio cliente (LGPD).
+ *
+ * ANONIMIZA em vez de apagar a linha. Apagar levaria junto os pedidos — e
+ * com eles o faturamento, o lucro e o fechamento do mês que o lojista
+ * precisa. O que é dado pessoal sai; o que é registro contábil fica.
+ *
+ * Sai de vez:
+ *  - nome, e-mail e telefone do cadastro (e-mail vira um endereço num TLD
+ *    reservado, que nunca pode existir de verdade);
+ *  - endereços salvos, códigos de verificação e tokens de redefinição;
+ *  - depoimentos enviados por esta conta — são as palavras da pessoa
+ *    assinadas com o nome dela; "anonimizar" deixaria o texto no ar, que é
+ *    o oposto do que ela pediu;
+ *  - rua, número, complemento, bairro e CEP dos pedidos.
+ *
+ * Fica:
+ *  - o pedido inteiro no que importa para a contabilidade (itens, valores,
+ *    custos, status, data e forma de pagamento);
+ *  - cidade e UF do pedido, porque o relatório de vendas por região é
+ *    construído em cima deles e sozinhos não identificam ninguém.
+ *
+ * Pede a senha de novo: uma sessão roubada não pode apagar a conta da
+ * vítima só por estar aberta.
+ */
+accountRouter.delete("/me", accountActionLimiter, requireCustomerAuth, async (req, res) => {
+  const schema = z.object({ password: z.string().min(1, "Informe sua senha para confirmar.") });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Dados inválidos." });
+    return;
+  }
+
+  const customerId = req.customer!.sub;
+  const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+  if (!customer?.passwordHash) {
+    res.status(401).json({ error: "Sessão inválida." });
+    return;
+  }
+
+  const valid = await bcrypt.compare(parsed.data.password, customer.passwordHash);
+  if (!valid) {
+    res.status(400).json({ error: "Senha incorreta." });
+    return;
+  }
+
+  const agora = new Date();
+  await prisma.$transaction([
+    prisma.customerAddress.deleteMany({ where: { customerId } }),
+    prisma.emailVerification.deleteMany({ where: { customerId } }),
+    prisma.passwordReset.deleteMany({ where: { customerId } }),
+    prisma.testimonial.deleteMany({ where: { customerId } }),
+    prisma.order.updateMany({
+      where: { customerId },
+      // Cidade e UF continuam: são o eixo do relatório por região e não
+      // apontam para uma pessoa. Rua e CEP apontam, então saem.
+      data: { street: "—", number: "—", complement: "", neighborhood: "—", cep: "" },
+    }),
+    prisma.customer.update({
+      where: { id: customerId },
+      data: {
+        name: "Cliente removido",
+        // TLD reservado pela IANA: nunca vai existir, então não há risco de
+        // um dia este endereço cair na caixa de outra pessoa.
+        email: `removido-${customerId}@conta-excluida.invalid`,
+        phone: "",
+        // Sem senha não há login; `sessionsValidFrom` derruba na hora
+        // qualquer sessão aberta em outro aparelho.
+        passwordHash: null,
+        emailVerified: false,
+        sessionsValidFrom: agora,
+        anonymizedAt: agora,
+      },
+    }),
+  ]);
+
+  res.clearCookie(CUSTOMER_COOKIE_NAME, { ...customerCookieOptions, maxAge: undefined });
+  res.json({ ok: true });
+});
+
 accountRouter.post("/verify-email", accountActionLimiter, requireCustomerAuth, async (req, res) => {
   const schema = z.object({ code: z.string().trim().length(6, "Código inválido.") });
   const parsed = schema.safeParse(req.body);

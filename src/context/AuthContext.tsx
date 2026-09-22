@@ -41,6 +41,7 @@ interface AuthContextValue {
   resetPassword: (token: string, password: string) => Promise<AuthResult>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>;
   updateProfile: (data: ProfileInput) => Promise<AuthUserResult>;
+  deleteAccount: (password: string) => Promise<AuthResult>;
   refresh: () => Promise<void>;
 }
 
@@ -158,6 +159,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /**
+   * Exclusão da conta. O servidor anonimiza o cadastro e encerra a sessão;
+   * aqui só limpamos o usuário em memória para a interface acompanhar.
+   */
+  const deleteAccount = useCallback(async (password: string): Promise<AuthResult> => {
+    try {
+      await api.delete("/api/account/me", { password });
+      setUser(null);
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: errorMessage(err, "Não foi possível excluir sua conta.") };
+    }
+  }, []);
+
   const value: AuthContextValue = {
     user,
     isAuthenticated: Boolean(user),
@@ -171,6 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetPassword,
     changePassword,
     updateProfile,
+    deleteAccount,
     refresh,
   };
 

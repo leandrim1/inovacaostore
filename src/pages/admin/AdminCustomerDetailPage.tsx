@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { BadgeCheck, ChevronLeft, Mail, MessageCircle, Phone, ShieldAlert } from "lucide-react";
+import { BadgeCheck, ChevronLeft, Mail, MessageCircle, Phone, ShieldAlert, UserX } from "lucide-react";
 import { useAdminCustomer } from "../../hooks/admin/useAdminCustomers";
 import { STATUS_LABELS, STATUS_STYLES } from "../../lib/orderStatus";
 import { paymentMethodLabel } from "../../lib/paymentMethods";
@@ -42,10 +42,10 @@ export default function AdminCustomerDetailPage() {
           <p className="text-sm text-neutral-500">
             Cliente desde{" "}
             {new Date(customer.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-            {!customer.hasAccount && " · comprou como convidado (sem senha cadastrada)"}
+            {!customer.anonymizedAt && !customer.hasAccount && " · comprou como convidado (sem senha cadastrada)"}
           </p>
         </div>
-        {phoneDigits.length >= 10 && (
+        {!customer.anonymizedAt && phoneDigits.length >= 10 && (
           <a
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
@@ -56,6 +56,21 @@ export default function AdminCustomerDetailPage() {
           </a>
         )}
       </div>
+
+      {customer.anonymizedAt && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <UserX size={18} className="mt-0.5 shrink-0" aria-hidden />
+          <div>
+            <p className="font-medium">
+              Conta excluída pelo cliente em {new Date(customer.anonymizedAt).toLocaleDateString("pt-BR")}.
+            </p>
+            <p className="mt-0.5 text-amber-800">
+              Nome, e-mail, telefone, endereços e depoimentos foram removidos a pedido dele. Os pedidos
+              continuam aqui, com os valores, para a contabilidade da loja — sem os dados pessoais.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Pedidos" value={String(customer.ordersCount)} />
@@ -74,6 +89,12 @@ export default function AdminCustomerDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <section className="flex flex-col gap-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <h2 className="font-display text-sm tracking-widest text-neutral-500">CONTATO</h2>
+          {customer.anonymizedAt ? (
+            <p className="text-sm text-neutral-400">
+              Os dados de contato foram removidos com a exclusão da conta.
+            </p>
+          ) : (
+          <>
           <p className="flex items-start gap-2 break-all text-sm text-brand-ink">
             <Mail size={16} className="mt-0.5 shrink-0 text-neutral-400" />
             {customer.email}
@@ -91,13 +112,20 @@ export default function AdminCustomerDetailPage() {
               <ShieldAlert size={16} /> E-mail não verificado
             </p>
           )}
+          </>
+          )}
         </section>
 
         <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5 lg:col-span-2">
           <h2 className="mb-3 font-display text-sm tracking-widest text-neutral-500">
             ÚLTIMO ENDEREÇO DE ENTREGA
           </h2>
-          {lastOrder ? (
+          {customer.anonymizedAt ? (
+            <p className="text-sm text-neutral-400">
+              O endereço de entrega foi removido com a exclusão da conta. Cidade e UF seguem nos pedidos,
+              porque o relatório de vendas por região é montado em cima deles.
+            </p>
+          ) : lastOrder ? (
             <address className="text-sm not-italic leading-relaxed text-brand-ink">
               {lastOrder.street}, {lastOrder.number}
               {lastOrder.complement && ` — ${lastOrder.complement}`}

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { BadgeCheck, ShieldAlert } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BadgeCheck, ShieldAlert, Trash2 } from "lucide-react";
 import { Seo } from "../../components/seo/Seo";
 import { AccountBreadcrumb } from "../../components/account/AccountBreadcrumb";
 import { PasswordInput } from "../../components/ui/PasswordInput";
@@ -153,6 +153,108 @@ function PasswordForm() {
   );
 }
 
+/**
+ * Exclusão da conta.
+ *
+ * Fica atrás de dois passos (abrir a área e digitar a senha) porque é
+ * irreversível. A lista do que sai e do que fica é mostrada ANTES de pedir
+ * a senha: quem exclui precisa saber que os pedidos continuam registrados
+ * na loja, e quem só estava curioso desiste antes de digitar qualquer coisa.
+ */
+function DeleteAccountSection() {
+  const { deleteAccount } = useAuth();
+  const navigate = useNavigate();
+  const [aberto, setAberto] = useState(false);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
+
+  async function handleDelete(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setExcluindo(true);
+    const result = await deleteAccount(password);
+    setExcluindo(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    navigate("/", { replace: true });
+  }
+
+  return (
+    <section className="rounded-2xl border border-red-200 bg-red-50/40 p-5 sm:p-6">
+      <h2 className="mb-2 flex items-center gap-2 font-display text-sm tracking-widest text-red-700">
+        <Trash2 size={16} /> EXCLUIR MINHA CONTA
+      </h2>
+
+      {!aberto ? (
+        <>
+          <p className="mb-4 text-sm text-neutral-600">
+            Seus dados pessoais saem da loja e você perde o acesso a esta conta.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAberto(true)}
+            className="rounded-full border border-red-300 px-5 py-2.5 font-display text-xs tracking-[0.15em] text-red-700 transition-colors hover:bg-red-100"
+          >
+            EXCLUIR MINHA CONTA
+          </button>
+        </>
+      ) : (
+        <form onSubmit={handleDelete} className="flex flex-col gap-4 sm:max-w-md">
+          <div className="text-sm text-neutral-600">
+            <p className="mb-2 font-medium text-brand-ink">Isto não pode ser desfeito. Ao confirmar:</p>
+            <ul className="mb-3 flex list-disc flex-col gap-1 pl-5">
+              <li>seu nome, e-mail e telefone saem do cadastro;</li>
+              <li>seus endereços salvos são apagados;</li>
+              <li>seus depoimentos saem do site;</li>
+              <li>você perde o acesso e precisará criar uma conta nova para comprar de novo.</li>
+            </ul>
+            {/* Dito aqui, e não depois: é o ponto em que a pessoa ainda pode
+                desistir sabendo o que realmente acontece. */}
+            <p>
+              Seus <strong>pedidos continuam registrados</strong> na loja, sem os seus dados pessoais — a
+              loja precisa deles para a contabilidade dela.
+            </p>
+          </div>
+
+          <PasswordInput
+            placeholder="Digite sua senha para confirmar"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+
+          {error && <p className="alert-error">{error}</p>}
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={excluindo}
+              className="rounded-full bg-red-600 px-6 py-3 font-display text-xs tracking-[0.15em] text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+            >
+              {excluindo ? "EXCLUINDO…" : "CONFIRMAR EXCLUSÃO"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAberto(false);
+                setPassword("");
+                setError(null);
+              }}
+              className="btn-outline"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}
+
 export default function MyDataPage() {
   const { user } = useAuth();
   if (!user) return null;
@@ -188,6 +290,8 @@ export default function MyDataPage() {
             <h2 className="mb-4 font-display text-sm tracking-widest text-neutral-500">ALTERAR SENHA</h2>
             <PasswordForm />
           </section>
+
+          <DeleteAccountSection />
         </div>
 
         <div className="mt-8">

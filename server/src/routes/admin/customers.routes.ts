@@ -16,6 +16,8 @@ const CUSTOMER_SELECT = {
   phone: true,
   emailVerified: true,
   createdAt: true,
+  /// Preenchido = o cliente pediu a exclusão e o cadastro foi anonimizado.
+  anonymizedAt: true,
 } as const;
 
 interface CustomerStats {

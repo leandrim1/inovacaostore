@@ -118,6 +118,10 @@ model Customer {
   /// Ver AdminUser.sessionsValidFrom. Atualizado na troca/redefinição de
   /// senha, para que a sessão de quem roubou o acesso morra junto.
   sessionsValidFrom  DateTime?
+  /// Quando o próprio cliente pediu a exclusão da conta. Preenchido = o
+  /// cadastro foi anonimizado: nome, e-mail e telefone saíram, os pedidos
+  /// ficaram. `null` = conta normal.
+  anonymizedAt       DateTime?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   orders             Order[]

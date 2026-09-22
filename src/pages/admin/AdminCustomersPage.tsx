@@ -68,17 +68,32 @@ export default function AdminCustomersPage() {
               customers.map((c) => (
                 <tr key={c.id} className="border-b border-black/5 last:border-0">
                   <td className="py-3 pl-5 pr-4">
-                    <Link to={`/admin/clientes/${c.id}`} className="font-medium text-brand-ink hover:underline">
+                    <Link
+                      to={`/admin/clientes/${c.id}`}
+                      className={`font-medium hover:underline ${
+                        c.anonymizedAt ? "text-neutral-400 italic" : "text-brand-ink"
+                      }`}
+                    >
                       {c.name}
                     </Link>
-                    <p className="flex items-center gap-1.5 text-xs text-neutral-400">
-                      {c.email}
-                      {c.emailVerified ? (
-                        <BadgeCheck size={13} className="text-green-600" aria-label="E-mail verificado" />
-                      ) : (
-                        <ShieldAlert size={13} className="text-amber-500" aria-label="E-mail não verificado" />
-                      )}
-                    </p>
+                    {/* Conta excluída não mostra e-mail nem selo de verificação:
+                        não há mais e-mail, e o que está gravado é um endereço
+                        de descarte. Mostrar confundiria o lojista. */}
+                    {c.anonymizedAt ? (
+                      <p className="text-xs text-neutral-400">
+                        Conta excluída pelo cliente em{" "}
+                        {new Date(c.anonymizedAt).toLocaleDateString("pt-BR")}
+                      </p>
+                    ) : (
+                      <p className="flex items-center gap-1.5 text-xs text-neutral-400">
+                        {c.email}
+                        {c.emailVerified ? (
+                          <BadgeCheck size={13} className="text-green-600" aria-label="E-mail verificado" />
+                        ) : (
+                          <ShieldAlert size={13} className="text-amber-500" aria-label="E-mail não verificado" />
+                        )}
+                      </p>
+                    )}
                   </td>
                   <td className="py-3 pr-4 text-neutral-500">{c.phone ? formatPhoneBR(c.phone) : "—"}</td>
                   <td className="py-3 pr-4">{c.ordersCount}</td>
@@ -114,7 +129,11 @@ export default function AdminCustomersPage() {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="truncate font-medium text-brand-ink">{c.name}</p>
-                  <p className="truncate text-xs text-neutral-400">{c.email}</p>
+                  <p className="truncate text-xs text-neutral-400">
+                    {c.anonymizedAt
+                      ? `Conta excluída em ${new Date(c.anonymizedAt).toLocaleDateString("pt-BR")}`
+                      : c.email}
+                  </p>
                 </div>
                 {c.emailVerified ? (
                   <BadgeCheck size={16} className="shrink-0 text-green-600" aria-label="E-mail verificado" />

@@ -10,6 +10,8 @@ export interface AdminCustomer {
   phone: string;
   emailVerified: boolean;
   createdAt: string;
+  /** Data em que o cliente pediu a exclusão; `null` numa conta normal. */
+  anonymizedAt: string | null;
   /** `false` para quem comprou como convidado e nunca criou senha. */
   hasAccount: boolean;
   /** Todos os pedidos, inclusive cancelados/reembolsados. */
