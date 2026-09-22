@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BadgeCheck,
-  KeyRound,
   LogOut,
   MapPin,
   MessageCircle,
@@ -12,15 +11,15 @@ import {
   UserRound,
 } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
-import { PasswordInput } from "../components/ui/PasswordInput";
 import { TestimonialFormModal } from "../components/home/TestimonialFormModal";
 import { OrderThumb } from "../components/account/OrderThumb";
 import { useAuth } from "../context/AuthContext";
 import { useMyOrders, type MyOrder } from "../hooks/useMyOrders";
+import { useAddresses } from "../hooks/useAddresses";
 import { useSiteSettings } from "../hooks/useSiteSettings";
 import { useTestimonialEligibility } from "../hooks/useTestimonials";
 import { buildWhatsAppLink } from "../data/store";
-import { formatBRL, formatItemCount, formatPhoneBR, maskPhoneBR } from "../lib/format";
+import { formatBRL, formatItemCount, formatPhoneBR } from "../lib/format";
 import { STATUS_LABELS, STATUS_STYLES } from "../lib/orderStatus";
 import { paymentMethodLabel } from "../lib/paymentMethods";
 
@@ -36,9 +35,6 @@ import { paymentMethodLabel } from "../lib/paymentMethods";
  * /admin/pedidos, o endereço vem do pedido, e o atendimento usa o WhatsApp
  * cadastrado em Configurações.
  */
-
-/** Painel que abre abaixo da grade; `null` = nenhum. */
-type Panel = "dados" | "senha" | "endereco" | null;
 
 /** Etapas que um pedido percorre. Cancelado/reembolsado saem da trilha. */
 const TRACK = ["pendente", "pago", "separacao", "enviado", "entregue"] as const;
@@ -159,138 +155,6 @@ function ShortcutStatic(props: ShortcutProps) {
   );
 }
 
-function ProfileForm() {
-  const { user, updateProfile } = useAuth();
-  const [name, setName] = useState(user?.name ?? "");
-  const [phone, setPhone] = useState(maskPhoneBR(user?.phone ?? ""));
-  const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSaved(false);
-    setIsSaving(true);
-    const result = await updateProfile({ name: name.trim(), phone });
-    setIsSaving(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
-    setSaved(true);
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-xs uppercase tracking-wide text-neutral-500">Nome completo</span>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoComplete="name"
-          required
-          className="input-field"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-xs uppercase tracking-wide text-neutral-500">Telefone / WhatsApp</span>
-        <input
-          value={phone}
-          onChange={(e) => setPhone(maskPhoneBR(e.target.value))}
-          placeholder="(34) 99999-9999"
-          inputMode="tel"
-          autoComplete="tel"
-          className="input-field"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
-        <span className="text-xs uppercase tracking-wide text-neutral-500">E-mail</span>
-        <input value={user?.email ?? ""} readOnly disabled className="input-field bg-neutral-50 text-neutral-500" />
-        <span className="text-xs text-neutral-400">
-          O e-mail é o login da conta e não pode ser trocado por aqui. Precisa mudar? Fale com a gente pelo WhatsApp.
-        </span>
-      </label>
-
-      {error && <p className="alert-error sm:col-span-2">{error}</p>}
-      {saved && <p className="alert-success sm:col-span-2">Dados atualizados.</p>}
-
-      <div className="sm:col-span-2">
-        <button type="submit" disabled={isSaving} className="btn-primary disabled:opacity-60">
-          {isSaving ? "Salvando…" : "Salvar alterações"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function PasswordForm() {
-  const { changePassword } = useAuth();
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
-
-    if (newPassword !== confirmPassword) {
-      setError("As novas senhas não coincidem.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    const result = await changePassword(currentPassword, newPassword);
-    setIsSubmitting(false);
-
-    if (!result.ok) {
-      setError(result.error);
-      return;
-    }
-    setSuccess(true);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:max-w-sm">
-      <PasswordInput
-        placeholder="Senha atual"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-        autoComplete="current-password"
-        required
-      />
-      <PasswordInput
-        placeholder="Nova senha"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        autoComplete="new-password"
-        required
-      />
-      <PasswordInput
-        placeholder="Confirmar nova senha"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        autoComplete="new-password"
-        required
-      />
-      {error && <p className="alert-error">{error}</p>}
-      {success && <p className="alert-success">Senha alterada com sucesso.</p>}
-      <button type="submit" disabled={isSubmitting} className="btn-primary mt-1 w-full disabled:opacity-60">
-        {isSubmitting ? "Salvando…" : "Alterar senha"}
-      </button>
-    </form>
-  );
-}
-
 function LastOrderCard({ order }: { order: MyOrder }) {
   const units = order.items.reduce((sum, i) => sum + i.quantity, 0);
   const preview = order.items.slice(0, 3);
@@ -371,16 +235,8 @@ export default function MyAccountPage() {
   const { data: settings } = useSiteSettings();
   const { data: eligibility } = useTestimonialEligibility();
 
-  const [panel, setPanel] = useState<Panel>(null);
+  const { data: addresses = [] } = useAddresses();
   const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement>(null);
-
-  // Abrir um painel no celular colocaria o formulário fora da tela: a grade
-  // de atalhos ocupa a dobra inteira. Rolar até ele é o que faz o clique no
-  // atalho parecer que fez alguma coisa.
-  useEffect(() => {
-    if (panel) panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [panel]);
 
   if (!user) return null;
 
@@ -391,15 +247,16 @@ export default function MyAccountPage() {
     navigate("/");
   }
 
-  function toggle(next: Exclude<Panel, null>) {
-    setPanel((current) => (current === next ? null : next));
-  }
-
   const ordersDescription = isLoadingOrders
     ? "Carregando…"
     : orders.length === 0
       ? "Você ainda não comprou"
       : `${orders.length} pedido${orders.length === 1 ? "" : "s"} · acompanhe a entrega`;
+
+  const addressDescription =
+    addresses.length === 0
+      ? "Salve um para agilizar a compra"
+      : `${addresses.length} salvo${addresses.length === 1 ? "" : "s"} · gerencie a entrega`;
 
   const reviewMessages: Record<string, string> = {
     nao_logado: "Entre na sua conta para avaliar a loja.",
@@ -455,49 +312,29 @@ export default function MyAccountPage() {
                   <ShieldAlert size={15} /> Confirmar e-mail
                 </Link>
               )}
-              <button
-                type="button"
-                onClick={() => toggle("dados")}
+              <Link
+                to="/minha-conta/meus-dados"
                 className="rounded-full bg-brand-yellow px-5 py-2.5 font-display text-xs tracking-[0.15em] text-brand-ink transition-colors hover:bg-brand-yellow-light"
               >
                 EDITAR DADOS
-              </button>
+              </Link>
             </div>
           </div>
         </section>
 
         <h2 className="mb-4 font-display text-sm tracking-widest text-neutral-500">ATALHOS</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Link to="/meus-pedidos" className={shortcutClass()}>
             <ShortcutBody icon={PackageSearch} label="Meus pedidos" description={ordersDescription} />
           </Link>
 
-          <button type="button" onClick={() => toggle("dados")} className={shortcutClass(panel === "dados")}>
-            <ShortcutBody
-              icon={UserRound}
-              label="Meus dados"
-              description="Nome, telefone e e-mail"
-              active={panel === "dados"}
-            />
-          </button>
+          <Link to="/minha-conta/meus-dados" className={shortcutClass()}>
+            <ShortcutBody icon={UserRound} label="Meus dados" description="Nome, telefone e senha" />
+          </Link>
 
-          <button type="button" onClick={() => toggle("endereco")} className={shortcutClass(panel === "endereco")}>
-            <ShortcutBody
-              icon={MapPin}
-              label="Endereço"
-              description={lastOrder ? "Último usado na entrega" : "Ainda sem entrega"}
-              active={panel === "endereco"}
-            />
-          </button>
-
-          <button type="button" onClick={() => toggle("senha")} className={shortcutClass(panel === "senha")}>
-            <ShortcutBody
-              icon={KeyRound}
-              label="Alterar senha"
-              description="Troque sua senha de acesso"
-              active={panel === "senha"}
-            />
-          </button>
+          <Link to="/minha-conta/enderecos" className={shortcutClass()}>
+            <ShortcutBody icon={MapPin} label="Endereços" description={addressDescription} />
+          </Link>
 
           {eligibility?.canSubmit ? (
             <button type="button" onClick={() => setIsReviewOpen(true)} className={shortcutClass()}>
@@ -533,59 +370,6 @@ export default function MyAccountPage() {
           <button type="button" onClick={handleLogout} className={shortcutClass(false, "danger")}>
             <ShortcutBody icon={LogOut} label="Sair da conta" description="Encerrar esta sessão" tone="danger" />
           </button>
-        </div>
-
-        <div ref={panelRef} className="scroll-mt-24">
-          {panel && (
-            <section className="mt-6 rounded-2xl border border-brand-ink/10 bg-white p-5 sm:p-6">
-              {panel === "dados" && (
-                <>
-                  <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
-                    <UserRound size={16} /> MEUS DADOS
-                  </h2>
-                  <ProfileForm />
-                </>
-              )}
-
-              {panel === "senha" && (
-                <>
-                  <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
-                    <KeyRound size={16} /> ALTERAR SENHA
-                  </h2>
-                  <PasswordForm />
-                </>
-              )}
-
-              {panel === "endereco" && (
-                <>
-                  <h2 className="mb-4 flex items-center gap-2 font-display text-sm tracking-widest text-neutral-500">
-                    <MapPin size={16} /> ENDEREÇO DE ENTREGA
-                  </h2>
-                  {lastOrder ? (
-                    <>
-                      <address className="text-sm not-italic leading-relaxed text-brand-ink">
-                        {lastOrder.street}, {lastOrder.number}
-                        {lastOrder.complement && ` — ${lastOrder.complement}`}
-                        <br />
-                        {lastOrder.neighborhood} · {lastOrder.city}/{lastOrder.state}
-                        <br />
-                        CEP {lastOrder.cep}
-                      </address>
-                      <p className="mt-3 text-xs text-neutral-500">
-                        Este é o endereço do seu último pedido. Você informa o endereço a cada compra, na
-                        finalização — assim dá para enviar para casa hoje e para o trabalho amanhã.
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-sm text-neutral-500">
-                      Você ainda não fez nenhum pedido. O endereço é informado na finalização da compra e aparece
-                      aqui depois.
-                    </p>
-                  )}
-                </>
-              )}
-            </section>
-          )}
         </div>
 
         {isLoadingOrders ? (

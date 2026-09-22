@@ -21,7 +21,7 @@ export default function AdminCustomerDetailPage() {
   if (isLoading) return <p className="text-neutral-400">Carregando…</p>;
   if (!data) return <p className="text-neutral-400">Cliente não encontrado.</p>;
 
-  const { customer, orders } = data;
+  const { customer, orders, addresses } = data;
   const phoneDigits = customer.phone.replace(/\D/g, "");
   // O link do WhatsApp precisa do DDI; o cadastro pode ter só DDD + número.
   const whatsappNumber = phoneDigits.startsWith("55") ? phoneDigits : `55${phoneDigits}`;
@@ -108,8 +108,34 @@ export default function AdminCustomerDetailPage() {
             </address>
           ) : (
             <p className="text-sm text-neutral-400">
-              Este cliente ainda não fez pedidos, então não há endereço cadastrado.
+              Este cliente ainda não fez pedidos, então não há endereço de entrega registrado.
             </p>
+          )}
+
+          {/* Endereços que o próprio cliente salvou na conta. É outra coisa
+              que o endereço do pedido: este é o caderninho dele, aquele é
+              para onde a compra foi de fato. */}
+          {addresses.length > 0 && (
+            <div className="mt-5 border-t border-black/5 pt-4">
+              <h3 className="mb-2 text-xs uppercase tracking-wide text-neutral-400">
+                Endereços salvos pelo cliente ({addresses.length})
+              </h3>
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {addresses.map((a) => (
+                  <li key={a.id} className="text-sm leading-relaxed text-neutral-600">
+                    <span className="font-medium text-brand-ink">{a.label || "Endereço"}</span>
+                    {a.isDefault && (
+                      <span className="ml-1.5 text-[10px] tracking-wide text-brand-yellow-dark">PADRÃO</span>
+                    )}
+                    <br />
+                    {a.street}, {a.number}
+                    {a.complement && ` — ${a.complement}`} · {a.neighborhood}
+                    <br />
+                    {a.city}/{a.state} · CEP {a.cep}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       </div>

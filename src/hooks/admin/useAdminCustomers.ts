@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api, buildQueryString } from "../../lib/api";
 import type { AdminOrder } from "./useAdminOrders";
+import type { CustomerAddress } from "../useAddresses";
 
 export interface AdminCustomer {
   id: string;
@@ -25,6 +26,8 @@ export type AdminCustomerOrder = Omit<AdminOrder, "customer">;
 export interface AdminCustomerDetail {
   customer: AdminCustomer;
   orders: AdminCustomerOrder[];
+  /** Caderninho de endereços do cliente — o que ele mesmo cadastrou na conta. */
+  addresses: CustomerAddress[];
 }
 
 export function useAdminCustomers(q?: string) {

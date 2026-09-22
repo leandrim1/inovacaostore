@@ -25,6 +25,8 @@ const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const MyAccountPage = lazy(() => import("./pages/MyAccountPage"));
 const MyOrdersPage = lazy(() => import("./pages/MyOrdersPage"));
+const MyDataPage = lazy(() => import("./pages/account/MyDataPage"));
+const AddressesPage = lazy(() => import("./pages/account/AddressesPage"));
 
 const AdminLoginPage = lazy(() => import("./pages/admin/AdminLoginPage"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -87,6 +89,22 @@ function StorefrontApp() {
             element={
               <ProtectedRoute>
                 <MyAccountPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/minha-conta/meus-dados"
+            element={
+              <ProtectedRoute>
+                <MyDataPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/minha-conta/enderecos"
+            element={
+              <ProtectedRoute>
+                <AddressesPage />
               </ProtectedRoute>
             }
           />

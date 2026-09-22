@@ -1,14 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { CheckCircle2, Copy, CreditCard, MessageCircle, QrCode, Receipt } from "lucide-react";
+import { CheckCircle2, Copy, CreditCard, MapPin, MessageCircle, QrCode, Receipt } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
-import { formatBRL } from "../lib/format";
+import { formatBRL, maskPhoneBR } from "../lib/format";
 import { formatCep, isValidCep, quoteShipping, type ShippingQuote } from "../lib/shipping";
 import { api } from "../lib/api";
 import { buildWhatsAppLink, STORE } from "../data/store";
 import { useSiteSettings } from "../hooks/useSiteSettings";
 import { useAuth } from "../context/AuthContext";
+import { useAddresses, useCreateAddress, type CustomerAddress } from "../hooks/useAddresses";
 
 type PaymentMethod = "pix" | "cartao" | "boleto";
 
@@ -50,7 +51,14 @@ export default function CheckoutPage() {
   const { data: settings } = useSiteSettings();
   const { user } = useAuth();
 
+  const { data: savedAddresses = [] } = useAddresses();
+  const createAddress = useCreateAddress();
+
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
+  /** `null` = "usar outro endereço" (formulário em branco). */
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [saveAddress, setSaveAddress] = useState(false);
+
   const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null);
   const [cepError, setCepError] = useState<string | null>(null);
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
@@ -81,8 +89,46 @@ export default function CheckoutPage() {
       .join("\n");
   }, [items, shippingQuote, shippingPrice, total, address, user]);
 
-  async function handleCepBlur() {
-    if (!isValidCep(address.cep)) {
+  /**
+   * Preenche o formulário a partir de um endereço salvo.
+   *
+   * Não é um `useEffect` que observa a lista: o cliente que escolheu "usar
+   * outro endereço" e começou a digitar não pode ver o que digitou sumir
+   * porque a consulta revalidou.
+   */
+  function applySavedAddress(saved: CustomerAddress) {
+    setSelectedAddressId(saved.id);
+    setSaveAddress(false);
+    setAddress({
+      phone: saved.phone ? maskPhoneBR(saved.phone) : address.phone,
+      cep: formatCep(saved.cep),
+      street: saved.street,
+      number: saved.number,
+      complement: saved.complement,
+      neighborhood: saved.neighborhood,
+      city: saved.city,
+      state: saved.state,
+    });
+    setShippingQuote(null);
+    setCepError(null);
+    // Cota na hora: escolher o endereço e ainda ter que tocar no campo de CEP
+    // para o frete aparecer desmontaria metade do ganho do atalho.
+    void cotarFrete(formatCep(saved.cep));
+  }
+
+  // Endereço padrão entra sozinho na primeira carga — é o atalho que faz os
+  // endereços salvos valerem a pena. O ref garante UMA vez: sem ele, cada
+  // revalidação da consulta reescreveria por cima do que o cliente digitou.
+  const preencheuPadrao = useRef(false);
+  useEffect(() => {
+    if (preencheuPadrao.current || savedAddresses.length === 0) return;
+    preencheuPadrao.current = true;
+    applySavedAddress(savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedAddresses]);
+
+  async function cotarFrete(cep: string) {
+    if (!isValidCep(cep)) {
       setCepError("CEP inválido");
       setShippingQuote(null);
       return;
@@ -90,7 +136,7 @@ export default function CheckoutPage() {
     setIsCalculatingShipping(true);
     try {
       const quote = await quoteShipping(
-        address.cep,
+        cep,
         items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
       );
       setShippingQuote(quote);
@@ -101,6 +147,10 @@ export default function CheckoutPage() {
     } finally {
       setIsCalculatingShipping(false);
     }
+  }
+
+  function handleCepBlur() {
+    return cotarFrete(address.cep);
   }
 
   async function handleConfirm(e: React.FormEvent) {
@@ -130,6 +180,30 @@ export default function CheckoutPage() {
       setOrderNumber(result.orderNumber);
       setOrderConfirmed(true);
       clearCart();
+
+      // Depois do pedido criado, nunca antes: se falhar em salvar o endereço,
+      // a compra já está feita e o cliente não perde nada — o contrário
+      // (salvar primeiro e o pedido falhar) deixaria lixo no caderninho.
+      if (saveAddress && selectedAddressId === null) {
+        createAddress
+          .mutateAsync({
+            label: "",
+            recipient: user?.name ?? "",
+            phone: address.phone,
+            cep: address.cep,
+            street: address.street,
+            number: address.number,
+            complement: address.complement,
+            neighborhood: address.neighborhood,
+            city: address.city,
+            state: address.state,
+          })
+          .catch(() => {
+            // Silencioso de propósito: o pedido foi confirmado, e um erro
+            // aqui não pode virar uma mensagem que assusta quem acabou de
+            // comprar. O endereço continua salvável em /minha-conta/enderecos.
+          });
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Não foi possível finalizar o pedido.");
     } finally {
@@ -199,6 +273,54 @@ export default function CheckoutPage() {
                   Não é você?
                 </Link>
               </div>
+              {savedAddresses.length > 0 && (
+                <div className="mb-4 flex flex-col gap-2">
+                  <p className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-neutral-500">
+                    <MapPin size={14} aria-hidden /> Endereços salvos
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedAddresses.map((saved) => (
+                      <button
+                        key={saved.id}
+                        type="button"
+                        onClick={() => applySavedAddress(saved)}
+                        className={`rounded-xl border px-4 py-2.5 text-left text-sm transition-colors ${
+                          selectedAddressId === saved.id
+                            ? "border-brand-ink bg-brand-cream"
+                            : "border-brand-ink/15 bg-white hover:border-brand-ink/40"
+                        }`}
+                      >
+                        <span className="block font-medium text-brand-ink">
+                          {saved.label || "Endereço"}
+                          {saved.isDefault && (
+                            <span className="ml-1.5 text-[10px] tracking-wide text-brand-yellow-dark">PADRÃO</span>
+                          )}
+                        </span>
+                        <span className="block text-xs text-neutral-500">
+                          {saved.street}, {saved.number} · {saved.city}/{saved.state}
+                        </span>
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedAddressId(null);
+                        setAddress({ ...EMPTY_ADDRESS, phone: address.phone });
+                        setShippingQuote(null);
+                        setCepError(null);
+                      }}
+                      className={`rounded-xl border px-4 py-2.5 text-sm transition-colors ${
+                        selectedAddressId === null
+                          ? "border-brand-ink bg-brand-cream"
+                          : "border-dashed border-brand-ink/25 bg-white hover:border-brand-ink/50"
+                      }`}
+                    >
+                      Usar outro endereço
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <input
                   required
@@ -258,6 +380,20 @@ export default function CheckoutPage() {
                   className="input-field uppercase"
                 />
               </div>
+
+              {/* Só faz sentido oferecer quando o endereço é novo: marcar isto
+                  com um endereço salvo selecionado criaria uma cópia igual. */}
+              {selectedAddressId === null && (
+                <label className="mt-3 flex items-center gap-2 text-sm text-neutral-600">
+                  <input
+                    type="checkbox"
+                    checked={saveAddress}
+                    onChange={(e) => setSaveAddress(e.target.checked)}
+                    className="h-4 w-4 accent-brand-ink"
+                  />
+                  Salvar este endereço para as próximas compras
+                </label>
+              )}
             </section>
 
             <section>

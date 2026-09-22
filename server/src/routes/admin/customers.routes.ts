@@ -132,11 +132,15 @@ adminCustomersRouter.get("/:id", async (req, res) => {
   }
 
   const { passwordHash, ...customer } = row;
-  const [orders, stats] = await Promise.all([
+  const [orders, addresses, stats] = await Promise.all([
     prisma.order.findMany({
       where: { customerId: customer.id },
       include: { items: true },
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.customerAddress.findMany({
+      where: { customerId: customer.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
     }),
     loadCustomerStats([customer.id]),
   ]);
@@ -144,5 +148,6 @@ adminCustomersRouter.get("/:id", async (req, res) => {
   res.json({
     customer: { ...customer, hasAccount: passwordHash !== null, ...(stats.get(customer.id) ?? EMPTY_STATS) },
     orders,
+    addresses,
   });
 });

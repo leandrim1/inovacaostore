@@ -15,8 +15,13 @@ import { requireCustomerAuth } from "../middleware/requireCustomer.js";
 import { sendEmail } from "../email.js";
 import { accountEmailLimiter, loginLimiter as ipAndAccountLoginLimiter, publicBaseUrl } from "../security.js";
 import { passwordResetEmail, verificationCodeEmail } from "../emailTemplates.js";
+import { customerAddressesRouter } from "./addresses.routes.js";
 
 export const accountRouter = Router();
+
+// Montado aqui, e não em app.ts, para deixar óbvio que o caderninho de
+// endereços vive dentro da conta do cliente logado.
+accountRouter.use("/addresses", customerAddressesRouter);
 
 const CODE_TTL_MINUTES = 15;
 const RESET_TTL_MINUTES = 60;

@@ -124,6 +124,7 @@ model Customer {
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
   testimonials       Testimonial[]
+  addresses          CustomerAddress[]
 }
 
 model Testimonial {
@@ -417,4 +418,35 @@ model Expense {
   updatedAt   DateTime @updatedAt
 
   @@index([occurredAt])
+}
+
+/// Endereço salvo do cliente ("Endereços" da área do cliente).
+///
+/// Até aqui o endereço só existia dentro de cada `Order`, digitado de novo a
+/// cada compra. Esta tabela é o caderninho do cliente; o pedido continua
+/// guardando a própria cópia, porque editar um endereço salvo não pode
+/// reescrever para onde um pedido antigo foi enviado.
+model CustomerAddress {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  /// Apelido dado pelo cliente ("Minha casa", "Trabalho").
+  label        String   @default("")
+  recipient    String   @default("")
+  phone        String   @default("")
+  cep          String
+  street       String
+  number       String
+  complement   String   @default("")
+  neighborhood String
+  city         String
+  state        String
+  /// O checkout começa neste. Só um por cliente fica true — quem garante é
+  /// a rota, numa transação, não uma constraint parcial do Postgres (que o
+  /// Prisma não expressa no schema).
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerId])
 }
