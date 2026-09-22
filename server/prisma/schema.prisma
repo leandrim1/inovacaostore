@@ -454,3 +454,18 @@ model CustomerAddress {
 
   @@index([customerId])
 }
+
+/// Cache do endereço de um CEP (rua, bairro, cidade, UF), usado no
+/// preenchimento automático do formulário.
+///
+/// Separado de `CepGeocodeCache` porque aquele exige lat/lng para o frete, e
+/// um CEP pode ter endereço conhecido sem coordenada. Guardar os dois juntos
+/// obrigaria a inventar uma coordenada ou a deixar o campo vazio.
+model CepAddressCache {
+  cep          String   @id
+  street       String
+  neighborhood String
+  city         String
+  state        String
+  createdAt    DateTime @default(now())
+}

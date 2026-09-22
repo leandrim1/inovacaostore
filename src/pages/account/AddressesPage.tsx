@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Plus, Star, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Plus, Star, Trash2 } from "lucide-react";
 import { Seo } from "../../components/seo/Seo";
 import { AccountBreadcrumb } from "../../components/account/AccountBreadcrumb";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -15,6 +15,7 @@ import {
   type CustomerAddress,
 } from "../../hooks/useAddresses";
 import { formatCep } from "../../lib/shipping";
+import { useCepAutofill } from "../../hooks/useCepAutofill";
 import { formatPhoneBR, maskPhoneBR } from "../../lib/format";
 
 /**
@@ -61,6 +62,24 @@ function AddressForm({
   const set = (campo: keyof AddressInput, valor: string | boolean) =>
     setForm((atual) => ({ ...atual, [campo]: valor }));
 
+  const numeroRef = useRef<HTMLInputElement>(null);
+  const ruaRef = useRef<HTMLInputElement>(null);
+
+  const cep = useCepAutofill((endereco) => {
+    setForm((atual) => ({
+      ...atual,
+      // Rua e bairro vazios acontecem em CEP de cidade inteira: nesses casos
+      // o que a pessoa já digitou vale mais que o vazio que veio da consulta.
+      street: endereco.street || atual.street,
+      neighborhood: endereco.neighborhood || atual.neighborhood,
+      city: endereco.city,
+      state: endereco.state,
+    }));
+    // Leva o cursor para o próximo campo que a consulta não tem como saber:
+    // o número da casa (ou a rua, quando o CEP não trouxe logradouro).
+    (endereco.street ? numeroRef : ruaRef).current?.focus();
+  });
+
   return (
     <form
       onSubmit={(e) => {
@@ -72,6 +91,7 @@ function AddressForm({
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-3">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Apelido</span>
         <input
+          name="label"
           value={form.label}
           onChange={(e) => set("label", e.target.value)}
           placeholder="Minha casa, Trabalho…"
@@ -83,6 +103,7 @@ function AddressForm({
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-3">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Quem recebe</span>
         <input
+          name="recipient"
           value={form.recipient}
           onChange={(e) => set("recipient", e.target.value)}
           placeholder="Nome de quem recebe"
@@ -93,22 +114,40 @@ function AddressForm({
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
-        <span className="text-xs uppercase tracking-wide text-neutral-500">CEP *</span>
+        <span className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-neutral-500">
+          CEP *
+          {cep.buscando && (
+            <span className="flex items-center gap-1 normal-case tracking-normal text-neutral-400">
+              <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden />
+              buscando…
+            </span>
+          )}
+        </span>
         <input
           required
+          name="cep"
           value={form.cep}
-          onChange={(e) => set("cep", formatCep(e.target.value))}
+          onChange={(e) => {
+            const formatado = formatCep(e.target.value);
+            set("cep", formatado);
+            void cep.buscar(formatado);
+          }}
           placeholder="00000-000"
           inputMode="numeric"
           autoComplete="postal-code"
           className="input-field"
         />
+        {/* Erro de CEP nunca trava o formulário: a pessoa continua podendo
+            digitar o endereço à mão e salvar. */}
+        {cep.erro && <span className="text-xs text-amber-600">{cep.erro} Preencha abaixo.</span>}
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-4">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Endereço *</span>
         <input
+          ref={ruaRef}
           required
+          name="street"
           value={form.street}
           onChange={(e) => set("street", e.target.value)}
           autoComplete="address-line1"
@@ -118,12 +157,20 @@ function AddressForm({
 
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Número *</span>
-        <input required value={form.number} onChange={(e) => set("number", e.target.value)} className="input-field" />
+        <input
+          ref={numeroRef}
+          required
+          name="number"
+          value={form.number}
+          onChange={(e) => set("number", e.target.value)}
+          className="input-field"
+        />
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-4">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Complemento</span>
         <input
+          name="complement"
           value={form.complement}
           onChange={(e) => set("complement", e.target.value)}
           placeholder="Apto, bloco, referência"
@@ -135,6 +182,7 @@ function AddressForm({
         <span className="text-xs uppercase tracking-wide text-neutral-500">Bairro *</span>
         <input
           required
+          name="neighborhood"
           value={form.neighborhood}
           onChange={(e) => set("neighborhood", e.target.value)}
           className="input-field"
@@ -143,13 +191,15 @@ function AddressForm({
 
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-2">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Cidade *</span>
-        <input required value={form.city} onChange={(e) => set("city", e.target.value)} className="input-field" />
+        <input required name="city"
+          value={form.city} onChange={(e) => set("city", e.target.value)} className="input-field" />
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-1">
         <span className="text-xs uppercase tracking-wide text-neutral-500">UF *</span>
         <select
           required
+          name="state"
           value={form.state}
           onChange={(e) => set("state", e.target.value)}
           className="input-field"
@@ -166,6 +216,7 @@ function AddressForm({
       <label className="flex flex-col gap-1.5 text-sm sm:col-span-3">
         <span className="text-xs uppercase tracking-wide text-neutral-500">Telefone para a entrega</span>
         <input
+          name="phone"
           value={form.phone}
           onChange={(e) => set("phone", maskPhoneBR(e.target.value))}
           placeholder="(34) 99999-9999"

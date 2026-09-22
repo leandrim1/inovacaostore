@@ -186,6 +186,21 @@ export const publicWriteLimiter = rateLimit({
   message: { error: "Muitas requisições. Aguarde alguns instantes." },
 });
 
+/**
+ * Consulta de CEP do formulário de endereço.
+ *
+ * Mais folgado que `publicWriteLimiter` porque é leitura e acontece enquanto
+ * a pessoa digita — um casal comprando na mesma rede não pode esbarrar no
+ * limite. Ainda assim é limitado: a rota conversa com um serviço externo, e
+ * sem teto viraria um proxy aberto para a BrasilAPI na nossa conta.
+ */
+export const cepLookupLimiter = rateLimit({
+  ...baseLimiter,
+  windowMs: 10 * 60 * 1000,
+  limit: 120,
+  message: { error: "Muitas consultas de CEP. Aguarde alguns instantes." },
+});
+
 /** Painel administrativo: um admin legítimo nunca chega perto desse volume. */
 export const adminApiLimiter = rateLimit({
   ...baseLimiter,

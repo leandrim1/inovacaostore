@@ -34,6 +34,8 @@ async function fetchWithTimeout(url: string, init?: RequestInit) {
 interface BrasilApiCepResponse {
   city?: string;
   state?: string;
+  street?: string;
+  neighborhood?: string;
   location?: { coordinates?: { latitude?: string | number; longitude?: string | number } };
 }
 
@@ -61,7 +63,7 @@ async function tryBrasilApi(cep: string): Promise<GeocodeCoords | "not_found" | 
   }
 }
 
-interface ViaCepAddress {
+export interface CepAddress {
   city: string;
   state: string;
   street: string;
@@ -76,7 +78,7 @@ interface ViaCepResponse {
   bairro?: string;
 }
 
-async function tryViaCep(cep: string): Promise<ViaCepAddress | "not_found" | null> {
+async function tryViaCep(cep: string): Promise<CepAddress | "not_found" | null> {
   try {
     const res = await fetchWithTimeout(`https://viacep.com.br/ws/${cep}/json/`);
     if (!res.ok) return null;
@@ -188,4 +190,79 @@ export async function geocodeCep(rawCep: string): Promise<GeocodeResult> {
   };
   await writeCache(cep, result);
   return { ok: true, ...result };
+}
+
+
+/** BrasilAPI também resolve o endereço; é a primeira tentativa por ser a mesma
+ * fonte que o frete usa, então os dois nunca discordam sobre um CEP. */
+async function tryBrasilApiAddress(cep: string): Promise<CepAddress | "not_found" | null> {
+  try {
+    const res = await fetchWithTimeout(`https://brasilapi.com.br/api/cep/v2/${cep}`);
+    if (res.status === 404) return "not_found";
+    if (!res.ok) return null;
+    const data = (await res.json()) as BrasilApiCepResponse;
+    if (!data?.city || !data?.state) return null;
+    return {
+      city: String(data.city),
+      state: String(data.state),
+      street: String(data.street ?? ""),
+      neighborhood: String(data.neighborhood ?? ""),
+    };
+  } catch (err) {
+    console.error("BrasilAPI (endereço do CEP) falhou:", err);
+    return null;
+  }
+}
+
+export type CepAddressResult =
+  | ({ ok: true } & CepAddress)
+  | { ok: false; reason: "invalid_cep" | "not_found" | "service_unavailable" };
+
+/**
+ * Resolve um CEP no endereço (rua, bairro, cidade, UF) para preencher o
+ * formulário sozinho.
+ *
+ * Separada de `geocodeCep` de propósito: aquela existe para achar
+ * coordenadas e calcular frete, e falha quando não consegue geocodificar.
+ * Aqui, um CEP sem coordenada ainda é perfeitamente útil — o cliente só quer
+ * a rua preenchida. Misturar as duas faria o formulário deixar de preencher
+ * por causa de um problema que não é dele.
+ *
+ * Cache próprio pelo mesmo motivo: `CepGeocodeCache` exige lat/lng, que esta
+ * consulta pode não ter.
+ */
+export async function lookupCepAddress(rawCep: string): Promise<CepAddressResult> {
+  const cep = normalizeCep(rawCep);
+  if (cep.length !== 8) return { ok: false, reason: "invalid_cep" };
+
+  const cached = await prisma.cepAddressCache.findUnique({ where: { cep } }).catch(() => null);
+  if (cached) {
+    return {
+      ok: true,
+      street: cached.street,
+      neighborhood: cached.neighborhood,
+      city: cached.city,
+      state: cached.state,
+    };
+  }
+
+  const brasilApi = await tryBrasilApiAddress(cep);
+  let address: CepAddress | null = brasilApi && brasilApi !== "not_found" ? brasilApi : null;
+
+  if (!address) {
+    const viaCep = await tryViaCep(cep);
+    if (viaCep === "not_found" || (brasilApi === "not_found" && !viaCep)) {
+      return { ok: false, reason: "not_found" };
+    }
+    if (!viaCep) return { ok: false, reason: "service_unavailable" };
+    address = viaCep;
+  }
+
+  await prisma.cepAddressCache
+    .upsert({ where: { cep }, update: address, create: { cep, ...address } })
+    // Cache é otimização: falhar aqui não pode impedir o formulário de ser
+    // preenchido com o endereço que já temos em mãos.
+    .catch(() => undefined);
+
+  return { ok: true, ...address };
 }

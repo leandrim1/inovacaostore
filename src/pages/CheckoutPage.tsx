@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { CheckCircle2, Copy, CreditCard, MapPin, MessageCircle, QrCode, Receipt } from "lucide-react";
+import { CheckCircle2, Copy, CreditCard, Loader2, MapPin, MessageCircle, QrCode, Receipt } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
 import { useCart } from "../context/CartContext";
 import { formatBRL, maskPhoneBR } from "../lib/format";
@@ -10,6 +10,7 @@ import { buildWhatsAppLink, STORE } from "../data/store";
 import { useSiteSettings } from "../hooks/useSiteSettings";
 import { useAuth } from "../context/AuthContext";
 import { useAddresses, useCreateAddress, type CustomerAddress } from "../hooks/useAddresses";
+import { useCepAutofill } from "../hooks/useCepAutofill";
 
 type PaymentMethod = "pix" | "cartao" | "boleto";
 
@@ -127,6 +128,35 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedAddresses]);
 
+  const numeroRef = useRef<HTMLInputElement>(null);
+  const ruaRef = useRef<HTMLInputElement>(null);
+
+  const cepLookup = useCepAutofill((endereco) => {
+    setAddress((atual) => ({
+      ...atual,
+      street: endereco.street || atual.street,
+      neighborhood: endereco.neighborhood || atual.neighborhood,
+      city: endereco.city,
+      state: endereco.state,
+    }));
+    (endereco.street ? numeroRef : ruaRef).current?.focus();
+  });
+
+  /**
+   * Um CEP completo faz duas coisas de uma vez: preenche o endereço e cota o
+   * frete. Separar em dois gestos (digitar e depois sair do campo) é o tipo
+   * de atrito que faz alguém desistir na última tela da compra.
+   */
+  function handleCepChange(valor: string) {
+    const formatado = formatCep(valor);
+    setAddress((atual) => ({ ...atual, cep: formatado }));
+    // Endereço escolhido da lista deixa de valer assim que o CEP muda.
+    setSelectedAddressId(null);
+    void cepLookup.buscar(formatado);
+    if (formatado.replace(/\D/g, "").length === 8) void cotarFrete(formatado);
+    else setShippingQuote(null);
+  }
+
   async function cotarFrete(cep: string) {
     if (!isValidCep(cep)) {
       setCepError("CEP inválido");
@@ -149,7 +179,14 @@ export default function CheckoutPage() {
     }
   }
 
+  /**
+   * Rede de segurança do campo de CEP. Digitar já cota o frete; este blur
+   * só age quando ainda não há cotação — o caso de uma falha momentânea na
+   * primeira tentativa. Sem a guarda, o fluxo normal pediria a cotação duas
+   * vezes para o mesmo CEP.
+   */
   function handleCepBlur() {
+    if (shippingQuote) return Promise.resolve();
     return cotarFrete(address.cep);
   }
 
@@ -329,15 +366,29 @@ export default function CheckoutPage() {
                   onChange={(e) => setAddress({ ...address, phone: e.target.value })}
                   className="input-field"
                 />
+                <div className="flex flex-col gap-1">
+                  <input
+                    required
+                    placeholder="CEP"
+                    value={address.cep}
+                    onChange={(e) => handleCepChange(e.target.value)}
+                    onBlur={handleCepBlur}
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    className="input-field"
+                  />
+                  {cepLookup.buscando && (
+                    <span className="flex items-center gap-1 text-xs text-neutral-400">
+                      <Loader2 size={12} className="animate-spin motion-reduce:animate-none" aria-hidden />
+                      buscando endereço…
+                    </span>
+                  )}
+                  {cepLookup.erro && (
+                    <span className="text-xs text-amber-600">{cepLookup.erro} Preencha abaixo.</span>
+                  )}
+                </div>
                 <input
-                  required
-                  placeholder="CEP"
-                  value={address.cep}
-                  onChange={(e) => setAddress({ ...address, cep: formatCep(e.target.value) })}
-                  onBlur={handleCepBlur}
-                  className="input-field"
-                />
-                <input
+                  ref={ruaRef}
                   required
                   placeholder="Endereço"
                   value={address.street}
@@ -345,6 +396,7 @@ export default function CheckoutPage() {
                   className="input-field sm:col-span-1"
                 />
                 <input
+                  ref={numeroRef}
                   required
                   placeholder="Número"
                   value={address.number}
