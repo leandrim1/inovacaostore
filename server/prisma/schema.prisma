@@ -251,6 +251,22 @@ model SiteSettings {
   announcementItem2 String
   announcementItem3 String
   announcementItem4 String
+  // Faixa de benefícios da home (abaixo dos produtos). O ícone é uma chave
+  // de uma lista fechada (server/src/benefitIcons.ts ↔ src/lib/benefitIcons.ts),
+  // nunca um nome de componente livre. Os defaults são os textos que ficavam
+  // fixos no código, então o deploy não muda nada na loja.
+  benefit1Icon      String   @default("truck")
+  benefit1Title     String   @default("Frete grátis")
+  benefit1Text      String   @default("Em compras acima de R$ 299 para todo o Brasil.")
+  benefit2Icon      String   @default("refresh")
+  benefit2Title     String   @default("Troca fácil")
+  benefit2Text      String   @default("Até 30 dias para trocar ou devolver sem complicação.")
+  benefit3Icon      String   @default("shield")
+  benefit3Title     String   @default("Pagamento seguro")
+  benefit3Text      String   @default("Ambiente 100% protegido com múltiplas formas de pagamento.")
+  benefit4Icon      String   @default("headset")
+  benefit4Title     String   @default("Atendimento rápido")
+  benefit4Text      String   @default("Suporte pelo WhatsApp para tirar suas dúvidas na hora.")
   updatedAt         DateTime @updatedAt
 }
 

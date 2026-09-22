@@ -23,6 +23,18 @@ const DEFAULT_SETTINGS = {
   announcementItem2: "Troca fácil em até 30 dias",
   announcementItem3: "Pagamento 100% seguro",
   announcementItem4: "Atendimento rápido pelo WhatsApp",
+  benefit1Icon: "truck",
+  benefit1Title: "Frete grátis",
+  benefit1Text: "Em compras acima de R$ 299 para todo o Brasil.",
+  benefit2Icon: "refresh",
+  benefit2Title: "Troca fácil",
+  benefit2Text: "Até 30 dias para trocar ou devolver sem complicação.",
+  benefit3Icon: "shield",
+  benefit3Title: "Pagamento seguro",
+  benefit3Text: "Ambiente 100% protegido com múltiplas formas de pagamento.",
+  benefit4Icon: "headset",
+  benefit4Title: "Atendimento rápido",
+  benefit4Text: "Suporte pelo WhatsApp para tirar suas dúvidas na hora.",
 };
 
 // 10s frescos + 1 dia servindo a cópia anterior enquanto revalida.

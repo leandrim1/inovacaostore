@@ -24,6 +24,16 @@ import {
 import type { Banner, HeroImage, PaymentMethod } from "../../hooks/useSiteSettings";
 import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
 import { EmailDiagnostic } from "../../components/admin/EmailDiagnostic";
+import { BENEFIT_ICONS, benefitIcon } from "../../lib/benefitIcons";
+
+interface BenefitForm {
+  icon: string;
+  title: string;
+  text: string;
+}
+
+const BENEFIT_TITLE_MAX = 40;
+const BENEFIT_TEXT_MAX = 140;
 
 export default function AdminSettingsPage() {
   const { data: settings, isLoading } = useAdminSettings();
@@ -73,6 +83,7 @@ export default function AdminSettingsPage() {
   const [announcementItem2, setAnnouncementItem2] = useState("");
   const [announcementItem3, setAnnouncementItem3] = useState("");
   const [announcementItem4, setAnnouncementItem4] = useState("");
+  const [benefits, setBenefits] = useState<BenefitForm[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -97,12 +108,31 @@ export default function AdminSettingsPage() {
     setAnnouncementItem2(settings.announcementItem2);
     setAnnouncementItem3(settings.announcementItem3);
     setAnnouncementItem4(settings.announcementItem4);
+    setBenefits([
+      { icon: settings.benefit1Icon, title: settings.benefit1Title, text: settings.benefit1Text },
+      { icon: settings.benefit2Icon, title: settings.benefit2Title, text: settings.benefit2Text },
+      { icon: settings.benefit3Icon, title: settings.benefit3Title, text: settings.benefit3Text },
+      { icon: settings.benefit4Icon, title: settings.benefit4Title, text: settings.benefit4Text },
+    ]);
   }, [settings]);
+
+  function updateBenefit(index: number, patch: Partial<BenefitForm>) {
+    setBenefits((atual) => atual.map((b, i) => (i === index ? { ...b, ...patch } : b)));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaved(false);
+
+    // `required` do navegador aceita um campo só com espaços; o servidor
+    // recusaria com um "Dados inválidos." genérico. Melhor dizer qual é.
+    const benefitVazio = benefits.findIndex((b) => !b.title.trim() || !b.text.trim());
+    if (benefits.length !== 4 || benefitVazio !== -1) {
+      setError(`Preencha o título e o texto do benefício ${benefitVazio + 1}.`);
+      return;
+    }
+    const [b1, b2, b3, b4] = benefits;
 
     const payload: SiteSettingsInput = {
       heroEyebrow,
@@ -121,6 +151,18 @@ export default function AdminSettingsPage() {
       announcementItem2,
       announcementItem3,
       announcementItem4,
+      benefit1Icon: b1.icon,
+      benefit1Title: b1.title,
+      benefit1Text: b1.text,
+      benefit2Icon: b2.icon,
+      benefit2Title: b2.title,
+      benefit2Text: b2.text,
+      benefit3Icon: b3.icon,
+      benefit3Title: b3.title,
+      benefit3Text: b3.text,
+      benefit4Icon: b4.icon,
+      benefit4Title: b4.title,
+      benefit4Text: b4.text,
     };
 
     try {
@@ -587,6 +629,79 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setAnnouncementItem4(e.target.value)}
                 className="admin-input px-3 py-2"
               />
+            </div>
+          </section>
+
+          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <h2 className="mb-1 font-display text-sm tracking-widest text-neutral-500">
+              BENEFÍCIOS (página inicial)
+            </h2>
+            <p className="mb-4 text-xs leading-relaxed text-neutral-500">
+              Os 4 itens com ícone que aparecem na página inicial, logo abaixo dos produtos em
+              destaque.
+            </p>
+            <div className="flex flex-col gap-4">
+              {benefits.map((b, i) => {
+                const Icon = benefitIcon(b.icon);
+                return (
+                  <fieldset key={i} className="min-w-0 rounded-xl border border-black/10 p-3">
+                    <legend className="px-1 font-mono text-[11px] tabular-nums text-neutral-400">
+                      BENEFÍCIO {String(i + 1).padStart(2, "0")}
+                    </legend>
+                    <div className="grid grid-cols-1 gap-3">
+                      <label className="text-xs font-medium text-neutral-500">
+                        Ícone
+                        <span className="mt-1 flex items-center gap-2">
+                          <span
+                            aria-hidden="true"
+                            className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg bg-brand-cream text-brand-yellow-dark"
+                          >
+                            <Icon size={18} strokeWidth={1.75} />
+                          </span>
+                          <select
+                            name={`benefit${i + 1}Icon`}
+                            value={b.icon}
+                            onChange={(e) => updateBenefit(i, { icon: e.target.value })}
+                            className="min-w-0 flex-1 admin-input px-3 py-2"
+                          >
+                            {BENEFIT_ICONS.map((opcao) => (
+                              <option key={opcao.key} value={opcao.key}>
+                                {opcao.label}
+                              </option>
+                            ))}
+                          </select>
+                        </span>
+                      </label>
+                      <label className="text-xs font-medium text-neutral-500">
+                        Título
+                        <input
+                          required
+                          name={`benefit${i + 1}Title`}
+                          maxLength={BENEFIT_TITLE_MAX}
+                          value={b.title}
+                          onChange={(e) => updateBenefit(i, { title: e.target.value })}
+                          className="mt-1 w-full admin-input px-3 py-2"
+                        />
+                      </label>
+                      <label className="text-xs font-medium text-neutral-500">
+                        Texto
+                        <textarea
+                          required
+                          name={`benefit${i + 1}Text`}
+                          maxLength={BENEFIT_TEXT_MAX}
+                          rows={2}
+                          value={b.text}
+                          onChange={(e) => updateBenefit(i, { text: e.target.value })}
+                          className="mt-1 w-full admin-input px-3 py-2"
+                        />
+                        <span className="mt-1 block text-right font-normal tabular-nums text-neutral-400">
+                          {b.text.length}/{BENEFIT_TEXT_MAX}
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+                );
+              })}
             </div>
           </section>
         </div>

@@ -6,8 +6,16 @@ import { upload, saveValidatedImage } from "../../upload.js";
 import { deleteUpload } from "../../storage.js";
 import { imageSettingsPatchSchema } from "../../imageSettings.js";
 import { classifyEmailError, describeEmailConfig, sendEmail } from "../../email.js";
+import { BENEFIT_ICON_KEYS } from "../../benefitIcons.js";
 
 export const adminSettingsRouter = Router();
+
+// Faixa de benefícios da home. Os limites vêm do layout: a faixa tem 2
+// colunas no celular, e um título maior que isso quebra em várias linhas e
+// desalinha os quatro itens.
+const benefitIcon = z.enum(BENEFIT_ICON_KEYS);
+const benefitTitle = z.string().trim().min(1, "Informe o título do benefício.").max(40);
+const benefitText = z.string().trim().min(1, "Informe o texto do benefício.").max(140);
 
 const settingsSchema = z.object({
   heroEyebrow: z.string().min(1),
@@ -26,6 +34,18 @@ const settingsSchema = z.object({
   announcementItem2: z.string().min(1),
   announcementItem3: z.string().min(1),
   announcementItem4: z.string().min(1),
+  benefit1Icon: benefitIcon,
+  benefit1Title: benefitTitle,
+  benefit1Text: benefitText,
+  benefit2Icon: benefitIcon,
+  benefit2Title: benefitTitle,
+  benefit2Text: benefitText,
+  benefit3Icon: benefitIcon,
+  benefit3Title: benefitTitle,
+  benefit3Text: benefitText,
+  benefit4Icon: benefitIcon,
+  benefit4Title: benefitTitle,
+  benefit4Text: benefitText,
 });
 
 adminSettingsRouter.get("/", async (_req, res) => {

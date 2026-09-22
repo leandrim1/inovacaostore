@@ -52,6 +52,19 @@ export interface SiteSettings {
   announcementItem2: string;
   announcementItem3: string;
   announcementItem4: string;
+  /** Faixa de benefícios da home. Ícone = chave de src/lib/benefitIcons.ts. */
+  benefit1Icon: string;
+  benefit1Title: string;
+  benefit1Text: string;
+  benefit2Icon: string;
+  benefit2Title: string;
+  benefit2Text: string;
+  benefit3Icon: string;
+  benefit3Title: string;
+  benefit3Text: string;
+  benefit4Icon: string;
+  benefit4Title: string;
+  benefit4Text: string;
 }
 
 // Mesmo conteúdo usado como default no backend (server/src/routes/settings.routes.ts)
@@ -79,6 +92,18 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   announcementItem2: "Troca fácil em até 30 dias",
   announcementItem3: "Pagamento 100% seguro",
   announcementItem4: "Atendimento rápido pelo WhatsApp",
+  benefit1Icon: "truck",
+  benefit1Title: "Frete grátis",
+  benefit1Text: "Em compras acima de R$ 299 para todo o Brasil.",
+  benefit2Icon: "refresh",
+  benefit2Title: "Troca fácil",
+  benefit2Text: "Até 30 dias para trocar ou devolver sem complicação.",
+  benefit3Icon: "shield",
+  benefit3Title: "Pagamento seguro",
+  benefit3Text: "Ambiente 100% protegido com múltiplas formas de pagamento.",
+  benefit4Icon: "headset",
+  benefit4Title: "Atendimento rápido",
+  benefit4Text: "Suporte pelo WhatsApp para tirar suas dúvidas na hora.",
 };
 
 /**
