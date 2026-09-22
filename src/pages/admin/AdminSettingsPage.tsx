@@ -5,19 +5,23 @@ import {
   useAdminBanners,
   useAdminGalleryImages,
   useAdminHeroImages,
+  useAdminPaymentMethods,
   useAdminSettings,
   useDeleteBanner,
   useDeleteGalleryImage,
   useDeleteHeroImage,
+  useDeletePaymentMethod,
   useUpdateBanner,
   useUpdateHeroImageSettings,
+  useUpdatePaymentMethod,
   useUpdateSettings,
   useUploadBanners,
   useUploadGalleryImages,
   useUploadHeroImages,
+  useUploadPaymentMethods,
   type SiteSettingsInput,
 } from "../../hooks/admin/useAdminSettings";
-import type { Banner, HeroImage } from "../../hooks/useSiteSettings";
+import type { Banner, HeroImage, PaymentMethod } from "../../hooks/useSiteSettings";
 import { ImagePositionEditor } from "../../components/admin/ImagePositionEditor";
 
 export default function AdminSettingsPage() {
@@ -41,6 +45,14 @@ export default function AdminSettingsPage() {
   // Guarda o link enquanto a pessoa digita; só vai para o servidor ao sair do
   // campo, para não disparar uma requisição por tecla.
   const [linksEmEdicao, setLinksEmEdicao] = useState<Record<string, string>>({});
+  const { data: formasDePagamento = [] } = useAdminPaymentMethods();
+  const uploadFormasDePagamento = useUploadPaymentMethods();
+  const deleteFormaDePagamento = useDeletePaymentMethod();
+  const updateFormaDePagamento = useUpdatePaymentMethod();
+  const pagamentoInputRef = useRef<HTMLInputElement>(null);
+  const [pagamentoError, setPagamentoError] = useState<string | null>(null);
+  // Mesmo padrão do link do banner: guarda enquanto digita, salva ao sair.
+  const [nomesEmEdicao, setNomesEmEdicao] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,6 +171,38 @@ export default function AdminSettingsPage() {
       await updateBanner.mutateAsync({ id: banner.id, data: { linkUrl: novo } });
     } catch (err) {
       setBannerError(err instanceof Error ? err.message : "Não foi possível salvar o link.");
+    }
+  }
+
+  async function handlePagamentoFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files?.length) return;
+    setPagamentoError(null);
+    try {
+      await uploadFormasDePagamento.mutateAsync(Array.from(e.target.files));
+    } catch (err) {
+      setPagamentoError(err instanceof Error ? err.message : "Não foi possível enviar as imagens.");
+    } finally {
+      if (pagamentoInputRef.current) pagamentoInputRef.current.value = "";
+    }
+  }
+
+  async function handleDeleteFormaDePagamento(id: string) {
+    setPagamentoError(null);
+    try {
+      await deleteFormaDePagamento.mutateAsync(id);
+    } catch (err) {
+      setPagamentoError(err instanceof Error ? err.message : "Não foi possível excluir a imagem.");
+    }
+  }
+
+  async function salvarNomeDaForma(forma: PaymentMethod) {
+    const novo = nomesEmEdicao[forma.id];
+    if (novo === undefined || novo === forma.label) return;
+    setPagamentoError(null);
+    try {
+      await updateFormaDePagamento.mutateAsync({ id: forma.id, data: { label: novo } });
+    } catch (err) {
+      setPagamentoError(err instanceof Error ? err.message : "Não foi possível salvar o nome.");
     }
   }
 
@@ -389,6 +433,76 @@ export default function AdminSettingsPage() {
               <Upload size={16} />
               {uploadBanners.isPending ? "Enviando…" : "Enviar imagens"}
             </label>
+          </section>
+
+          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <h2 className="mb-1 font-display text-sm tracking-widest text-neutral-500">
+              FORMAS DE PAGAMENTO
+            </h2>
+            <p className="mb-4 text-xs leading-relaxed text-neutral-400">
+              As bandeirinhas que aparecem no rodapé do site. Envie os logos em PNG com fundo
+              transparente (JPG e WEBP também servem; SVG não é aceito por segurança). Enquanto você
+              não enviar nenhum, o site mostra um conjunto padrão desenhado — a faixa nunca fica
+              vazia.
+            </p>
+            {pagamentoError && <p className="mb-3 text-sm text-red-600">{pagamentoError}</p>}
+
+            {formasDePagamento.length > 0 && (
+              <ul className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {formasDePagamento.map((forma) => (
+                  <li
+                    key={forma.id}
+                    className="flex items-center gap-3 rounded-xl p-2 ring-1 ring-black/5"
+                  >
+                    {/* Fundo quadriculado claro: é como o lojista percebe na
+                        hora se o PNG veio com fundo branco em vez de
+                        transparente. */}
+                    <div className="grid h-12 w-[68px] shrink-0 place-items-center rounded-lg bg-[repeating-conic-gradient(#f3f3f3_0%_25%,#ffffff_0%_50%)] bg-[length:12px_12px] p-1.5">
+                      <img src={forma.url} alt="" className="h-full w-full object-contain" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Nome (ex.: Visa)"
+                      value={nomesEmEdicao[forma.id] ?? forma.label}
+                      onChange={(e) =>
+                        setNomesEmEdicao((atual) => ({ ...atual, [forma.id]: e.target.value }))
+                      }
+                      onBlur={() => salvarNomeDaForma(forma)}
+                      className="admin-input min-w-0 flex-1 px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteFormaDePagamento(forma.id)}
+                      aria-label={`Excluir ${forma.label || "forma de pagamento"}`}
+                      className="shrink-0 rounded-full p-1.5 text-neutral-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    >
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <input
+              ref={pagamentoInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handlePagamentoFileChange}
+              className="hidden"
+              id="pagamento-input"
+            />
+            <label
+              htmlFor="pagamento-input"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-black/20 px-4 py-3 text-sm text-neutral-500 hover:border-brand-ink hover:text-brand-ink"
+            >
+              <Upload size={16} />
+              {uploadFormasDePagamento.isPending ? "Enviando…" : "Enviar logos"}
+            </label>
+            <p className="mt-2 text-[11px] text-neutral-400">
+              O nome é o que o leitor de tela anuncia e o que aparece ao passar o mouse. Ele é salvo
+              ao sair do campo. A ordem de exibição é a ordem de envio.
+            </p>
           </section>
 
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">

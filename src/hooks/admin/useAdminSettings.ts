@@ -1,12 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../lib/api";
-import type { Banner, HeroImage, SiteSettings } from "../useSiteSettings";
+import type { Banner, HeroImage, PaymentMethod, SiteSettings } from "../useSiteSettings";
 import type { ImageSettings } from "../../lib/imageSettings";
 
-export type { Banner, HeroImage };
+export type { Banner, HeroImage, PaymentMethod };
 
-export type SiteSettingsInput = Omit<SiteSettings, "id" | "heroImages" | "galleryImages" | "banners">;
-export type AdminSiteSettings = Omit<SiteSettings, "heroImages" | "galleryImages" | "banners">;
+export type SiteSettingsInput = Omit<
+  SiteSettings,
+  "id" | "heroImages" | "galleryImages" | "banners" | "paymentMethods"
+>;
+export type AdminSiteSettings = Omit<
+  SiteSettings,
+  "heroImages" | "galleryImages" | "banners" | "paymentMethods"
+>;
 
 export function useAdminSettings() {
   return useQuery({
@@ -132,6 +138,56 @@ export function useDeleteBanner() {
   const invalidate = useInvalidateBanners();
   return useMutation({
     mutationFn: (id: string) => api.delete<{ items: Banner[] }>(`/api/admin/settings/banners/${id}`),
+    onSuccess: invalidate,
+  });
+}
+
+// --- Formas de pagamento (faixa do rodapé) ---
+
+export function useAdminPaymentMethods() {
+  return useQuery({
+    queryKey: ["admin-payment-methods"],
+    queryFn: () =>
+      api
+        .get<{ items: PaymentMethod[] }>("/api/admin/settings/payment-methods")
+        .then((r) => r.items),
+  });
+}
+
+function useInvalidatePaymentMethods() {
+  const qc = useQueryClient();
+  return () => {
+    qc.invalidateQueries({ queryKey: ["admin-payment-methods"] });
+    qc.invalidateQueries({ queryKey: ["settings"] });
+  };
+}
+
+export function useUploadPaymentMethods() {
+  const invalidate = useInvalidatePaymentMethods();
+  return useMutation({
+    mutationFn: (files: File[]) => {
+      const form = new FormData();
+      files.forEach((file) => form.append("images", file));
+      return api.upload<{ items: PaymentMethod[] }>("/api/admin/settings/payment-methods", form);
+    },
+    onSuccess: invalidate,
+  });
+}
+
+export function useUpdatePaymentMethod() {
+  const invalidate = useInvalidatePaymentMethods();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { label?: string; order?: number } }) =>
+      api.patch<PaymentMethod>(`/api/admin/settings/payment-methods/${id}`, data),
+    onSuccess: invalidate,
+  });
+}
+
+export function useDeletePaymentMethod() {
+  const invalidate = useInvalidatePaymentMethods();
+  return useMutation({
+    mutationFn: (id: string) =>
+      api.delete<{ items: PaymentMethod[] }>(`/api/admin/settings/payment-methods/${id}`),
     onSuccess: invalidate,
   });
 }

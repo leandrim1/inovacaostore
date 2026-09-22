@@ -204,6 +204,78 @@ adminSettingsRouter.delete("/banners/:id", async (req, res) => {
   res.json({ items: await listarBanners() });
 });
 
+// ---------------------------------------------------------------------------
+// Formas de pagamento (faixa do rodapé)
+// ---------------------------------------------------------------------------
+
+function listarFormasDePagamento() {
+  return prisma.paymentMethod.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] });
+}
+
+adminSettingsRouter.get("/payment-methods", async (_req, res) => {
+  res.json({ items: await listarFormasDePagamento() });
+});
+
+adminSettingsRouter.post("/payment-methods", upload.array("images", 8), async (req, res) => {
+  const files = (req.files as Express.Multer.File[]) ?? [];
+  if (files.length === 0) {
+    res.status(400).json({ error: "Nenhuma imagem enviada." });
+    return;
+  }
+
+  const currentCount = await prisma.paymentMethod.count();
+  const urls = await Promise.all(files.map((file) => saveValidatedImage(file.buffer)));
+  await prisma.paymentMethod.createMany({
+    // O nome começa vazio: o upload é múltiplo e o servidor não tem como
+    // saber qual arquivo é qual bandeira. O admin preenche na lista.
+    data: urls.map((url, i) => ({ url, order: currentCount + i })),
+  });
+
+  res.status(201).json({ items: await listarFormasDePagamento() });
+});
+
+const paymentMethodPatchSchema = z.object({
+  label: z.string().max(40).optional(),
+  order: z.number().int().min(0).optional(),
+});
+
+adminSettingsRouter.patch("/payment-methods/:id", async (req, res) => {
+  const parsed = paymentMethodPatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Dados inválidos.", details: parsed.error.flatten() });
+    return;
+  }
+  const data = parsed.data;
+
+  const existe = await prisma.paymentMethod.findUnique({ where: { id: req.params.id } });
+  if (!existe) {
+    res.status(404).json({ error: "Forma de pagamento não encontrada." });
+    return;
+  }
+
+  const atualizada = await prisma.paymentMethod.update({
+    where: { id: req.params.id },
+    data: {
+      ...(data.label !== undefined ? { label: data.label.trim() } : {}),
+      ...(data.order !== undefined ? { order: data.order } : {}),
+    },
+  });
+  res.json(atualizada);
+});
+
+adminSettingsRouter.delete("/payment-methods/:id", async (req, res) => {
+  const forma = await prisma.paymentMethod.findUnique({ where: { id: req.params.id } });
+  if (!forma) {
+    res.status(404).json({ error: "Forma de pagamento não encontrada." });
+    return;
+  }
+
+  await prisma.paymentMethod.delete({ where: { id: forma.id } });
+  await deleteUpload(forma.url);
+
+  res.json({ items: await listarFormasDePagamento() });
+});
+
 adminSettingsRouter.get("/gallery-images", async (_req, res) => {
   const galleryImages = await prisma.galleryImage.findMany({ orderBy: { order: "asc" } });
   res.json({ items: galleryImages });

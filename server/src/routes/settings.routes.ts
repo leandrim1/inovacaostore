@@ -26,11 +26,12 @@ const DEFAULT_SETTINGS = {
 };
 
 settingsRouter.get("/", cacheLeituraPublica(60), async (_req, res) => {
-  const [settings, heroImages, galleryImages, banners] = await Promise.all([
+  const [settings, heroImages, galleryImages, banners, paymentMethods] = await Promise.all([
     prisma.siteSettings.findUnique({ where: { id: "singleton" } }),
     prisma.heroImage.findMany({ orderBy: { order: "asc" } }),
     prisma.galleryImage.findMany({ orderBy: { order: "asc" } }),
     prisma.banner.findMany({ orderBy: { order: "asc" } }),
+    prisma.paymentMethod.findMany({ orderBy: [{ order: "asc" }, { createdAt: "asc" }] }),
   ]);
-  res.json({ ...(settings ?? DEFAULT_SETTINGS), heroImages, galleryImages, banners });
+  res.json({ ...(settings ?? DEFAULT_SETTINGS), heroImages, galleryImages, banners, paymentMethods });
 });

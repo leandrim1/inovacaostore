@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+import { useSiteSettings } from "../../hooks/useSiteSettings";
 import { PAYMENT_BRANDS, PAYMENT_MARK_VIEWBOX } from "../ui/paymentBrands";
 
 /**
@@ -17,8 +18,22 @@ import { PAYMENT_BRANDS, PAYMENT_MARK_VIEWBOX } from "../ui/paymentBrands";
  *    uma altura só em qualquer tela.
  * 3. O selo de compra segura usa o preto e o amarelo da marca, não o verde
  *    genérico de plataforma — o rodapé continua parecendo desta loja.
+ *
+ * As bandeiras vêm do painel (Configurações › Formas de pagamento). Enquanto
+ * o lojista não tiver enviado nenhuma, vale o conjunto desenhado em código:
+ * é o mesmo princípio do hero, que tem uma foto de reserva — a faixa nunca
+ * aparece vazia nem quebrada.
  */
+/** A pastilha é a mesma nos dois casos: é ela que dá unidade à fileira. */
+const PASTILHA =
+  "flex h-10 w-[58px] shrink-0 snap-start items-center justify-center rounded-xl bg-white p-2 " +
+  "shadow-[0_1px_2px_rgba(10,10,10,0.05)] ring-1 ring-brand-ink/[0.08] transition-all duration-300 " +
+  "hover:-translate-y-0.5 hover:shadow-[0_8px_18px_-8px_rgba(10,10,10,0.25)] hover:ring-brand-ink/20";
+
 export function PaymentStrip() {
+  const { data: settings } = useSiteSettings();
+  const doPainel = settings.paymentMethods ?? [];
+
   return (
     <div className="border-t border-brand-ink/[0.07] px-6 py-7 sm:px-10 sm:py-8 lg:px-12">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
@@ -30,18 +45,29 @@ export function PaymentStrip() {
           {/* `-mx-* px-*` deixa a primeira e a última pastilha respirarem nas
               pontas quando a fileira rola no celular, sem cortar a sombra. */}
           <ul className="-mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pb-0 [&::-webkit-scrollbar]:hidden">
-            {PAYMENT_BRANDS.map((brand) => (
-              <li
-                key={brand.id}
-                title={brand.label}
-                className="flex h-10 w-[58px] shrink-0 snap-start items-center justify-center rounded-xl bg-white p-2 shadow-[0_1px_2px_rgba(10,10,10,0.05)] ring-1 ring-brand-ink/[0.08] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_-8px_rgba(10,10,10,0.25)] hover:ring-brand-ink/20"
-              >
-                <span className="sr-only">{brand.label}</span>
-                <svg viewBox={PAYMENT_MARK_VIEWBOX} aria-hidden="true" className="h-full w-full">
-                  {brand.art}
-                </svg>
-              </li>
-            ))}
+            {doPainel.length > 0
+              ? doPainel.map((forma) => (
+                  <li key={forma.id} title={forma.label || undefined} className={PASTILHA}>
+                    <img
+                      src={forma.url}
+                      // A bandeira é informação redundante quando não tem nome:
+                      // o texto ao lado já diz o que a loja aceita. Com nome,
+                      // ele é lido — daí o alt condicional.
+                      alt={forma.label}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-contain"
+                    />
+                  </li>
+                ))
+              : PAYMENT_BRANDS.map((brand) => (
+                  <li key={brand.id} title={brand.label} className={PASTILHA}>
+                    <span className="sr-only">{brand.label}</span>
+                    <svg viewBox={PAYMENT_MARK_VIEWBOX} aria-hidden="true" className="h-full w-full">
+                      {brand.art}
+                    </svg>
+                  </li>
+                ))}
           </ul>
 
           {/* Só o que o checkout realmente oferece hoje (pix, cartão e boleto).

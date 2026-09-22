@@ -11,6 +11,15 @@ export interface HeroImage {
 }
 
 /** Imagem da faixa acima das Categorias. */
+/** Bandeira da faixa de pagamento do rodapé, enviada pelo painel. */
+export interface PaymentMethod {
+  id: string;
+  url: string;
+  /** Nome da bandeira; vai para o leitor de tela e para o `title`. */
+  label: string;
+  order: number;
+}
+
 export interface Banner {
   id: string;
   url: string;
@@ -31,6 +40,7 @@ export interface SiteSettings {
   heroImages: HeroImage[];
   galleryImages: HeroImage[];
   banners: Banner[];
+  paymentMethods: PaymentMethod[];
   whatsappNumber: string;
   whatsappMessage: string;
   contactEmail: string;
@@ -57,6 +67,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroImages: [],
   galleryImages: [],
   banners: [],
+  paymentMethods: [],
   whatsappNumber: "5534996576357",
   whatsappMessage: "Olá! Vim pelo site da Inovação Store e gostaria de mais informações.",
   contactEmail: "inovacaostoretiktok@gmail.com",
