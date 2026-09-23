@@ -49,10 +49,14 @@ export const upload = multer({
  * Devolve o tipo REAL detectado, que passa a ser a fonte do nome e do
  * content-type gravados — nunca o que o cliente declarou.
  */
-export async function assertImageContent(buffer: Buffer): Promise<string> {
+export async function assertImageContent(
+  buffer: Buffer,
+  permitidos: Record<string, string> = ALLOWED_TYPES,
+  mensagem = "O arquivo enviado não é uma imagem válida. Use JPG, PNG, WEBP ou AVIF.",
+): Promise<string> {
   const detected = await fileTypeFromBuffer(buffer);
-  if (!detected || !ALLOWED_TYPES[detected.mime]) {
-    throw new HttpError(400, "O arquivo enviado não é uma imagem válida. Use JPG, PNG, WEBP ou AVIF.");
+  if (!detected || !permitidos[detected.mime]) {
+    throw new HttpError(400, mensagem);
   }
   return detected.mime;
 }
@@ -114,4 +118,76 @@ export async function optimizeImage(buffer: Buffer, mime: string): Promise<{ buf
     console.error("[upload] otimização falhou, salvando o original:", err instanceof Error ? err.message : err);
     return { buffer, mime };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Foto de perfil do cliente
+// ---------------------------------------------------------------------------
+
+/** Formatos aceitos para a foto de perfil (sem AVIF: nem todo celular abre). */
+const AVATAR_TYPES: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+};
+
+/**
+ * Teto do arquivo recebido. A tela já reduz a foto para 512px antes de
+ * enviar (fica em torno de 50–200 KB); este limite é para quem chama a API
+ * direto. Fica abaixo dos 4,5 MB que a Vercel aceita por requisição — acima
+ * disso a própria Vercel recusaria, com um erro que não é o nosso.
+ */
+export const AVATAR_MAX_BYTES = 4 * 1024 * 1024;
+/** Lado da foto gravada: quadrada, nítida até no círculo grande da conta em tela retina. */
+const AVATAR_SIZE = 512;
+const AVATAR_TIPO_INVALIDO = "Formato não suportado. Envie uma foto JPG, PNG ou WebP.";
+
+export const avatarUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: AVATAR_MAX_BYTES, files: 1, fields: 2, parts: 3 },
+  fileFilter: (_req, file, cb) => {
+    if (!AVATAR_TYPES[file.mimetype]) {
+      cb(new HttpError(400, AVATAR_TIPO_INVALIDO));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+/**
+ * Grava a foto de perfil: confere o conteúdo real (não o tipo declarado),
+ * recorta no quadrado central, reduz para 512px e converte para WebP. Tudo
+ * no servidor, mesmo que a tela já tenha feito o mesmo — o que chega aqui
+ * nunca é confiável só por ter vindo do nosso site.
+ */
+export async function saveAvatarImage(buffer: Buffer): Promise<string> {
+  const mime = await assertImageContent(buffer, AVATAR_TYPES, AVATAR_TIPO_INVALIDO);
+  let saida = { buffer, mime };
+  try {
+    const { default: sharp } = await import("sharp");
+    saida = {
+      buffer: await sharp(buffer)
+        .rotate()
+        .resize(AVATAR_SIZE, AVATAR_SIZE, { fit: "cover", position: "centre" })
+        .webp({ quality: 85, effort: 4 })
+        .toBuffer(),
+      mime: "image/webp",
+    };
+  } catch (err) {
+    // Já validado pelo conteúdo: se só o sharp falhou, grava o original em
+    // vez de impedir o cliente de ter foto.
+    console.error("[avatar] otimização falhou, salvando o original:", err instanceof Error ? err.message : err);
+  }
+  const { saveUpload } = await import("./storage.js");
+  return saveUpload(saida.buffer, `avatar-${randomUploadName(saida.mime)}`, saida.mime);
+}
+
+/**
+ * Só apaga do storage o que foi gravado como foto de perfil. Proteção extra
+ * para que um valor inesperado no banco nunca leve a apagar imagem de
+ * produto ou do hero.
+ */
+export function isAvatarUpload(url: string) {
+  const nome = url.split("?")[0].split("/").pop() ?? "";
+  return nome.startsWith("avatar-");
 }

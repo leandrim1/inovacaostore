@@ -7,6 +7,7 @@ import { useCategories } from "../../hooks/useCategories";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { InstagramIcon } from "../ui/InstagramIcon";
+import { UserAvatar } from "../account/UserAvatar";
 
 export function MobileMenu({
   isOpen,
@@ -83,7 +84,17 @@ export function MobileMenu({
               {isAuthenticated && user ? (
                 <>
                   <div className="flex items-center gap-2 text-sm font-medium text-brand-ink">
-                    <User size={18} />
+                    {/* Com foto, a foto; sem foto, o ícone de sempre. */}
+                    {user.avatarUrl ? (
+                      <UserAvatar
+                        name={user.name}
+                        avatarUrl={user.avatarUrl}
+                        letras={1}
+                        className="h-7 w-7 bg-brand-yellow text-xs font-bold text-brand-ink"
+                      />
+                    ) : (
+                      <User size={18} />
+                    )}
                     Olá, {user.name.split(" ")[0]}
                   </div>
                   <Link

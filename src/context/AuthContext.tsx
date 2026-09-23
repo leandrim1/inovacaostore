@@ -15,6 +15,8 @@ export interface User {
   /** Só dígitos (ex.: "34996576357"); string vazia quando nunca foi informado. */
   phone: string;
   emailVerified: boolean;
+  /** Foto de perfil; `null` = sem foto (o site mostra as iniciais). */
+  avatarUrl: string | null;
   /** ISO — vira o "Cliente desde" da área do cliente. */
   createdAt: string;
 }
@@ -46,6 +48,9 @@ interface AuthContextValue {
   resetPassword: (token: string, password: string) => Promise<AuthResult>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>;
   updateProfile: (data: ProfileInput) => Promise<AuthUserResult>;
+  /** Envia/troca a foto de perfil (já preparada por `prepararFotoDePerfil`). */
+  updateAvatar: (foto: Blob) => Promise<AuthUserResult>;
+  removeAvatar: () => Promise<AuthUserResult>;
   deleteAccount: (password: string) => Promise<AuthResult>;
   refresh: () => Promise<void>;
 }
@@ -54,6 +59,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function errorMessage(err: unknown, fallback: string) {
   return err instanceof Error ? err.message : fallback;
+}
+
+/**
+ * Mensagem de erro de envio de foto. `fetch` sem internet lança um
+ * TypeError em inglês ("Failed to fetch"), e um 413 (corpo grande demais,
+ * recusado antes de chegar ao servidor) vem sem texto nosso.
+ */
+function avatarErrorMessage(err: unknown, fallback: string) {
+  if (err instanceof TypeError) return "Sem conexão com a internet. Verifique e tente de novo.";
+  if (err instanceof Error && err.message === "Erro 413") return "A foto é muito grande. Escolha uma imagem menor.";
+  return errorMessage(err, fallback);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -163,6 +179,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const updateAvatar = useCallback(async (foto: Blob): Promise<AuthUserResult> => {
+    try {
+      const form = new FormData();
+      form.append("avatar", foto, foto.type === "image/jpeg" ? "foto.jpg" : "foto.webp");
+      const { user: updated } = await api.upload<{ user: User }>("/api/account/avatar", form);
+      // Atualiza o usuário em memória: cabeçalho, menu e área do cliente
+      // trocam a foto juntos, sem recarregar a página.
+      setUser(updated);
+      return { ok: true, user: updated };
+    } catch (err) {
+      return { ok: false, error: avatarErrorMessage(err, "Não foi possível salvar sua foto.") };
+    }
+  }, []);
+
+  const removeAvatar = useCallback(async (): Promise<AuthUserResult> => {
+    try {
+      const { user: updated } = await api.delete<{ user: User }>("/api/account/avatar");
+      setUser(updated);
+      return { ok: true, user: updated };
+    } catch (err) {
+      return { ok: false, error: avatarErrorMessage(err, "Não foi possível remover sua foto.") };
+    }
+  }, []);
+
   /**
    * Exclusão da conta. O servidor anonimiza o cadastro e encerra a sessão;
    * aqui só limpamos o usuário em memória para a interface acompanhar.
@@ -190,6 +230,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetPassword,
     changePassword,
     updateProfile,
+    updateAvatar,
+    removeAvatar,
     deleteAccount,
     refresh,
   };

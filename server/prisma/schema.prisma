@@ -122,6 +122,9 @@ model Customer {
   /// cadastro foi anonimizado: nome, e-mail e telefone saíram, os pedidos
   /// ficaram. `null` = conta normal.
   anonymizedAt       DateTime?
+  /// Foto de perfil enviada pelo próprio cliente (URL gerada pelo servidor
+  /// em storage.ts). `null` = sem foto: o site mostra as iniciais.
+  avatarUrl          String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   orders             Order[]

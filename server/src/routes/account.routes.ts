@@ -1,5 +1,6 @@
-import { Router } from "express";
+import { Router, type RequestHandler } from "express";
 import bcrypt from "bcryptjs";
+import { MulterError } from "multer";
 import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { prisma } from "../db.js";
@@ -16,6 +17,8 @@ import { classifyEmailError, sendEmail } from "../email.js";
 import { accountEmailLimiter, loginLimiter as ipAndAccountLoginLimiter, publicBaseUrl } from "../security.js";
 import { passwordResetEmail, verificationCodeEmail } from "../emailTemplates.js";
 import { customerAddressesRouter } from "./addresses.routes.js";
+import { AVATAR_MAX_BYTES, avatarUpload, isAvatarUpload, saveAvatarImage } from "../upload.js";
+import { deleteUpload } from "../storage.js";
 
 export const accountRouter = Router();
 
@@ -57,6 +60,7 @@ function toPublicUser(customer: {
   email: string;
   phone: string;
   emailVerified: boolean;
+  avatarUrl: string | null;
   createdAt: Date;
 }) {
   return {
@@ -65,6 +69,7 @@ function toPublicUser(customer: {
     email: customer.email,
     phone: customer.phone,
     emailVerified: customer.emailVerified,
+    avatarUrl: customer.avatarUrl,
     createdAt: customer.createdAt,
   };
 }
@@ -287,6 +292,81 @@ accountRouter.patch("/me", accountActionLimiter, requireCustomerAuth, async (req
 });
 
 /**
+ * Recebe o arquivo da foto de perfil com mensagens próprias. Pelo tratador
+ * global, o limite de tamanho sairia como "Cada imagem deve ter no máximo
+ * 6MB" — o texto do upload do painel, errado aqui.
+ */
+const receberFoto: RequestHandler = (req, res, next) => {
+  avatarUpload.single("avatar")(req, res, (err: unknown) => {
+    if (!err) {
+      next();
+      return;
+    }
+    if (err instanceof MulterError) {
+      res.status(400).json({
+        error:
+          err.code === "LIMIT_FILE_SIZE"
+            ? `A foto deve ter no máximo ${AVATAR_MAX_BYTES / (1024 * 1024)} MB.`
+            : "Envie uma única foto.",
+      });
+      return;
+    }
+    // Formato recusado pelo fileFilter (HttpError 400): segue para o
+    // tratador global, que devolve a mensagem como está.
+    next(err);
+  });
+};
+
+async function apagarFotoDePerfil(url: string | null) {
+  if (url && isAvatarUpload(url)) await deleteUpload(url).catch(() => undefined);
+}
+
+/**
+ * Envia ou troca a foto de perfil. A conta é sempre a da sessão — o corpo
+ * só traz o arquivo, nunca "de quem" é a foto.
+ *
+ * Ordem importa: grava a foto nova, aponta o cadastro para ela e só então
+ * apaga a antiga. Se o banco falhar no meio, a nova é apagada e o cliente
+ * continua com a foto que tinha (nunca fica apontando para um arquivo que
+ * não existe mais).
+ */
+accountRouter.post("/avatar", accountActionLimiter, requireCustomerAuth, receberFoto, async (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: "Escolha uma foto para enviar." });
+    return;
+  }
+  const customerId = req.customer!.sub;
+  const url = await saveAvatarImage(req.file.buffer);
+
+  let resultado;
+  try {
+    resultado = await prisma.$transaction(async (tx) => {
+      const antes = await tx.customer.findUnique({ where: { id: customerId }, select: { avatarUrl: true } });
+      const customer = await tx.customer.update({ where: { id: customerId }, data: { avatarUrl: url } });
+      return { anterior: antes?.avatarUrl ?? null, customer };
+    });
+  } catch (err) {
+    await deleteUpload(url).catch(() => undefined);
+    throw err;
+  }
+
+  if (resultado.anterior !== url) await apagarFotoDePerfil(resultado.anterior);
+  res.json({ user: toPublicUser(resultado.customer) });
+});
+
+/** Remove a foto de perfil: o site volta a mostrar as iniciais. */
+accountRouter.delete("/avatar", accountActionLimiter, requireCustomerAuth, async (req, res) => {
+  const customerId = req.customer!.sub;
+  const { anterior, customer } = await prisma.$transaction(async (tx) => {
+    const antes = await tx.customer.findUnique({ where: { id: customerId }, select: { avatarUrl: true } });
+    const atualizado = await tx.customer.update({ where: { id: customerId }, data: { avatarUrl: null } });
+    return { anterior: antes?.avatarUrl ?? null, customer: atualizado };
+  });
+  await apagarFotoDePerfil(anterior);
+  res.json({ user: toPublicUser(customer) });
+});
+
+/**
  * Exclusão da conta pelo próprio cliente (LGPD).
  *
  * ANONIMIZA em vez de apagar a linha. Apagar levaria junto os pedidos — e
@@ -296,6 +376,7 @@ accountRouter.patch("/me", accountActionLimiter, requireCustomerAuth, async (req
  * Sai de vez:
  *  - nome, e-mail e telefone do cadastro (e-mail vira um endereço num TLD
  *    reservado, que nunca pode existir de verdade);
+ *  - foto de perfil (do cadastro e do storage);
  *  - endereços salvos, códigos de verificação e tokens de redefinição;
  *  - depoimentos enviados por esta conta — são as palavras da pessoa
  *    assinadas com o nome dela; "anonimizar" deixaria o texto no ar, que é
@@ -333,6 +414,7 @@ accountRouter.delete("/me", accountActionLimiter, requireCustomerAuth, async (re
   }
 
   const agora = new Date();
+  const fotoAnterior = customer.avatarUrl;
   await prisma.$transaction([
     prisma.customerAddress.deleteMany({ where: { customerId } }),
     prisma.emailVerification.deleteMany({ where: { customerId } }),
@@ -358,9 +440,12 @@ accountRouter.delete("/me", accountActionLimiter, requireCustomerAuth, async (re
         emailVerified: false,
         sessionsValidFrom: agora,
         anonymizedAt: agora,
+        avatarUrl: null,
       },
     }),
   ]);
+  // A foto é dado pessoal como o nome: sai do storage, não só do cadastro.
+  await apagarFotoDePerfil(fotoAnterior);
 
   res.clearCookie(CUSTOMER_COOKIE_NAME, { ...customerCookieOptions, maxAge: undefined });
   res.json({ ok: true });

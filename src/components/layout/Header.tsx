@@ -8,6 +8,7 @@ import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
+import { UserAvatar } from "../account/UserAvatar";
 
 const CATEGORIES_PER_PAGE = 5;
 
@@ -150,9 +151,12 @@ export function Header() {
                   aria-expanded={isAccountMenuOpen}
                   className="flex items-center gap-1.5 rounded-full p-1.5 hover:bg-neutral-100 xl:py-1.5 xl:pl-1.5 xl:pr-2.5"
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-yellow text-xs font-bold text-brand-ink">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
+                  <UserAvatar
+                    name={user.name}
+                    avatarUrl={user.avatarUrl}
+                    letras={1}
+                    className="h-7 w-7 bg-brand-yellow text-xs font-bold text-brand-ink"
+                  />
                   {/* Entre 1024 e 1279 fica só o avatar, pela mesma razão do
                       ícone de visitante: com o nome, o bloco da direita chega a
                       293px e o menu centralizado bate nele. */}

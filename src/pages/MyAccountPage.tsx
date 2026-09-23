@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BadgeCheck,
+  Camera,
   LogOut,
   MapPin,
   MessageCircle,
@@ -13,6 +14,8 @@ import {
 import { Seo } from "../components/seo/Seo";
 import { TestimonialFormModal } from "../components/home/TestimonialFormModal";
 import { OrderThumb } from "../components/account/OrderThumb";
+import { UserAvatar } from "../components/account/UserAvatar";
+import { useProfilePhoto } from "../hooks/useProfilePhoto";
 import { useAuth } from "../context/AuthContext";
 import { useMyOrders, type MyOrder } from "../hooks/useMyOrders";
 import { useAddresses } from "../hooks/useAddresses";
@@ -46,14 +49,6 @@ const TRACK_LABELS: Record<(typeof TRACK)[number], string> = {
   enviado: "Enviado",
   entregue: "Entregue",
 };
-
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  const first = parts[0][0] ?? "";
-  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "";
-  return (first + last).toUpperCase();
-}
 
 function OrderTrack({ status }: { status: string }) {
   const current = TRACK.indexOf(status as (typeof TRACK)[number]);
@@ -255,6 +250,7 @@ export default function MyAccountPage() {
 
   const { data: addresses = [] } = useAddresses();
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const foto = useProfilePhoto(user);
 
   if (!user) return null;
 
@@ -298,12 +294,32 @@ export default function MyAccountPage() {
         <section className="mb-8 overflow-hidden rounded-3xl bg-brand-ink p-6 text-white sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <span
-                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-yellow font-display text-xl tracking-wide text-brand-ink sm:h-16 sm:w-16 sm:text-2xl"
-                aria-hidden
+              {/* O próprio avatar é o botão: clicar abre o seletor de foto. */}
+              <button
+                type="button"
+                onClick={foto.abrirSeletor}
+                aria-label={user.avatarUrl ? "Alterar foto de perfil" : "Adicionar foto de perfil"}
+                className="group relative shrink-0 rounded-full focus-visible:outline-offset-4"
               >
-                {initials(user.name)}
-              </span>
+                <UserAvatar
+                  name={user.name}
+                  avatarUrl={user.avatarUrl}
+                  className="h-14 w-14 bg-brand-yellow font-display text-xl tracking-wide text-brand-ink sm:h-16 sm:w-16 sm:text-2xl"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <Camera size={20} />
+                </span>
+                {/* Selo sempre visível: no celular não existe "passar o mouse". */}
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white text-brand-ink ring-2 ring-brand-ink"
+                >
+                  <Camera size={12} />
+                </span>
+              </button>
               <div className="min-w-0">
                 <p className="font-display text-2xl leading-tight tracking-wide sm:text-3xl">
                   Olá, {user.name.trim().split(/\s+/)[0]}
@@ -314,6 +330,27 @@ export default function MyAccountPage() {
                   Cliente desde{" "}
                   {new Date(user.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
                 </p>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={foto.abrirSeletor}
+                    className="font-medium text-brand-yellow underline-offset-4 hover:underline"
+                  >
+                    {user.avatarUrl ? "Alterar foto" : "Adicionar foto"}
+                  </button>
+                  {user.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={foto.pedirRemocao}
+                      className="text-white/60 underline-offset-4 hover:text-white hover:underline"
+                    >
+                      Remover foto
+                    </button>
+                  )}
+                  <span role="status" className="text-green-300">
+                    {foto.aviso}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -407,6 +444,7 @@ export default function MyAccountPage() {
         )}
       </div>
 
+      {foto.elementos}
       <TestimonialFormModal
         isOpen={isReviewOpen}
         onClose={() => setIsReviewOpen(false)}
