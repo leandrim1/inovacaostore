@@ -18,6 +18,9 @@ function serializePublic(t: Testimonial) {
     rating: t.rating,
     quote: t.quote,
     featured: t.featured,
+    // Só o sim/não: enviado por uma conta de cliente — o que exige pedido
+    // entregue (ver /eligibility). Qual cliente, nunca.
+    verified: t.customerId !== null,
     createdAt: t.createdAt,
   };
 }

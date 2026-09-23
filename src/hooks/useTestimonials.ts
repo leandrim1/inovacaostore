@@ -8,6 +8,8 @@ export interface Testimonial {
   rating: number;
   quote: string;
   featured: boolean;
+  /** Enviado por um cliente com pedido entregue ("Compra verificada"). */
+  verified: boolean;
   createdAt: string;
 }
 
