@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Star } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Star, Upload } from "lucide-react";
 import { useAdminProducts, useDeleteProduct, useUpdateProduct } from "../../hooks/admin/useAdminProducts";
 import { formatBRL } from "../../lib/format";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -57,9 +57,14 @@ export default function AdminProductsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-2xl tracking-wide">Produtos</h1>
-        <Link to="/admin/produtos/novo" className="btn-primary">
-          <Plus size={16} /> Novo produto
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/admin/produtos/importar" className="btn-outline">
+            <Upload size={16} /> Importar produtos
+          </Link>
+          <Link to="/admin/produtos/novo" className="btn-primary">
+            <Plus size={16} /> Novo produto
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3">

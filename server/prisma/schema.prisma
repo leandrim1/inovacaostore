@@ -82,6 +82,33 @@ model Product {
   updatedAt      DateTime         @updatedAt
 }
 
+/// Histórico de importações em massa de produtos (Produtos → Importar).
+///
+/// Guarda o que cada operação fez para o lojista poder conferir depois — e,
+/// principalmente, os ids dos produtos CRIADOS na importação, que é o que
+/// permite desfazê-la sem tocar em produtos que já existiam antes.
+model ProductImport {
+  id        String   @id @default(cuid())
+  fileName  String   @default("")
+  /// processando | concluida | desfeita
+  status    String   @default("processando")
+  total     Int      @default(0)
+  created   Int      @default(0)
+  updated   Int      @default(0)
+  skipped   Int      @default(0)
+  failed    Int      @default(0)
+  /// Só produtos criados por esta importação; atualizados não entram (desfazer
+  /// não pode apagar um produto que o lojista já tinha).
+  createdProductIds String[]
+  /// [{ linha, produto, sku, erro }] — vira o CSV de erros para baixar.
+  errors    Json     @default("[]")
+  undoneAt  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
 model ProductImage {
   id        String  @id @default(cuid())
   url       String
