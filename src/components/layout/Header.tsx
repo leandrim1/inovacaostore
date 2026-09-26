@@ -10,6 +10,8 @@ import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
 import { UserAvatar } from "../account/UserAvatar";
 import { EVENTO_HERO } from "../../lib/experiencia3d";
+import { abrirPainel, fecharPainel, usePainel } from "../../lib/paineis";
+import { useQuiqueDoCarrinho } from "../../hooks/useQuiqueDoCarrinho";
 
 const CATEGORIES_PER_PAGE = 5;
 
@@ -17,8 +19,9 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [sobreHero, setSobreHero] = useState(false);
   const { pathname } = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const painel = usePainel();
+  const carrinhoRef = useRef<HTMLSpanElement>(null);
+  useQuiqueDoCarrinho(carrinhoRef);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [categoryPage, setCategoryPage] = useState(0);
   const { itemCount, openCart } = useCart();
@@ -66,14 +69,20 @@ export function Header() {
     navigate("/");
   }
 
-  // Na home o hero sobe por baixo do header: enquanto ele está atrás, o
-  // header vira vidro escuro (texto claro) em vez de uma faixa branca cortando
-  // a foto. Fora do hero — e em qualquer outra página — é o vidro claro.
+  // Sobre o hero e as seções escuras (o palco "Em destaque", a newsletter),
+  // o header vira vidro escuro com texto claro em vez de uma faixa branca
+  // acinzentada. No resto, vidro claro. As seções escuras se marcam com
+  // `data-cabecalho-escuro`.
   useEffect(() => {
     function onScroll() {
       setIsScrolled(window.scrollY > 12);
-      const hero = document.querySelector("[data-hero]");
-      setSobreHero(hero ? hero.getBoundingClientRect().bottom > 72 : false);
+      const linha = 72;
+      let escura = false;
+      document.querySelectorAll("[data-cabecalho-escuro]").forEach((el) => {
+        const caixa = el.getBoundingClientRect();
+        if (caixa.top < linha && caixa.bottom > linha) escura = true;
+      });
+      setSobreHero(escura);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -107,9 +116,9 @@ export function Header() {
         <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20 lg:max-w-none lg:px-10">
           <button
             type="button"
-            onClick={() => setIsMenuOpen(true)}
+            onClick={() => abrirPainel("menu")}
             aria-label="Abrir menu"
-            className={`rounded-full p-2 transition-colors lg:hidden ${hoverFundo}`}
+            className={`grid h-11 w-11 place-items-center rounded-full transition-colors lg:hidden ${hoverFundo}`}
           >
             <Menu size={22} />
           </button>
@@ -159,11 +168,29 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* No celular busca e carrinho moram na barra inferior (alcance do
+                polegar); aqui em cima fica só a conta. */}
+            <Link
+              to={isAuthenticated ? "/minha-conta" : "/login"}
+              aria-label={isAuthenticated ? "Minha conta" : "Entrar na conta"}
+              className={`grid h-11 w-11 place-items-center rounded-full transition-colors lg:hidden ${hoverFundo}`}
+            >
+              {isAuthenticated && user ? (
+                <UserAvatar
+                  name={user.name}
+                  avatarUrl={user.avatarUrl}
+                  letras={1}
+                  className="h-8 w-8 bg-brand-yellow text-xs font-bold text-brand-ink"
+                />
+              ) : (
+                <User size={21} />
+              )}
+            </Link>
             <button
               type="button"
-              onClick={() => setIsSearchOpen(true)}
+              onClick={() => abrirPainel("busca")}
               aria-label="Buscar"
-              className={`rounded-full p-2.5 transition-colors ${hoverFundo}`}
+              className={`hidden rounded-full p-2.5 transition-colors lg:block ${hoverFundo}`}
             >
               <Search size={20} />
             </button>
@@ -276,9 +303,12 @@ export function Header() {
               type="button"
               onClick={openCart}
               aria-label="Abrir carrinho"
-              className={`relative rounded-full p-2.5 transition-colors ${hoverFundo}`}
+              data-alvo-carrinho=""
+              className={`relative hidden rounded-full p-2.5 transition-colors lg:block ${hoverFundo}`}
             >
-              <ShoppingBag size={20} />
+              <span ref={carrinhoRef} className="block">
+                <ShoppingBag size={20} />
+              </span>
               {itemCount > 0 && (
                 <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-yellow px-1 text-[10px] font-bold text-brand-ink">
                   {itemCount}
@@ -289,8 +319,8 @@ export function Header() {
         </div>
       </header>
 
-      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <MobileMenu isOpen={painel === "menu"} onClose={fecharPainel} />
+      <SearchOverlay isOpen={painel === "busca"} onClose={fecharPainel} />
     </>
   );
 }

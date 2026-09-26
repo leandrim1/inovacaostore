@@ -10,6 +10,7 @@ import { useDragToScroll } from "../../hooks/useDragToScroll";
 import { StarRating } from "../ui/StarRating";
 import { Reveal } from "../ui/Reveal";
 import { TestimonialFormModal } from "./TestimonialFormModal";
+import { AnimatedSection } from "../ui/AnimatedSection";
 
 /** Explica ao cliente o que falta para ele poder avaliar a loja. */
 function SubmitArea({ onOpen }: { onOpen: () => void }) {
@@ -318,7 +319,7 @@ export function Testimonials() {
   if (testimonials.length === 0) return null;
 
   return (
-    <section className="bg-white py-16 sm:py-24">
+    <AnimatedSection tom="claro" className="py-16 sm:py-24">
       <div className="container-page">
         <Reveal className="mx-auto mb-10 flex max-w-2xl flex-col items-center text-center sm:mb-14">
           <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-ink shadow-sm ring-1 ring-black/5">
@@ -357,6 +358,6 @@ export function Testimonials() {
         onClose={() => setIsFormOpen(false)}
         suggestedName={eligibility?.suggestedName ?? null}
       />
-    </section>
+    </AnimatedSection>
   );
 }

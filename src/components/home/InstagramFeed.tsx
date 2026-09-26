@@ -3,6 +3,7 @@ import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
 import { InstagramIcon } from "../ui/InstagramIcon";
 import { Tilt3D } from "../ui/Tilt3D";
+import { AnimatedSection } from "../ui/AnimatedSection";
 
 // Versões de 400 px geradas por scripts/otimizar-imagens.mjs: a grade é um
 // quadrado de ~114 px no celular, então os arquivos de 1200 px baixavam
@@ -29,7 +30,7 @@ const IMAGES = [
 
 export function InstagramFeed() {
   return (
-    <section className="bg-brand-cream py-16 sm:py-24">
+    <AnimatedSection tom="creme" className="py-16 sm:py-24">
       <div className="container-page">
         <SectionHeading
           index="04"
@@ -77,6 +78,6 @@ export function InstagramFeed() {
           ))}
         </div>
       </div>
-    </section>
+    </AnimatedSection>
   );
 }

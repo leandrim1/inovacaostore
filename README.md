@@ -141,14 +141,39 @@ src/
                             # cadastro, verificar-email, esqueci/redefinir senha, minha conta, meus pedidos…)
 ```
 
-## Experiência 3D
+## Experiência 3D (mobile first)
 
-A camada 3D complementa a loja e nunca é necessária para comprar: sem ela, tudo continua funcionando igual.
+O desenho parte do celular (320–430 px); tablet e computador são expansões do mesmo sistema. O 3D complementa a loja e nunca é necessário para comprar.
 
-- **Vitrine do hero** (`src/components/three/VitrineHero.tsx`): até 3 produtos em destaque flutuam em painéis de vidro, com anel de luz, cabide, partículas e um spot que segue o mouse (luz e sombras mudam com ele). Clicar num painel abre o produto. É o único módulo que importa Three.js e vira um chunk separado, baixado só depois que a página carrega e o navegador fica ocioso (`src/components/home/VitrineHero3D.tsx`); para de renderizar quando o hero sai da tela.
-- **Nível de cada aparelho** (`src/lib/experiencia3d.ts`): `full` em computador com mouse (≥ 1280 px), `lite` em telas ≥ 1024 px ou hardware intermediário (menos partículas, sem sombras, resolução menor) e `off` em celular, tablet em pé, "reduzir movimento", economia de dados, aparelho fraco ou sem WebGL — nesses casos o Three.js nem é baixado. Para testar um nível, rode no console do navegador `localStorage.setItem("inovacao:3d", "full" | "lite" | "off")` e recarregue.
-- **Profundidade em CSS** (sem WebGL): `Tilt3D` inclina cards de produto, categorias, banners, a foto da página de produto e o feed do Instagram sob o mouse, com reflexo e sombra dinâmica; `Reveal` faz as seções entrarem com perspectiva; o hero recua ao rolar; o header é de vidro (escuro sobre o hero, claro no resto).
-- Tudo respeita `prefers-reduced-motion`. Nada disso carrega arquivo externo (compatível com a CSP do `vercel.json`).
+**Níveis por aparelho** (`src/lib/experiencia3d.ts`)
+- `alto`: cena WebGL completa (celular topo de linha, computador com folga).
+- `medio`: a mesma cena reduzida — menos partículas, sem sombras reais, resolução menor (celular intermediário, iPhone).
+- `baixo`: sem WebGL e sem baixar Three.js — o produto 3D vira camadas em CSS (aparelho fraco, economia de dados, sem WebGL, "reduzir movimento").
+- Em tempo real, se o FPS cair duas vezes seguidas abaixo de ~28 (ou o WebGL cair), o aparelho passa para `baixo` até recarregar.
+- Para testar um nível: `localStorage.setItem("inovacao:3d", "alto" | "medio" | "baixo")` no console e recarregar.
+
+**Estrutura**
+```
+src/components/3d/       ProductScene (Canvas + regras de custo), FloatingProduct, Particles,
+                         Lighting, CameraController, HeroScene, ProductViewer, ProdutoCSS (versão CSS),
+                         CenaDoHero (carrega a cena sob demanda), texturas, qualidade
+src/components/mobile/   MobileHero, MobileProductCarousel, MobileBottomNav, CategoriasSheet,
+                         Mobile3DViewer, BarraDeCompra
+src/components/ui/       Button3D, GlassPanel, AnimatedSection, Tilt3D, BotaoFavorito, AvisoCarrinho
+src/hooks/               useArrastoInercial (arrasto com inércia), useZoomDeImagem (pinça/toque duplo)
+src/lib/                 sensorInclinacao (giroscópio), vooAoCarrinho, favoritos, paineis
+```
+
+**O que o visitante vê**
+- Hero do celular: um produto em destaque flutuando no cabide, que o dedo gira de lado (com inércia e limite) e o giroscópio inclina; o gesto vertical continua rolando a página. Tocar abre o produto. No computador, o leque de produtos acompanha o mouse.
+- Barra de navegação inferior (Início, Categorias, Buscar, Favoritos, Carrinho), menu com perspectiva e folha de categorias.
+- Cards de produto: tocar "levanta" o card e mostra "Ver" e "Sacola"; no computador, inclinação sob o mouse.
+- "Em destaque": carrossel em perspectiva com snap no celular.
+- Adicionar ao carrinho: a foto voa até o ícone do carrinho, que quica, e aparece o aviso "No carrinho".
+- Página de produto: galeria com deslize em prisma, pinça e toque duplo; "Ver em 3D" em tela cheia (girar 360°, pinça, toque duplo, botões Frente/Costas); barra de compra fixa.
+- Favoritos ficam no próprio aparelho (como o carrinho); `/favoritos` busca os produtos na API por `?ids=`.
+
+Tudo respeita `prefers-reduced-motion`, a cena para de desenhar fora da tela e nada é baixado de fora (compatível com a CSP do `vercel.json`). Não há modelos GLB das roupas: o volume 3D vem das fotos do produto (frente e costas) em placas de vidro, luz e sombra.
 
 ## Como funciona o catálogo (sem dados fixos no frontend)
 

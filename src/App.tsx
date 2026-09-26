@@ -5,12 +5,15 @@ import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { CartDrawer } from "./components/layout/CartDrawer";
 import { WhatsAppButton } from "./components/layout/WhatsAppButton";
+import { MobileBottomNav } from "./components/mobile/MobileBottomNav";
+import { AvisoCarrinho } from "./components/ui/AvisoCarrinho";
 import { AdminAuthProvider } from "./context/AdminAuthContext";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 
 const Home = lazy(() => import("./pages/Home"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 const FeaturedPage = lazy(() => import("./pages/FeaturedPage"));
+const FavoritesPage = lazy(() => import("./pages/FavoritesPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
@@ -60,7 +63,9 @@ function ScrollToTop() {
 
 function StorefrontApp() {
   return (
-    <div className="flex min-h-dvh flex-col">
+    // `loja`: os botões ganham volume físico (index.css). O respiro embaixo é
+    // a barra de navegação do celular — nada da página fica por trás dela.
+    <div className="loja flex min-h-dvh flex-col pb-[var(--barra-inferior)] lg:pb-0">
       <AnnouncementBar />
       <Header />
       <main className="flex-1">
@@ -68,6 +73,7 @@ function StorefrontApp() {
           <Route path="/" element={<Home />} />
           <Route path="/categoria/:slug" element={<CategoryPage />} />
           <Route path="/destaques" element={<FeaturedPage />} />
+          <Route path="/favoritos" element={<FavoritesPage />} />
           <Route path="/busca" element={<SearchPage />} />
           <Route path="/produto/:slug" element={<ProductPage />} />
           <Route path="/carrinho" element={<CartPage />} />
@@ -124,6 +130,8 @@ function StorefrontApp() {
       <Footer />
       <CartDrawer />
       <WhatsAppButton />
+      <MobileBottomNav />
+      <AvisoCarrinho />
     </div>
   );
 }

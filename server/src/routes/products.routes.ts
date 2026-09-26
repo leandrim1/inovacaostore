@@ -30,6 +30,13 @@ const querySchema = z.object({
   sort: z.enum(["relevancia", "menor-preco", "maior-preco", "avaliacao"]).optional(),
   q: z.string().optional(),
   featured: z.string().optional(),
+  // Lista de ids (favoritos do aparelho). Só filtra produtos ativos, como o
+  // resto da rota; ids fora do formato derrubam o pedido em vez de irem ao banco.
+  ids: z
+    .string()
+    .transform((v) => v.split(",").map((id) => id.trim()).filter(Boolean))
+    .pipe(z.array(z.string().regex(/^[A-Za-z0-9_-]{6,40}$/)).min(1).max(60))
+    .optional(),
   limit: z
     .string()
     .refine((v) => Number.isInteger(Number(v)) && Number(v) > 0, "Deve ser um inteiro positivo.")
@@ -44,7 +51,7 @@ productsRouter.get("/", cacheLeituraPublica(60), async (req, res) => {
     res.status(400).json({ error: "Parâmetros de busca inválidos.", details: parsed.error.flatten() });
     return;
   }
-  const { category, size, color, brand, minPrice, maxPrice, sort, q, featured, limit } = parsed.data;
+  const { category, size, color, brand, minPrice, maxPrice, sort, q, featured, ids, limit } = parsed.data;
 
   const categories = toArray(category);
   const sizes = toArray(size);
@@ -71,6 +78,7 @@ productsRouter.get("/", cacheLeituraPublica(60), async (req, res) => {
   if (minPrice !== undefined) where.price = { ...(where.price as object), gte: minPrice };
   if (maxPrice !== undefined) where.price = { ...(where.price as object), lte: maxPrice };
   if (featured === "true") where.featured = true;
+  if (ids) where.id = { in: ids };
   if (q && q.trim()) {
     where.OR = [
       { name: { contains: q, mode: "insensitive" } },

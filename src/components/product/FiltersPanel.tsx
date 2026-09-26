@@ -101,10 +101,11 @@ export function FiltersPanel({
                 key={size}
                 type="button"
                 onClick={() => toggleSize(size)}
-                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition-colors ${
+                aria-pressed={active}
+                className={`flex h-10 min-w-10 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition-all duration-150 active:translate-y-[2px] ${
                   active
-                    ? "border-brand-ink bg-brand-ink text-white"
-                    : "border-brand-ink/15 text-neutral-600 hover:border-brand-ink"
+                    ? "border-brand-ink bg-brand-ink text-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                    : "border-brand-ink/15 bg-white text-neutral-600 shadow-[0_2px_0_rgba(10,10,10,0.1)] hover:border-brand-ink active:shadow-none"
                 }`}
               >
                 {size}
@@ -129,8 +130,8 @@ export function FiltersPanel({
                 title={color.name}
                 aria-pressed={active}
                 aria-label={color.name}
-                className={`h-8 w-8 rounded-full ring-2 ring-offset-2 transition-all ${
-                  active ? "ring-brand-ink" : "ring-transparent hover:ring-brand-ink/20"
+                className={`h-9 w-9 rounded-full shadow-[inset_0_-3px_6px_rgba(0,0,0,0.25),inset_0_2px_3px_rgba(255,255,255,0.35)] ring-2 ring-offset-2 transition-all active:scale-90 ${
+                  active ? "scale-110 ring-brand-ink" : "ring-transparent hover:ring-brand-ink/20"
                 }`}
                 style={{ backgroundColor: color.hex }}
               />

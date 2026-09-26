@@ -15,7 +15,7 @@ export function Newsletter() {
   }
 
   return (
-    <section className="relative min-h-[420px] overflow-hidden bg-brand-ink py-16 text-white sm:min-h-[460px] sm:py-24">
+    <section data-cabecalho-escuro className="relative min-h-[420px] overflow-hidden bg-brand-ink py-16 text-white sm:min-h-[460px] sm:py-24">
       {/* Fica no rodapé de uma página de ~7.400 px e carregava junto com o
           resto: 251 KB gastos antes de o visitante rolar. A altura mínima da
           seção já reserva o espaço, então adiar não desloca nada na tela. */}

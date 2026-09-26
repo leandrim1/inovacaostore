@@ -58,35 +58,51 @@ export function SearchOverlay({
                   <X size={20} />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="flex items-center gap-4 border-b border-brand-ink/15 pb-4">
-                <Search size={24} className="shrink-0 text-brand-ink/40" />
+              <motion.form
+                onSubmit={handleSubmit}
+                initial={{ opacity: 0, scale: 0.96, y: -6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.08, type: "spring", stiffness: 380, damping: 28 }}
+                className="flex items-center gap-4 border-b-2 border-brand-ink/15 pb-4 transition-colors focus-within:border-brand-yellow"
+              >
+                <Search
+                  size={24}
+                  className={`shrink-0 transition-all duration-300 ${
+                    query.trim() ? "scale-110 text-brand-yellow-dark drop-shadow-[0_0_8px_rgba(245,196,0,0.6)]" : "text-brand-ink/40"
+                  }`}
+                />
                 <input
                   autoFocus
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="O que você está procurando?"
+                  enterKeyHint="search"
                   className="w-full bg-transparent font-display text-2xl tracking-wide outline-none placeholder:text-brand-ink/25 sm:text-3xl"
                 />
-              </form>
+              </motion.form>
               <div className="flex flex-col gap-3">
                 <span className="text-xs font-medium uppercase tracking-[0.25em] text-neutral-400">
                   Sugestões
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {SUGGESTIONS.map((s) => (
-                    <button
+                  {SUGGESTIONS.map((s, i) => (
+                    <motion.button
                       key={s}
+                      initial={{ opacity: 0, y: 12, rotateX: -40 }}
+                      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                      transition={{ delay: 0.15 + i * 0.04, type: "spring", stiffness: 400, damping: 28 }}
+                      style={{ transformPerspective: 500 }}
                       type="button"
                       onClick={() => {
                         navigate(`/busca?q=${encodeURIComponent(s)}`);
                         onClose();
                         setQuery("");
                       }}
-                      className="rounded-full border border-brand-ink/15 px-4 py-2 text-sm text-neutral-600 transition-colors hover:border-brand-ink hover:text-brand-ink"
+                      className="min-h-11 rounded-full border border-brand-ink/15 bg-white px-4 py-2 text-sm text-neutral-600 shadow-[0_2px_0_rgba(10,10,10,0.08)] transition-[color,border-color,box-shadow,translate] hover:border-brand-ink hover:text-brand-ink active:translate-y-[2px] active:shadow-none"
                     >
                       {s}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
