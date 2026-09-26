@@ -2,28 +2,22 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Product } from "../../data/types";
 import { ProductCard } from "../product/ProductCard";
-import { useExperiencia3D } from "../../lib/experiencia3d";
 
 /**
- * Carrossel de produtos em perspectiva (celular e tablet):
+ * Faixa de produtos do celular e do tablet: rolagem nativa com snap (inércia
+ * de aplicativo, sem brigar com a rolagem vertical da página), alinhada à
+ * margem da página, com a próxima peça aparecendo na borda — é ela que
+ * convida a deslizar. Embaixo, a posição ("03 / 08") e as setas para quem
+ * prefere tocar.
  *
- *        [ PRODUTO ]
- *   [ PRODUTO ]   [ PRODUTO ]
- *
- * A rolagem é a nativa do navegador (inércia e snapping de aplicativo, sem
- * brigar com a rolagem vertical da página); a cada quadro de rolagem, cada
- * card recebe profundidade conforme a distância do centro: o do meio fica
- * maior, na frente e aceso; os laterais recuam no eixo Z, giram para o
- * centro e perdem opacidade. Só `transform` e `opacity` — compositor puro.
- *
- * Tocar num card lateral o traz para o centro (em vez de abrir); o central
- * funciona como qualquer card (tocar levanta, nome abre o produto).
+ * Tocar numa peça que está quase toda fora da tela primeiro a traz para
+ * dentro (em vez de agir sobre um card que mal se vê); as visíveis
+ * funcionam como qualquer card.
  */
 export function MobileProductCarousel({ produtos }: { produtos: Product[] }) {
   const trilho = useRef<HTMLDivElement>(null);
   const itens = useRef<(HTMLDivElement | null)[]>([]);
   const [ativo, setAtivo] = useState(0);
-  const { profundidade } = useExperiencia3D();
 
   useEffect(() => {
     const el = trilho.current;
@@ -31,27 +25,19 @@ export function MobileProductCarousel({ produtos }: { produtos: Product[] }) {
     let quadro = 0;
     const atualizar = () => {
       quadro = 0;
-      const centro = el.scrollLeft + el.clientWidth / 2;
+      const inicio = el.scrollLeft + parseFloat(getComputedStyle(el).scrollPaddingLeft || "0");
       let melhor = 0;
       let menor = Infinity;
       itens.current.forEach((item, i) => {
         if (!item) return;
-        const d = (item.offsetLeft + item.offsetWidth / 2 - centro) / item.offsetWidth;
-        const a = Math.min(Math.abs(d), 1);
-        if (Math.abs(d) < menor) {
-          menor = Math.abs(d);
+        const d = Math.abs(item.offsetLeft - inicio);
+        if (d < menor) {
+          menor = d;
           melhor = i;
         }
-        if (!profundidade) {
-          item.style.transform = "";
-          item.style.opacity = "";
-          return;
-        }
-        const giro = Math.max(-1, Math.min(1, d)) * -26;
-        item.style.transform = `perspective(900px) translateZ(${-a * 110}px) rotateY(${giro}deg) scale(${1 - a * 0.12})`;
-        item.style.opacity = String(1 - a * 0.45);
-        item.style.zIndex = String(10 - Math.round(a * 5));
       });
+      // No fim da faixa o último card não chega à margem esquerda: conta como ativo.
+      if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 2) melhor = itens.current.length - 1;
       setAtivo(melhor);
     };
     const aoRolar = () => {
@@ -65,23 +51,26 @@ export function MobileProductCarousel({ produtos }: { produtos: Product[] }) {
       window.removeEventListener("resize", aoRolar);
       cancelAnimationFrame(quadro);
     };
-  }, [produtos.length, profundidade]);
+  }, [produtos.length]);
 
-  const centralizar = useCallback((i: number) => {
+  const irPara = useCallback((i: number) => {
     const el = trilho.current;
     const item = itens.current[i];
     if (!el || !item) return;
-    el.scrollTo({ left: item.offsetLeft + item.offsetWidth / 2 - el.clientWidth / 2, behavior: "smooth" });
+    const margem = parseFloat(getComputedStyle(el).scrollPaddingLeft || "0");
+    el.scrollTo({ left: item.offsetLeft - margem, behavior: "smooth" });
   }, []);
 
+  const pad = (n: number) => String(n).padStart(2, "0");
+
   return (
-    <div className="relative">
+    <div>
       <div
         ref={trilho}
         role="region"
         aria-roledescription="carrossel"
         aria-label="Produtos em destaque"
-        className="no-scrollbar flex snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain py-10 [padding-inline:calc(50%-min(32vw,145px))]"
+        className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-4 pb-2 pt-1 scroll-px-4 sm:px-6 sm:scroll-px-6"
       >
         {produtos.map((produto, i) => (
           <div
@@ -91,56 +80,49 @@ export function MobileProductCarousel({ produtos }: { produtos: Product[] }) {
             }}
             aria-roledescription="slide"
             aria-label={`${i + 1} de ${produtos.length}`}
-            className="relative w-[64vw] max-w-[290px] shrink-0 snap-center [scroll-snap-stop:always]"
-            style={{ willChange: profundidade ? "transform" : undefined }}
+            className="w-[66vw] max-w-[280px] shrink-0 snap-start"
             onClickCapture={(e) => {
-              if (i === ativo) return;
+              const el = trilho.current;
+              const item = e.currentTarget;
+              if (!el) return;
+              const caixa = item.getBoundingClientRect();
+              const tela = el.getBoundingClientRect();
+              const visivel = Math.min(caixa.right, tela.right) - Math.max(caixa.left, tela.left);
+              if (visivel / caixa.width >= 0.6) return;
               e.preventDefault();
               e.stopPropagation();
-              centralizar(i);
+              irPara(i);
             }}
           >
-            {/* Luz de palco sob o produto central. */}
-            <span
-              aria-hidden
-              className={`pointer-events-none absolute -bottom-7 left-1/2 h-10 w-[86%] -translate-x-1/2 rounded-[50%] bg-brand-yellow/30 blur-2xl transition-opacity duration-500 ${
-                i === ativo ? "opacity-100" : "opacity-0"
-              }`}
-            />
             <ProductCard product={produto} />
           </div>
         ))}
       </div>
 
-      <div className="mt-1 flex items-center justify-center gap-3">
-        <button
-          type="button"
-          onClick={() => centralizar(Math.max(0, ativo - 1))}
-          disabled={ativo === 0}
-          aria-label="Produto anterior"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white transition-transform active:scale-90 disabled:opacity-30"
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <div className="flex items-center gap-1.5" aria-hidden>
-          {produtos.map((p, i) => (
-            <span
-              key={p.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === ativo ? "w-6 bg-brand-yellow shadow-[0_0_10px_rgba(245,196,0,0.8)]" : "w-1.5 bg-white/30"
-              }`}
-            />
-          ))}
+      <div className="container-page mt-4 flex items-center justify-between">
+        <span className="text-sm tabular-nums text-neutral-500" aria-live="polite">
+          <span className="font-medium text-brand-ink">{pad(ativo + 1)}</span> / {pad(produtos.length)}
+        </span>
+        <div className="flex">
+          <button
+            type="button"
+            onClick={() => irPara(Math.max(0, ativo - 1))}
+            disabled={ativo === 0}
+            aria-label="Produto anterior"
+            className="grid h-11 w-11 place-items-center border border-brand-ink/20 text-brand-ink active:bg-brand-ink/5 disabled:opacity-30"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => irPara(Math.min(produtos.length - 1, ativo + 1))}
+            disabled={ativo === produtos.length - 1}
+            aria-label="Próximo produto"
+            className="-ml-px grid h-11 w-11 place-items-center border border-brand-ink/20 text-brand-ink active:bg-brand-ink/5 disabled:opacity-30"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => centralizar(Math.min(produtos.length - 1, ativo + 1))}
-          disabled={ativo === produtos.length - 1}
-          aria-label="Próximo produto"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white transition-transform active:scale-90 disabled:opacity-30"
-        >
-          <ChevronRight size={18} />
-        </button>
       </div>
     </div>
   );

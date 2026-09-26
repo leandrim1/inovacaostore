@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState, type RefObject } from "react";
+import { Suspense, lazy, useEffect, useState, type RefObject } from "react";
 import { useExperiencia3D } from "../../lib/experiencia3d";
 import type { Entradas, ProdutoVitrine } from "./qualidade";
 import { LimiteDaCena } from "./LimiteDaCena";
@@ -30,7 +30,7 @@ export function CenaDoHero({
   onFalha,
 }: {
   layout: "vertical" | "leque";
-  /** Elemento observado para pausar fora da tela e medir a rolagem. */
+  /** Elemento observado para pausar a cena fora da tela. */
   area: RefObject<HTMLElement | null>;
   eventSource?: RefObject<HTMLElement | null>;
   produtos: ProdutoVitrine[];
@@ -42,11 +42,10 @@ export function CenaDoHero({
   onPronto?: () => void;
   onFalha?: () => void;
 }) {
-  const { nivel, reduzido } = useExperiencia3D();
+  const { nivel } = useExperiencia3D();
   const [liberada, setLiberada] = useState(false);
   const [naTela, setNaTela] = useState(true);
   const [falhou, setFalhou] = useState(false);
-  const rolagem = useRef(0);
 
   useEffect(() => {
     if (nivel === "baixo") return;
@@ -75,16 +74,7 @@ export function CenaDoHero({
     if (!el || nivel === "baixo") return;
     const observador = new IntersectionObserver(([e]) => setNaTela(e.isIntersecting), { rootMargin: "80px" });
     observador.observe(el);
-    const medir = () => {
-      const caixa = el.getBoundingClientRect();
-      rolagem.current = Math.min(1, Math.max(0, -caixa.top / Math.max(1, caixa.height)));
-    };
-    medir();
-    window.addEventListener("scroll", medir, { passive: true });
-    return () => {
-      observador.disconnect();
-      window.removeEventListener("scroll", medir);
-    };
+    return () => observador.disconnect();
   }, [area, nivel]);
 
   if (nivel === "baixo" || !liberada || falhou || produtos.length === 0) return null;
@@ -103,9 +93,7 @@ export function CenaDoHero({
           nivel={nivel}
           ativo={naTela}
           eventSource={eventSource}
-          rolagem={rolagem}
           entradas={entradas}
-          flutuar={!reduzido}
           onEscolher={onEscolher}
           crescer={crescer}
           onPronto={() => onPronto?.()}

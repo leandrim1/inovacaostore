@@ -80,26 +80,19 @@ export function useTexturaEtiqueta(nome: string, preco: string, ativa: boolean) 
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const fundo = ctx.createLinearGradient(0, 0, 0, A);
-      fundo.addColorStop(0, "#1c1c1c");
-      fundo.addColorStop(1, "#050505");
-      ctx.fillStyle = fundo;
+      // Etiqueta de papel preto, chapada: sem brilho, só a marca impressa.
+      ctx.fillStyle = "#141414";
       ctx.fillRect(0, 0, L, A);
-      const brilho = ctx.createRadialGradient(L / 2, A * 0.1, 0, L / 2, A * 0.1, A * 0.7);
-      brilho.addColorStop(0, "rgba(245,196,0,0.22)");
-      brilho.addColorStop(1, "rgba(245,196,0,0)");
-      ctx.fillStyle = brilho;
-      ctx.fillRect(0, 0, L, A);
-
-      ctx.strokeStyle = "rgba(245,196,0,0.55)";
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(255,255,255,0.14)";
+      ctx.lineWidth = 2;
       ctx.strokeRect(28, 28, L - 56, A - 56);
-      // Furo da etiqueta.
+      // Furo da etiqueta, com ilhós.
       ctx.beginPath();
-      ctx.arc(L / 2, 92, 22, 0, Math.PI * 2);
-      ctx.fillStyle = "#000";
+      ctx.arc(L / 2, 92, 20, 0, Math.PI * 2);
+      ctx.fillStyle = "#050505";
       ctx.fill();
-      ctx.strokeStyle = "#f5c400";
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = "#8a8a8a";
       ctx.stroke();
 
       ctx.textAlign = "center";
@@ -107,8 +100,8 @@ export function useTexturaEtiqueta(nome: string, preco: string, ativa: boolean) 
       ctx.font = '120px "Bebas Neue", Impact, sans-serif';
       ctx.fillText("INOVAÇÃO", L / 2, 290);
       ctx.font = '38px "Bebas Neue", Impact, sans-serif';
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.fillText("S  T  O  R  E", L / 2, 340);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillText("STORE", L / 2, 336);
 
       ctx.fillStyle = "#fff";
       ctx.font = '60px "Bebas Neue", Impact, sans-serif';
@@ -148,7 +141,7 @@ export function useTexturaEtiqueta(nome: string, preco: string, ativa: boolean) 
   return ativa ? textura : null;
 }
 
-/** Degradê radial branco→transparente: halo aditivo e sombra projetada falsa. */
+/** Degradê radial branco→transparente: a sombra projetada falsa no chão. */
 export function texturaRadial(centro = 1, meio = 0.35) {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 128;

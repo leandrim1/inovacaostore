@@ -290,10 +290,7 @@ export default function CheckoutPage() {
     <>
       <Seo title="Finalizar compra" />
       <div className="container-page py-10 sm:py-14">
-        <div className="mb-3 flex items-center gap-2.5">
-          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
-          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Última etapa</span>
-        </div>
+        <p className="rotulo mb-2 text-neutral-500">Última etapa</p>
         <h1 className="section-title mb-8">Finalizar compra</h1>
 
         <form onSubmit={handleConfirm} className="grid grid-cols-1 gap-10 lg:grid-cols-3">

@@ -7,9 +7,10 @@ import { BotaoFavorito } from "../ui/BotaoFavorito";
 
 /**
  * Barra de compra da página de produto no celular — ocupa o lugar da barra
- * de navegação, ao alcance do polegar: favoritar, abrir o carrinho e o CTA
- * principal "Adicionar", sempre visível enquanto a pessoa lê a descrição.
- * O ícone do carrinho aqui é o alvo do "voo" da foto ao adicionar.
+ * de navegação, encaixada na borda de baixo, ao alcance do polegar:
+ * favoritar, abrir o carrinho e o CTA principal "Adicionar", sempre visível
+ * enquanto a pessoa lê a descrição. Branca e chapada: a única cor é o botão
+ * de compra. O ícone do carrinho aqui é o alvo do "voo" da foto ao adicionar.
  */
 export function BarraDeCompra({
   produtoId,
@@ -33,21 +34,21 @@ export function BarraDeCompra({
   useQuiqueDoCarrinho(carrinhoRef);
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(10px+env(safe-area-inset-bottom,0px))] z-40 lg:hidden">
-      <div className="vidro-escuro flex h-[4.25rem] items-center gap-1.5 rounded-[26px] p-1.5 text-white">
-        <BotaoFavorito produtoId={produtoId} nome={nome} className="[&>span]:!bg-white/10 [&>span]:!bg-none [&>span]:!shadow-none [&_svg]:!text-white" />
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-ink/10 bg-white px-3 pb-[max(0.25rem,env(safe-area-inset-bottom,0px))] pt-1 lg:hidden">
+      <div className="flex h-12 items-center gap-2">
+        <BotaoFavorito produtoId={produtoId} nome={nome} tom="solido" className="-mx-0.5" />
         <button
           type="button"
           onClick={openCart}
           aria-label="Abrir carrinho"
           data-alvo-carrinho=""
-          className="relative grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 active:scale-90"
+          className="relative grid h-11 w-11 shrink-0 place-items-center text-brand-ink active:scale-95"
         >
           <span ref={carrinhoRef} className="block">
-            <ShoppingBag size={19} />
+            <ShoppingBag size={21} strokeWidth={1.8} />
           </span>
           {itemCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center overflow-hidden rounded-full bg-brand-yellow px-1 text-[10px] font-bold text-brand-ink ring-2 ring-brand-ink">
+            <span className="absolute right-0.5 top-1 grid h-4 min-w-4 place-items-center overflow-hidden rounded-full bg-brand-yellow px-1 text-[10px] font-bold leading-none text-brand-ink">
               <span key={itemCount} className="block animate-rolar-numero motion-reduce:animate-none">
                 {itemCount}
               </span>
@@ -58,12 +59,12 @@ export function BarraDeCompra({
           type="button"
           onClick={onAdicionar}
           disabled={desabilitado}
-          className="btn-accent btn-3d-accent h-full min-h-0 flex-1 flex-col !gap-0 px-3 py-1 leading-tight disabled:cursor-not-allowed disabled:opacity-40"
+          className="btn-accent btn-3d-accent h-full min-h-0 flex-1 justify-between !gap-3 !px-4 !py-0 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          <span className="text-[13px] tracking-[0.14em]">{rotulo}</span>
-          <span className="font-sans text-[11px] font-semibold tracking-normal text-brand-ink/75">
+          <span className="text-[15px] tracking-[0.1em]">{rotulo}</span>
+          <span className="min-w-0 truncate font-sans text-[13px] font-semibold tracking-normal">
             {formatBRL(preco)}
-            {detalhe ? ` · ${detalhe}` : ""}
+            {detalhe ? <span className="font-normal text-brand-ink/70"> · {detalhe}</span> : null}
           </span>
         </button>
       </div>

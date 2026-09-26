@@ -19,7 +19,7 @@ function normalizar(a: number) {
 }
 
 /**
- * "Ver em 3D": o produto em tela cheia num palco escuro.
+ * "Ver em 3D": o produto em tela cheia num fundo de estúdio.
  *
  * - arrastar (dedo ou mouse) gira livre, com inércia — frente e costas;
  * - pinça aproxima (até 2,4×); toque duplo volta à posição inicial;
@@ -27,8 +27,8 @@ function normalizar(a: number) {
  *   as setas do teclado giram — ninguém depende de precisão no toque;
  * - Esc ou o X fecham.
  *
- * Com WebGL, a cena de verdade (luz, reflexo no vidro, sombra); no nível
- * "baixo", a mesma peça em CSS 3D. Aqui a área inteira é do gesto
+ * Com WebGL, a cena de verdade (luz, sombra); no nível "baixo", a mesma
+ * peça em CSS 3D. Aqui a área inteira é do gesto
  * (`touch-action: none`): é um modal, não há página para rolar por trás.
  */
 export function Mobile3DViewer({
@@ -150,28 +150,25 @@ function Visualizador({ produto, onFechar }: { produto: ProdutoVitrine; onFechar
       tabIndex={-1}
       onKeyDown={teclado}
       className="fixed inset-0 z-[80] flex flex-col bg-brand-ink text-white outline-none"
-      initial={{ opacity: 0, scale: 1.04 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.03, transition: { duration: 0.2 } }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+      transition={{ duration: 0.2 }}
     >
-      {/* Palco: luz de cima, piso em perspectiva. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_75%_50%_at_50%_30%,rgba(245,196,0,0.2),transparent_70%)]" />
-      <div aria-hidden className="pointer-events-none absolute inset-x-[-30%] bottom-0 h-[40%] [perspective:600px]">
-        <div className="absolute inset-0 origin-bottom bg-[linear-gradient(rgba(245,196,0,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(245,196,0,0.2)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:linear-gradient(to_top,black,transparent_85%)] [transform:rotateX(68deg)]" />
-      </div>
+      {/* Fundo de estúdio: a luz caindo de cima num cinza neutro, escurecendo
+          para o chão — o fundo de uma foto de produto, não um palco. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_55%_at_50%_8%,#303030,rgba(48,48,48,0)_70%),linear-gradient(180deg,#1c1c1c,#0d0d0d)]" />
 
       <div className="relative z-10 flex items-start justify-between gap-3 px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <div className="min-w-0 pt-1">
-          <p className="font-display text-[11px] tracking-[0.35em] text-brand-yellow">Visualização 3D</p>
-          <p className="truncate font-display text-xl tracking-wide">{produto.nome}</p>
-          <p className="text-sm font-semibold text-brand-yellow">{produto.preco}</p>
+        <div className="min-w-0 pt-1.5">
+          <p className="truncate text-[15px] font-medium">{produto.nome}</p>
+          <p className="text-sm text-white/60">{produto.preco}</p>
         </div>
         <button
           type="button"
           onClick={onFechar}
           aria-label="Fechar visualização 3D"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 transition-transform active:scale-90"
+          className="-mr-2 grid h-11 w-11 shrink-0 place-items-center transition-transform active:scale-90"
         >
           <X size={20} />
         </button>
@@ -189,7 +186,7 @@ function Visualizador({ produto, onFechar }: { produto: ProdutoVitrine; onFechar
           className={`absolute inset-x-4 bottom-4 top-6 transition-opacity duration-500 ${mostrarCena ? "opacity-0" : "opacity-100"}`}
           style={{ scale: zoomCss }}
         >
-          <ProdutoCSS produto={produto} rotacao={arrasto.valor} giroX={inclinacaoX} giroY={inclinacaoY} flutuar={!reduzido} />
+          <ProdutoCSS produto={produto} rotacao={arrasto.valor} giroX={inclinacaoX} giroY={inclinacaoY} />
         </motion.div>
         {usaWebGL && (
           <div aria-hidden className={`absolute inset-0 transition-opacity duration-500 ${mostrarCena ? "opacity-100" : "opacity-0"}`}>
@@ -203,7 +200,6 @@ function Visualizador({ produto, onFechar }: { produto: ProdutoVitrine; onFechar
                   giroX={inclinacaoX}
                   giroY={inclinacaoY}
                   zoom={zoom}
-                  flutuar={!reduzido}
                   onPronto={() => setCenaPronta(true)}
                 />
               </Suspense>
@@ -213,19 +209,19 @@ function Visualizador({ produto, onFechar }: { produto: ProdutoVitrine; onFechar
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <p className="text-center text-[11px] text-white/55">Arraste para girar · pinça para aproximar · toque duplo para voltar</p>
-        <div className="vidro-escuro flex items-center gap-1 rounded-full p-1">
+        <p className="text-center text-xs text-white/50">Arraste para girar · pinça para aproximar · toque duplo volta</p>
+        <div className="flex w-full max-w-xs items-stretch divide-x divide-white/15 border border-white/15">
           <button
             type="button"
             onClick={() => girarPara(0)}
-            className="min-h-11 rounded-full px-4 font-display text-xs tracking-[0.18em] active:bg-white/10"
+            className="min-h-11 flex-1 font-display text-sm tracking-[0.1em] active:bg-white/10"
           >
             Frente
           </button>
           <button
             type="button"
             onClick={() => girarPara(Math.PI)}
-            className="min-h-11 rounded-full px-4 font-display text-xs tracking-[0.18em] active:bg-white/10"
+            className="min-h-11 flex-1 font-display text-sm tracking-[0.1em] active:bg-white/10"
           >
             Costas
           </button>
@@ -233,9 +229,9 @@ function Visualizador({ produto, onFechar }: { produto: ProdutoVitrine; onFechar
             type="button"
             onClick={recentralizar}
             aria-label="Recentralizar"
-            className="grid h-11 w-11 place-items-center rounded-full text-brand-yellow active:bg-white/10"
+            className="grid min-h-11 w-12 place-items-center active:bg-white/10"
           >
-            <RotateCcw size={17} />
+            <RotateCcw size={16} />
           </button>
         </div>
       </div>

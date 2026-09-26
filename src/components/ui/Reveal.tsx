@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
-import { comPerspectiva, useExperiencia3D } from "../../lib/experiencia3d";
+import { useExperiencia3D } from "../../lib/experiencia3d";
 
 interface RevealProps {
   children: ReactNode;
@@ -9,27 +9,21 @@ interface RevealProps {
   y?: number;
 }
 
-const PERSPECTIVA = comPerspectiva(1100);
-
 /**
- * Entrada ao rolar. Com profundidade ligada o bloco vem do fundo (eixo Z)
- * subindo de um leve ângulo, como uma peça sendo trazida até a vitrine; sem
- * ela (menos movimento), só aparece. O `MotionConfig reducedMotion="user"` de
- * main.tsx já corta o deslocamento para quem pediu menos movimento — a
- * checagem aqui evita até o estado inicial inclinado.
+ * Entrada ao rolar: o bloco aparece subindo alguns pixels, uma vez só. É
+ * curta e igual em toda a loja de propósito — a página não "se monta" na
+ * frente de quem só quer ver as peças. Com "reduzir movimento", só aparece.
  */
-export function Reveal({ children, delay = 0, className, y = 24 }: RevealProps) {
-  const { profundidade } = useExperiencia3D();
+export function Reveal({ children, delay = 0, className, y = 14 }: RevealProps) {
+  const { reduzido } = useExperiencia3D();
 
   return (
     <motion.div
       className={className}
-      initial={profundidade ? { opacity: 0, y, z: -140, rotateX: 10 } : { opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0, z: 0, rotateX: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
-      transformTemplate={PERSPECTIVA}
-      style={profundidade ? { transformOrigin: "50% 100%" } : undefined}
+      initial={{ opacity: 0, y: reduzido ? 0 : y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>

@@ -35,19 +35,15 @@ export function WhatsAppButton() {
           target="_blank"
           rel="noreferrer"
           aria-label="Falar no WhatsApp"
-          initial={{ opacity: 0, scale: 0.5, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 20 }}
-          transition={{ duration: 0.4, delay: escondeNoHero ? 0 : 1 }}
-          whileHover={{ scale: 1.08 }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 12 }}
+          transition={{ duration: 0.25, delay: escondeNoHero ? 0 : 1 }}
           whileTap={{ scale: 0.95 }}
-          // No celular sobe acima da barra inferior (e da barra de compra do produto).
-          className="fixed bottom-[calc(var(--barra-inferior)+10px)] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg lg:bottom-6 lg:right-6 lg:h-14 lg:w-14"
+          // No celular fica acima da barra inferior. Sem anel pulsando: o verde
+          // do WhatsApp já é reconhecível, e um alerta eterno cansa.
+          className="fixed bottom-[calc(var(--barra-inferior)+12px)] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.45)] lg:bottom-6 lg:right-6 lg:h-14 lg:w-14"
         >
-          <span
-            className="absolute inset-0 -z-10 animate-pulse-ring rounded-full bg-[#25D366] motion-reduce:animate-none"
-            aria-hidden
-          />
           <MessageCircle size={24} fill="white" className="text-[#25D366]" />
         </motion.a>
       )}

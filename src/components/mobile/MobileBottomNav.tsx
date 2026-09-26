@@ -12,9 +12,10 @@ import { CategoriasSheet } from "./CategoriasSheet";
  * Barra de navegação inferior do celular — o polegar alcança tudo sem
  * esticar: Início, Categorias, Buscar, Favoritos e Carrinho.
  *
- * Vidro escuro flutuando acima da área segura do iPhone. O item ativo
- * acende (ícone amarelo com brilho) e ganha um filete luminoso que desliza
- * de um item a outro. O conteúdo da página ganha um respiro embaixo
+ * Encaixada na borda de baixo, como a barra de abas de um aplicativo: preta,
+ * chapada, com uma régua fina em cima. O item ativo fica branco e ganha um
+ * traço amarelo no topo, que desliza de um item a outro — é a única cor da
+ * barra. O conteúdo da página ganha o mesmo respiro embaixo
  * (`--barra-inferior`), então a barra nunca cobre nada.
  *
  * Fica fora do checkout (foco total em finalizar) e da página de produto,
@@ -83,9 +84,9 @@ export function MobileBottomNav() {
     <>
       <nav
         aria-label="Navegação da loja"
-        className="fixed inset-x-3 bottom-[calc(10px+env(safe-area-inset-bottom,0px))] z-40 lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-brand-ink pb-[env(safe-area-inset-bottom,0px)] lg:hidden"
       >
-        <ul className="vidro-escuro flex h-[4.25rem] items-stretch rounded-[26px] px-1">
+        <ul className="flex h-14 items-stretch">
           {itens.map((item) => {
             const Icone = item.icone;
             const conteudo = (
@@ -93,34 +94,30 @@ export function MobileBottomNav() {
                 {item.ativo && (
                   <motion.span
                     layoutId="indicador-barra-inferior"
-                    className="absolute top-1 h-[3px] w-7 rounded-full bg-brand-yellow shadow-[0_0_12px_2px_rgba(245,196,0,0.7)]"
-                    transition={{ type: "spring", stiffness: 500, damping: 36 }}
+                    className="absolute inset-x-[30%] top-0 h-0.5 bg-brand-yellow"
+                    transition={{ type: "spring", stiffness: 520, damping: 42 }}
                   />
                 )}
                 <span
                   ref={item.id === "carrinho" ? carrinhoRef : undefined}
-                  className={`relative grid h-8 w-10 place-items-center rounded-xl transition-all duration-300 group-active:scale-90 ${
-                    item.ativo
-                      ? "-translate-y-0.5 bg-white/[0.07] text-brand-yellow shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_6px_14px_-6px_rgba(245,196,0,0.55)]"
-                      : "text-white/70"
+                  className={`relative block transition-transform duration-150 group-active:scale-90 ${
+                    item.ativo ? "text-white" : "text-white/55"
                   }`}
                 >
-                  <Icone size={21} strokeWidth={item.ativo ? 2.2 : 1.8} aria-hidden />
+                  <Icone size={21} strokeWidth={item.ativo ? 2 : 1.6} aria-hidden />
                   {!!item.selo && item.selo > 0 && (
-                    <span className="absolute -right-1 -top-1.5 grid h-[18px] min-w-[18px] place-items-center overflow-hidden rounded-full bg-brand-yellow px-1 text-[10px] font-bold text-brand-ink ring-2 ring-brand-ink">
+                    <span className="absolute -right-2.5 -top-1.5 grid h-4 min-w-4 place-items-center overflow-hidden rounded-full bg-brand-yellow px-1 text-[10px] font-bold leading-none text-brand-ink">
                       <span key={item.selo} className="block animate-rolar-numero motion-reduce:animate-none">
                         {item.selo > 99 ? "99+" : item.selo}
                       </span>
                     </span>
                   )}
                 </span>
-                <span className={`text-[10px] font-medium tracking-wide ${item.ativo ? "text-white" : "text-white/60"}`}>
-                  {item.rotulo}
-                </span>
+                <span className={`text-[10px] font-medium ${item.ativo ? "text-white" : "text-white/55"}`}>{item.rotulo}</span>
               </>
             );
             const classes =
-              "group relative flex h-full w-full flex-col items-center justify-center gap-0.5 [-webkit-tap-highlight-color:transparent]";
+              "group relative flex h-full w-full flex-col items-center justify-center gap-1 [-webkit-tap-highlight-color:transparent]";
             return (
               <li key={item.id} className="flex min-w-11 flex-1">
                 {item.to ? (

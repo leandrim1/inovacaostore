@@ -2,7 +2,6 @@ import { STORE } from "../../data/store";
 import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
 import { InstagramIcon } from "../ui/InstagramIcon";
-import { Tilt3D } from "../ui/Tilt3D";
 import { AnimatedSection } from "../ui/AnimatedSection";
 
 // Versões de 400 px geradas por scripts/otimizar-imagens.mjs: a grade é um
@@ -28,20 +27,23 @@ const IMAGES = [
   insta05,
 ];
 
+/**
+ * Recorte do Instagram da loja: quadros encostados, sem moldura nem cantos
+ * arredondados — uma folha de contato, que é o que o feed é. Oito fotos em
+ * duas fileiras de quatro no celular, uma fileira só no computador.
+ */
 export function InstagramFeed() {
   return (
-    <AnimatedSection tom="creme" className="py-16 sm:py-24">
+    <AnimatedSection tom="claro" className="py-14 sm:py-20">
       <div className="container-page">
         <SectionHeading
-          index="04"
-          eyebrow="Comunidade"
           title="Siga no Instagram"
-          description={
+          action={
             <a
               href={STORE.social.instagram}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 font-display text-sm tracking-widest text-brand-yellow-dark hover:underline"
+              className="flex min-h-11 items-center gap-2 text-sm font-medium text-brand-ink underline-offset-4 hover:underline"
             >
               <InstagramIcon size={16} />
               {STORE.social.instagramHandle}
@@ -49,31 +51,23 @@ export function InstagramFeed() {
           }
         />
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:grid-cols-4 lg:grid-cols-8">
+        <div className="grid grid-cols-4 gap-1 lg:grid-cols-8">
           {IMAGES.map((src, i) => (
-            <Reveal key={i} delay={(i % 8) * 0.03}>
-              <Tilt3D className="rounded-2xl" max={9}>
-                <a
-                  href={STORE.social.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group relative block aspect-square overflow-hidden rounded-2xl"
-                >
-                  <img
-                    src={src}
-                    alt="Publicação da Inovação Store no Instagram"
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/50">
-                    <InstagramIcon
-                      size={20}
-                      className="text-white opacity-0 transition-opacity group-hover:opacity-100"
-                    />
-                  </div>
-                </a>
-              </Tilt3D>
+            <Reveal key={i} delay={(i % 4) * 0.03}>
+              <a
+                href={STORE.social.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="group relative block aspect-square overflow-hidden bg-neutral-100"
+              >
+                <img
+                  src={src}
+                  alt="Publicação da Inovação Store no Instagram"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-85"
+                />
+              </a>
             </Reveal>
           ))}
         </div>

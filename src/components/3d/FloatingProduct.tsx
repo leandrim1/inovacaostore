@@ -1,19 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { Float, Html, RoundedBox } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { retanguloArredondado, texturaRadial, useTexturaDaFoto, useTexturaEtiqueta } from "./texturas";
 import { useQualidade, type Entradas, type ProdutoVitrine } from "./qualidade";
 
 /**
- * O produto como objeto físico: uma placa de vidro com a foto na frente e,
- * no verso, a segunda foto (costas da peça) ou uma etiqueta da loja. Pende de
- * um cabide dourado, flutua, projeta uma sombra macia no "chão" e gira com o
- * arrasto do dedo / mouse e com a inclinação do celular.
+ * O produto como objeto físico: uma prancha fina, como a foto de lookbook
+ * montada em papel-cartão, com a frente da peça de um lado e, no verso, a
+ * segunda foto (costas) ou a etiqueta da loja. Pende do cabide amarelo da
+ * marca, projeta uma sombra macia no "chão" e gira com o arrasto do dedo /
+ * mouse e com a inclinação do celular.
  *
- * Não há modelo GLB de roupa: o volume vem da espessura do vidro, da luz
- * que corre na borda e da sombra — e é isso que mantém a cena leve o bastante
- * para um celular intermediário.
+ * O 3D existe aqui por um motivo comercial: ver as costas da peça sem sair
+ * da página. Por isso nada flutua nem brilha — material fosco, luz de
+ * estúdio neutra, uma sombra de verdade.
+ *
+ * Não há modelo GLB de roupa: o volume vem da espessura da prancha, da luz e
+ * da sombra — e é isso que mantém a cena leve para um celular intermediário.
  */
 export const LARGURA = 1.6;
 export const ALTURA = 2;
@@ -29,8 +33,6 @@ interface Props {
   sombraNoChao?: boolean;
   /** Mostra nome e preço sob o produto enquanto estiver em foco. */
   rotulo?: boolean;
-  /** Flutuação automática (desligada com "reduzir movimento"). */
-  flutuar?: boolean;
   /** Ordem de entrada (os painéis aparecem em sequência). */
   ordem?: number;
   onEscolher?: (slug: string) => void;
@@ -49,7 +51,6 @@ export function FloatingProduct({
   cabide = false,
   sombraNoChao = false,
   rotulo = false,
-  flutuar = true,
   ordem = 0,
   onEscolher,
   interativo = false,
@@ -74,7 +75,7 @@ export function FloatingProduct({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [frente]);
 
-  const foto = useMemo(() => retanguloArredondado(LARGURA, ALTURA, 0.09), []);
+  const foto = useMemo(() => retanguloArredondado(LARGURA, ALTURA, 0.012), []);
   const texSombra = useMemo(() => texturaRadial(0.85, 0.4), []);
   useEffect(
     () => () => {
@@ -105,7 +106,7 @@ export function FloatingProduct({
 
     const m = sombra.current;
     if (m) {
-      // A sombra estreita quando a placa vira de lado e acompanha a flutuação.
+      // A sombra estreita quando a prancha vira de lado.
       const largura = 0.55 + Math.abs(Math.cos(p.rotation.y)) * 0.45;
       m.scale.set(LARGURA * 1.5 * largura, 0.55, 1);
       (m.material as THREE.MeshBasicMaterial).opacity = 0.55 * aparicao.current;
@@ -140,55 +141,42 @@ export function FloatingProduct({
       onPointerOver={interativo ? entrar : undefined}
       onPointerOut={interativo ? sair : undefined}
     >
-      <RoundedBox args={[LARGURA + 0.16, ALTURA + 0.16, 0.09]} radius={0.12} smoothness={economico ? 2 : 4} castShadow={!economico && !sombraNoChao}>
-        <meshPhysicalMaterial
-          color="#ffffff"
-          metalness={0.15}
-          roughness={0.08}
-          clearcoat={1}
-          clearcoatRoughness={0.05}
-          transparent
-          opacity={0.38}
-          envMapIntensity={1.6}
-        />
-      </RoundedBox>
+      {/* Prancha: papel-cartão branco fosco, com a espessura à mostra na borda. */}
+      <mesh castShadow={!economico && !sombraNoChao}>
+        <boxGeometry args={[LARGURA + 0.06, ALTURA + 0.06, 0.035]} />
+        <meshStandardMaterial color="#f2f0ea" roughness={0.9} metalness={0} envMapIntensity={0.5} />
+      </mesh>
       {frente && (
-        <mesh geometry={foto} position-z={0.047}>
+        <mesh geometry={foto} position-z={0.0185}>
           <meshStandardMaterial
             map={frente}
             emissiveMap={frente}
             emissive="#ffffff"
-            emissiveIntensity={0.72}
-            roughness={0.42}
-            metalness={0.05}
-            envMapIntensity={0.35}
-            toneMapped={false}
+            emissiveIntensity={0.42}
+            roughness={0.78}
+            metalness={0}
+            envMapIntensity={0.25}
           />
         </mesh>
       )}
       {verso && (
-        <mesh geometry={foto} position-z={-0.047} rotation-y={Math.PI}>
+        <mesh geometry={foto} position-z={-0.0185} rotation-y={Math.PI}>
           <meshStandardMaterial
             map={verso}
             emissiveMap={verso}
             emissive="#ffffff"
-            emissiveIntensity={0.7}
-            roughness={0.45}
-            toneMapped={false}
+            emissiveIntensity={0.42}
+            roughness={0.78}
+            envMapIntensity={0.25}
           />
         </mesh>
       )}
       {cabide && <Cabide economico={economico} />}
-      {/* Filete amarelo na base, como a etiqueta de preço de uma vitrine. */}
-      <mesh position={[0, -ALTURA / 2 - 0.02, 0.05]}>
-        <boxGeometry args={[LARGURA * 0.36, 0.022, 0.02]} />
-        <meshBasicMaterial color={AMARELO} toneMapped={false} />
-      </mesh>
       {rotulo && emFoco && (
         <Html position={[0, -ALTURA / 2 - 0.34, 0.1]} center zIndexRange={[20, 0]}>
-          <div className="pointer-events-none whitespace-nowrap rounded-full border border-white/15 bg-black/65 px-4 py-1.5 text-center shadow-2xl backdrop-blur-md">
-            <p className="font-display text-xs tracking-[0.18em] text-white">{produto.nome}</p>
-            <p className="text-[11px] font-semibold text-brand-yellow">{produto.preco}</p>
+          <div className="pointer-events-none flex items-stretch whitespace-nowrap text-left">
+            <p className="bg-brand-ink px-3 py-1.5 text-xs font-medium text-white">{produto.nome}</p>
+            <p className="bg-brand-yellow px-2.5 py-1.5 text-xs font-bold text-brand-ink">{produto.preco}</p>
           </div>
         </Html>
       )}
@@ -197,13 +185,7 @@ export function FloatingProduct({
 
   return (
     <group ref={raiz} scale={crescer ? 0.001 : 1}>
-      {flutuar ? (
-        <Float speed={1.3 + ordem * 0.2} rotationIntensity={0.16} floatIntensity={0.45} floatingRange={[-0.07, 0.07]}>
-          {conteudo}
-        </Float>
-      ) : (
-        conteudo
-      )}
+      {conteudo}
       {sombraNoChao && (
         <mesh ref={sombra} position={[0, -ALTURA / 2 - 0.55, 0]} rotation-x={-Math.PI / 2}>
           <planeGeometry />
@@ -215,9 +197,9 @@ export function FloatingProduct({
 }
 
 /**
- * Cabide de metal amarelo de onde o produto pende — o detalhe que diz "loja
+ * Cabide amarelo de onde o produto pende — o detalhe da marca que diz "loja
  * de roupa" sem baixar modelo nenhum: um tubo passando por uma curva
- * desenhada à mão (gancho, ombros e barra).
+ * desenhada à mão (gancho, ombros e barra), em metal pintado (fosco).
  */
 function Cabide({ economico }: { economico: boolean }) {
   const geometria = useMemo(() => {
@@ -231,51 +213,11 @@ function Cabide({ economico }: { economico: boolean }) {
   }, [economico]);
   useEffect(() => () => geometria.dispose(), [geometria]);
 
-  // A barra (y = -0.1 na curva) encosta na borda de cima da placa de vidro.
+  // A barra (y = -0.1 na curva) encosta na borda de cima da prancha.
   const escala = 0.56;
   return (
-    <mesh geometry={geometria} position={[0, ALTURA / 2 + 0.08 + 0.1 * escala, -0.05]} scale={escala} castShadow={!economico}>
-      <meshStandardMaterial color={AMARELO} metalness={0.95} roughness={0.22} envMapIntensity={1.4} />
+    <mesh geometry={geometria} position={[0, ALTURA / 2 + 0.03 + 0.1 * escala, 0]} scale={escala} castShadow={!economico}>
+      <meshStandardMaterial color={AMARELO} metalness={0.2} roughness={0.5} envMapIntensity={0.8} />
     </mesh>
-  );
-}
-
-/** Anel fino e luminoso atrás do produto, com um halo aditivo por trás. */
-export function HaloRing({ raio = 2.3 }: { raio?: number }) {
-  const ref = useRef<THREE.Group>(null);
-  const halo = useMemo(() => texturaRadial(1, 0.35), []);
-  useEffect(() => () => halo.dispose(), [halo]);
-
-  useFrame((state) => {
-    const g = ref.current;
-    if (!g) return;
-    const t = state.clock.elapsedTime;
-    g.rotation.z = t * 0.08;
-    g.rotation.y = -0.45 + Math.sin(t * 0.3) * 0.12;
-  });
-
-  return (
-    <group ref={ref}>
-      <mesh>
-        <torusGeometry args={[raio, 0.012, 12, 180]} />
-        <meshBasicMaterial color={AMARELO} transparent opacity={0.9} toneMapped={false} />
-      </mesh>
-      <mesh rotation-x={0.35} scale={0.82}>
-        <torusGeometry args={[raio, 0.006, 8, 160]} />
-        <meshBasicMaterial color="#ffe066" transparent opacity={0.45} toneMapped={false} />
-      </mesh>
-      <mesh position-z={-0.3} scale={raio * 3.2}>
-        <planeGeometry />
-        <meshBasicMaterial
-          map={halo}
-          color={AMARELO}
-          transparent
-          opacity={0.32}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </mesh>
-    </group>
   );
 }

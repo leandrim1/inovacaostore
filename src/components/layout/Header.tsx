@@ -30,10 +30,10 @@ export function Header() {
   const navigate = useNavigate();
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
-  // Fecha o menu da conta ao clicar fora ou apertar Esc. O padrão anterior era
-  // um `fixed inset-0` invisível atrás do menu, mas o `backdrop-blur-md` do
-  // header faz dele o bloco de contenção dos filhos `fixed` — esse fundo
-  // cobria só a faixa do cabeçalho, então clicar na página não fechava nada.
+  // Fecha o menu da conta ao clicar fora ou apertar Esc — ouvindo o documento
+  // em vez de pôr um `fixed inset-0` invisível atrás do menu: qualquer filtro
+  // no header (como o desfoque que ele já teve) faz dele o bloco de contenção
+  // dos filhos `fixed`, e esse fundo passaria a cobrir só a faixa do topo.
   useEffect(() => {
     if (!isAccountMenuOpen) return;
     function onPointerDown(e: PointerEvent) {
@@ -69,10 +69,9 @@ export function Header() {
     navigate("/");
   }
 
-  // Sobre o hero e as seções escuras (o palco "Em destaque", a newsletter),
-  // o header vira vidro escuro com texto claro em vez de uma faixa branca
-  // acinzentada. No resto, vidro claro. As seções escuras se marcam com
-  // `data-cabecalho-escuro`.
+  // Sobre o hero e as seções escuras (a faixa de benefícios, a newsletter),
+  // o header troca para o tom escuro com texto claro. As seções escuras se
+  // marcam com `data-cabecalho-escuro`.
   useEffect(() => {
     function onScroll() {
       setIsScrolled(window.scrollY > 12);
@@ -100,13 +99,18 @@ export function Header() {
 
   return (
     <>
+      {/* Chapado, sem vidro: no topo do hero ele é transparente sobre a foto;
+          rolando por cima de uma seção escura vira preto; no resto, creme com
+          uma régua fina embaixo. */}
       <header
-        className={`sticky top-0 z-50 border-b backdrop-blur-xl backdrop-saturate-150 transition-[background-color,border-color,box-shadow,color] duration-500 ${
+        className={`sticky top-0 z-50 border-b transition-[background-color,border-color,color] duration-300 ${
           escuro
-            ? "border-white/10 bg-brand-ink/45 text-white shadow-[inset_0_-1px_0_rgba(255,255,255,0.04)]"
+            ? isScrolled
+              ? "border-white/10 bg-brand-ink text-white"
+              : "border-white/10 bg-transparent text-white"
             : isScrolled
-              ? "border-brand-ink/10 bg-white/75 text-brand-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_12px_28px_-22px_rgba(0,0,0,0.4)]"
-              : "border-transparent bg-white/75 text-brand-ink"
+              ? "border-brand-ink/10 bg-brand-cream text-brand-ink"
+              : "border-transparent bg-brand-cream text-brand-ink"
         }`}
       >
         {/* No desktop o header solta a largura máxima do container e vai de

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useParallax } from "../../hooks/useParallax";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { useElementAspectRatio } from "../../hooks/useElementAspectRatio";
@@ -9,20 +9,19 @@ import { useProducts } from "../../hooks/useProducts";
 import { SLIDE_DURATION, useDadosDoHero, type DadosDoHero } from "../../hooks/useDadosDoHero";
 import { DEFAULT_IMAGE_SETTINGS, totalScale } from "../../lib/imageSettings";
 import { StarRating } from "../ui/StarRating";
-import { EVENTO_HERO, comPerspectiva, useExperiencia3D } from "../../lib/experiencia3d";
+import { EVENTO_HERO, useExperiencia3D } from "../../lib/experiencia3d";
 import { CenaDoHero } from "../3d/CenaDoHero";
 import { paraVitrine, type ProdutoVitrine } from "../3d/qualidade";
 import { MobileHero } from "../mobile/MobileHero";
-import { PoeiraDeLuz } from "./PoeiraDeLuz";
 
-const PERSPECTIVA = comPerspectiva(1400);
 
 /**
  * Hero da home. O celular é o desenho principal (`MobileHero`: composição
- * vertical com o produto 3D no centro); a partir de 1024 px ele se expande
- * para a vitrine larga — texto à esquerda, leque de produtos à direita, foto
- * do painel de ponta a ponta. Os dois leem os mesmos dados
- * (`useDadosDoHero`), então textos, imagens e CTA do painel valem igual.
+ * vertical com o produto pendurado no centro); a partir de 1024 px ele se
+ * expande para a vitrine larga — texto grande à esquerda, as peças em
+ * destaque à direita, foto do painel de ponta a ponta. Os dois leem os
+ * mesmos dados (`useDadosDoHero`), então textos, imagens e CTA do painel
+ * valem igual.
  */
 export function Hero() {
   const movel = useIsMobileViewport();
@@ -49,7 +48,7 @@ function HeroDesktop({ dados }: { dados: DadosDoHero }) {
   );
   const secaoRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
-  const { nivel, profundidade } = useExperiencia3D();
+  const { nivel } = useExperiencia3D();
   const [cenaPronta, setCenaPronta] = useState(false);
 
   const { data: destaques = [] } = useProducts({ featured: true, limit: 8 });
@@ -58,17 +57,6 @@ function HeroDesktop({ dados }: { dados: DadosDoHero }) {
     [destaques],
   );
 
-  // Ao rolar, o palco do hero recua como uma tela se afastando (encolhe,
-  // inclina para trás e arredonda os cantos) e o texto se apaga — a transição
-  // de profundidade para a próxima seção. A base fica ancorada, então não
-  // abre vão entre o hero e o que vem depois.
-  const { scrollYProgress } = useScroll({ target: secaoRef, offset: ["start start", "end start"] });
-  const palcoEscala = useTransform(scrollYProgress, [0, 1], [1, 0.88]);
-  const palcoGiro = useTransform(scrollYProgress, [0, 1], [0, 7]);
-  const palcoRaio = useTransform(scrollYProgress, [0, 0.35], [0, 36]);
-  const textoOpacidade = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
-  const textoY = useTransform(scrollYProgress, [0, 1], [0, -80]);
-
   const customSettings = currentSlide.desktopSettings;
   const effectiveSettings = customSettings ?? DEFAULT_IMAGE_SETTINGS;
   const zoomFactor = totalScale(effectiveSettings, aspect);
@@ -76,26 +64,19 @@ function HeroDesktop({ dados }: { dados: DadosDoHero }) {
     ? "absolute inset-0 h-full w-full object-cover"
     : "absolute inset-0 h-[120%] w-full object-cover object-[center_82%]";
 
+  const cta = (
+    <>
+      {settings.heroCtaLabel}
+      <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+    </>
+  );
+
   return (
-    // Sobe por baixo do header (-mt): o header vira vidro escuro sobre a foto
-    // enquanto o hero está na tela. As alturas mínimas somam a altura do
-    // header, para a área visível da foto continuar a mesma de antes.
+    // Sobe por baixo do header (-mt): no topo ele fica transparente sobre a
+    // foto. As alturas mínimas somam a altura do header, para a área visível
+    // da foto continuar a mesma de antes.
     <section ref={secaoRef} data-hero data-cabecalho-escuro className="relative -mt-20">
-      <motion.div
-        className="relative flex min-h-[calc(90vh+5rem)] items-end overflow-hidden bg-brand-ink"
-        transformTemplate={PERSPECTIVA}
-        style={
-          profundidade
-            ? {
-                scale: palcoEscala,
-                rotateX: palcoGiro,
-                borderBottomLeftRadius: palcoRaio,
-                borderBottomRightRadius: palcoRaio,
-                transformOrigin: "50% 100%",
-              }
-            : undefined
-        }
-      >
+      <div className="relative flex min-h-[calc(90vh+5rem)] items-end overflow-hidden bg-brand-ink">
         <div ref={ref} className="absolute inset-0" aria-hidden>
           <AnimatePresence>
             {!carregando && (
@@ -103,10 +84,10 @@ function HeroDesktop({ dados }: { dados: DadosDoHero }) {
                 key={currentSlide.id}
                 src={currentSlide.url}
                 alt="Amigos vestindo peças da Inovação Store"
-                initial={{ opacity: 0, scale: 1.02 * zoomFactor, rotate: effectiveSettings.rotation }}
+                initial={{ opacity: 0, scale: zoomFactor, rotate: effectiveSettings.rotation }}
                 animate={{
-                  opacity: 0.95,
-                  scale: (prefersReducedMotion ? 1 : 1.18) * zoomFactor,
+                  opacity: 1,
+                  scale: (prefersReducedMotion ? 1 : 1.04) * zoomFactor,
                   rotate: effectiveSettings.rotation,
                 }}
                 exit={{ opacity: 0 }}
@@ -125,23 +106,23 @@ function HeroDesktop({ dados }: { dados: DadosDoHero }) {
               />
             )}
           </AnimatePresence>
-          {/* Duotone + vinheta no lugar do degradê plano — dá profundidade e mantém o texto legível */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_55%_at_15%_100%,rgba(245,196,0,0.16),transparent_70%)]" />
-          <div className="absolute inset-0 [box-shadow:inset_0_0_180px_60px_rgba(0,0,0,0.5)]" />
+          {/* Escurece de baixo para cima (onde fica o texto) e um pouco no
+              topo (onde fica o header) — a foto continua a protagonista. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/30" />
+          <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-black/55 to-transparent" />
         </div>
 
-        {/* Palco da vitrine 3D: escurece a metade direita para os painéis de
-            vidro ganharem contraste sobre qualquer foto que o lojista subir. */}
+        {/* Vitrine 3D na metade direita: as peças em destaque penduradas, que
+            o mouse traz para frente (com nome e preço) e o clique abre. */}
         {nivel !== "baixo" && (
           <>
             <div
-              className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_46%_70%_at_76%_48%,rgba(0,0,0,0.62),transparent_74%)]"
+              className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-black/55 to-transparent"
               aria-hidden
             />
             <div
               aria-hidden
-              className={`pointer-events-none absolute inset-0 z-[5] transition-opacity duration-[1400ms] ease-out ${
+              className={`pointer-events-none absolute inset-0 z-[5] transition-opacity duration-700 ease-out ${
                 cenaPronta ? "opacity-100" : "opacity-0"
               }`}
             >
@@ -157,117 +138,78 @@ function HeroDesktop({ dados }: { dados: DadosDoHero }) {
             </div>
           </>
         )}
-        {nivel === "baixo" && profundidade && <PoeiraDeLuz />}
 
-        <motion.div
-          className="container-page relative z-10 pb-24 pt-40"
-          style={profundidade ? { opacity: textoOpacidade, y: textoY } : undefined}
-        >
+        <div className="container-page relative z-10 pb-20 pt-40">
           {/* O texto espera junto com a imagem: título e descrição padrão de
               código também não são os que o lojista escreveu. A altura mínima da
               seção segura o layout, então nada pula quando o conteúdo entra. */}
           {!carregando && (
-            <div className="max-w-3xl border-l-2 border-brand-yellow pl-7">
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                className="mb-4 flex items-center gap-2.5"
-              >
-                <span className="h-px w-8 bg-brand-yellow" aria-hidden />
-                <span className="font-display text-xs tracking-[0.4em] text-brand-yellow">{settings.heroEyebrow}</span>
-              </motion.div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                className="font-display text-[clamp(2.75rem,8vw,6.5rem)] leading-[0.86] text-white"
-              >
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="max-w-3xl"
+            >
+              <p className="text-xs font-medium uppercase tracking-[0.1em] text-white/60">{settings.heroEyebrow}</p>
+              <h1 className="mt-3 font-display text-[clamp(3.5rem,8.5vw,8rem)] leading-[0.84] text-white">
                 {titleLines.map((line, i) => (
                   <span key={i} className="block">
                     {line}
                   </span>
                 ))}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
-                className="mt-6 max-w-md text-lg text-white/75"
-              >
-                {settings.heroDescription}
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
-                className="mt-9 flex flex-wrap items-center gap-5"
-              >
+              </h1>
+              <p className="mt-6 max-w-md text-lg leading-snug text-white/75">{settings.heroDescription}</p>
+              <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
                 {isExternalCta ? (
                   <a href={settings.heroCtaUrl} target="_blank" rel="noreferrer" className="btn-accent group">
-                    {settings.heroCtaLabel}
-                    <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    {cta}
                   </a>
                 ) : (
                   <Link to={settings.heroCtaUrl} className="btn-accent group">
-                    {settings.heroCtaLabel}
-                    <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+                    {cta}
                   </Link>
                 )}
-              </motion.div>
-            </div>
+                {/* Prova social em texto corrido, ao lado do CTA — só quando existe
+                    algum depoimento aprovado para sustentar a nota. */}
+                {averageRating !== null && (
+                  <div className="flex items-center gap-2.5 text-sm text-white/70">
+                    <StarRating rating={averageRating} size={13} />
+                    <span>
+                      <strong className="font-semibold text-white">{averageRating.toFixed(1).replace(".", ",")}</strong> de 5 na
+                      avaliação dos clientes
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
-        </motion.div>
-
-        {/* Cartão flutuante de prova social — quebra o limite da foto para dar profundidade.
-            Só aparece quando existe algum depoimento aprovado para sustentar a nota. */}
-        {averageRating !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="absolute bottom-28 right-6 z-10 flex animate-float items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-2xl backdrop-blur-md"
-          >
-            <StarRating rating={averageRating} size={13} />
-            <div className="h-8 w-px bg-white/20" aria-hidden />
-            <div className="leading-tight">
-              <p className="font-display text-sm text-white">{averageRating.toFixed(1).replace(".", ",")} / 5</p>
-              <p className="text-[11px] text-white/60">Avaliação dos clientes</p>
-            </div>
-          </motion.div>
-        )}
+        </div>
 
         {count > 1 && (
-          <div className="absolute bottom-14 left-7 z-10 flex w-40 items-center gap-1.5">
+          <div className="absolute bottom-8 right-10 z-10 flex w-40 items-center gap-1">
             {slides.map((slide, i) => (
               <button
                 key={slide.id}
                 type="button"
                 onClick={() => setIndex(i)}
                 aria-label={`Ver imagem ${i + 1}`}
-                className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
+                className="flex h-6 flex-1 items-center"
               >
-                {i === safeIndex ? (
-                  <span
-                    key={safeIndex}
-                    className="block h-full w-full origin-left animate-[fill-bar_6s_linear] bg-brand-yellow motion-reduce:animate-none"
-                  />
-                ) : i < safeIndex ? (
-                  <span className="block h-full w-full bg-brand-yellow/70" />
-                ) : null}
+                <span className="block h-0.5 w-full overflow-hidden bg-white/25">
+                  {i === safeIndex ? (
+                    <span
+                      key={safeIndex}
+                      className="block h-full w-full origin-left animate-[fill-bar_6s_linear] bg-white motion-reduce:animate-none"
+                    />
+                  ) : i < safeIndex ? (
+                    <span className="block h-full w-full bg-white/70" />
+                  ) : null}
+                </span>
               </button>
             ))}
           </div>
         )}
-
-        <a
-          href="#categorias"
-          aria-label="Rolar para baixo"
-          className="absolute inset-x-0 bottom-5 z-10 mx-auto grid w-fit place-items-center text-white/60 transition-colors hover:text-brand-yellow"
-        >
-          <ChevronDown size={20} className="animate-bounce-slow motion-reduce:animate-none" aria-hidden />
-        </a>
-      </motion.div>
+      </div>
     </section>
   );
 }

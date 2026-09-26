@@ -8,7 +8,6 @@ import { useCategories } from "../hooks/useCategories";
 import { PriceTag } from "../components/ui/PriceTag";
 import { StarRating } from "../components/ui/StarRating";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
-import { Tilt3D } from "../components/ui/Tilt3D";
 import { GaleriaProduto } from "../components/product/GaleriaProduto";
 import { BarraDeCompra } from "../components/mobile/BarraDeCompra";
 import { Mobile3DViewer } from "../components/mobile/Mobile3DViewer";
@@ -148,26 +147,22 @@ export default function ProductPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
-            {/* A galeria inclina sob o mouse como uma peça na mão; no toque,
-                desliza, amplia e abre o "Ver em 3D". */}
-            <Tilt3D className="rounded-2xl" max={3} brilho={false}>
-              <GaleriaProduto
-                imagens={product.imageDetails}
-                nome={product.name}
-                ativa={activeImage}
-                onTrocar={trocarImagem}
-                onVer3D={() => setVer3d(true)}
-                fotoAtualRef={fotoAtualRef}
-              />
-            </Tilt3D>
+            {/* Desliza, amplia e abre o "Ver em 3D" — o único 3D da página, que
+                existe para mostrar as costas da peça. */}
+            <GaleriaProduto
+              imagens={product.imageDetails}
+              nome={product.name}
+              ativa={activeImage}
+              onTrocar={trocarImagem}
+              onVer3D={() => setVer3d(true)}
+              fotoAtualRef={fotoAtualRef}
+            />
           </div>
 
           <div>
-            <span className="text-xs uppercase tracking-wide text-neutral-400">
-              {category?.name}
-            </span>
-            <div className="mt-1 flex items-start justify-between gap-3">
-              <h1 className="font-display text-3xl tracking-wide text-brand-ink sm:text-4xl">{product.name}</h1>
+            <span className="rotulo text-neutral-500">{category?.name}</span>
+            <div className="mt-1.5 flex items-start justify-between gap-3">
+              <h1 className="font-display text-[2.5rem] leading-[0.9] text-brand-ink sm:text-5xl">{product.name}</h1>
               <BotaoFavorito produtoId={product.id} nome={product.name} tom="solido" className="-mr-1 -mt-1 hidden lg:grid" />
             </div>
 
@@ -184,7 +179,7 @@ export default function ProductPage() {
                   promoção está valendo e até quando — a informação que decide
                   a compra por impulso. */}
               {product.promotion && (
-                <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl bg-brand-yellow/15 px-3 py-2 text-sm text-brand-ink ring-1 ring-brand-yellow/40">
+                <p className="mt-3 inline-flex flex-wrap items-center gap-2 border-l-2 border-brand-yellow bg-brand-yellow/10 px-3 py-2 text-sm text-brand-ink">
                   <Tag size={14} className="text-brand-yellow-dark" aria-hidden />
                   <span className="font-medium">{product.promotion.title || "Promoção"}</span>
                   {product.promotion.endsAt && (
@@ -201,7 +196,7 @@ export default function ProductPage() {
             </div>
 
             {product.comingSoon ? (
-              <div className="mt-6 rounded-xl bg-neutral-100 p-4 text-sm text-neutral-600">
+              <div className="mt-6 rounded-[3px] bg-neutral-100 p-4 text-sm text-neutral-600">
                 Esta peça chega em breve à loja. Fale conosco pelo WhatsApp para
                 ser avisado assim que estiver disponível.
               </div>
@@ -220,8 +215,8 @@ export default function ProductPage() {
                         title={c.name}
                         aria-pressed={color === c.name}
                         aria-label={`Cor ${c.name}`}
-                        className={`h-11 w-11 rounded-full shadow-[inset_0_-3px_6px_rgba(0,0,0,0.25),inset_0_2px_3px_rgba(255,255,255,0.35)] ring-2 ring-offset-2 transition-all active:scale-90 ${
-                          color === c.name ? "scale-105 ring-brand-ink" : "ring-transparent hover:ring-black/20"
+                        className={`h-10 w-10 rounded-full border border-black/10 ring-1 ring-offset-[3px] transition-shadow ${
+                          color === c.name ? "ring-brand-ink" : "ring-transparent hover:ring-black/25"
                         }`}
                         style={{ backgroundColor: c.hex }}
                       />
@@ -241,12 +236,12 @@ export default function ProductPage() {
                           onClick={() => setSize(s)}
                           aria-pressed={size === s}
                           disabled={sizeStock <= 0}
-                          className={`flex h-12 min-w-12 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition-all duration-150 active:translate-y-[2px] ${
+                          className={`flex h-12 min-w-12 items-center justify-center rounded-[3px] border px-3 text-sm font-semibold transition-colors duration-150 ${
                             size === s
-                              ? "border-brand-ink bg-brand-ink text-white shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)]"
+                              ? "border-brand-ink bg-brand-ink text-white"
                               : sizeStock <= 0
                                 ? "border-black/10 text-neutral-300 line-through"
-                                : "border-black/15 bg-white text-neutral-600 shadow-[0_3px_0_rgba(10,10,10,0.1)] hover:border-brand-ink active:shadow-none"
+                                : "border-black/20 bg-white text-neutral-700 hover:border-brand-ink"
                           }`}
                         >
                           {s}
@@ -297,7 +292,7 @@ export default function ProductPage() {
               Tirar dúvidas pelo WhatsApp
             </a>
 
-            <div className="mt-8 grid grid-cols-1 gap-3 rounded-2xl border border-brand-ink/10 bg-brand-cream p-4 text-xs text-neutral-600 sm:grid-cols-3 sm:divide-x sm:divide-brand-ink/10 sm:gap-0">
+            <div className="mt-8 grid grid-cols-1 gap-3 border-y border-brand-ink/10 py-4 text-xs text-neutral-600 sm:grid-cols-3 sm:divide-x sm:divide-brand-ink/10 sm:gap-0">
               <div className="flex items-center gap-2 sm:px-4 sm:first:pl-0">
                 <Truck size={16} className="text-brand-yellow-dark" /> Frete grátis acima de R$ 299
               </div>
@@ -340,13 +335,12 @@ export default function ProductPage() {
         {related.length > 0 && (
           <section className="mt-20">
             <Reveal>
-              <div className="mb-3 flex items-center gap-2.5">
-                <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
-                <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Combine com</span>
+              <div className="mb-8 border-t border-brand-ink/15 pt-5">
+                <p className="rotulo text-neutral-500">Combine com</p>
+                <h2 className="section-title mt-2">Você também pode gostar</h2>
               </div>
-              <h2 className="section-title mb-6">Você também pode gostar</h2>
             </Reveal>
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-4">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

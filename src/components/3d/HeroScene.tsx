@@ -2,9 +2,8 @@ import { useRef, type RefObject } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { ProductScene } from "./ProductScene";
-import { FloatingProduct, HaloRing } from "./FloatingProduct";
+import { FloatingProduct } from "./FloatingProduct";
 import { LuzesDinamicas } from "./Lighting";
-import { Particles } from "./Particles";
 import { CameraController } from "./CameraController";
 import { useQualidade, type Entradas, type ProdutoVitrine } from "./qualidade";
 
@@ -13,10 +12,13 @@ import { useQualidade, type Entradas, type ProdutoVitrine } from "./qualidade";
  * three/R3F/drei para a página inicial).
  *
  * - "vertical" (celular, primeiro): UM produto no centro do palco, pendurado
- *   no cabide, que o dedo gira (com inércia e limite) e o giroscópio inclina;
- *   câmera e luz acompanham.
+ *   no cabide, que o dedo gira (com inércia e limite) para ver as costas e o
+ *   giroscópio inclina de leve; câmera e luz acompanham.
  * - "leque" (computador, expansão): até três produtos em leque na metade
- *   direita, acompanhando o mouse, com sombras reais numa parede invisível.
+ *   direita; o mouse traz o painel apontado para frente (e mostra nome e
+ *   preço), com sombras reais numa parede invisível.
+ *
+ * Só o produto, o cabide, a luz e a sombra: nada gira ou brilha sozinho.
  */
 interface Props {
   layout: "vertical" | "leque";
@@ -24,9 +26,7 @@ interface Props {
   nivel: "alto" | "medio";
   ativo: boolean;
   eventSource?: RefObject<HTMLElement | null>;
-  rolagem: RefObject<number>;
   entradas: Entradas;
-  flutuar: boolean;
   crescer: boolean;
   onEscolher: (slug: string) => void;
   onPronto: () => void;
@@ -38,9 +38,7 @@ export default function HeroScene({
   nivel,
   ativo,
   eventSource,
-  rolagem,
   entradas,
-  flutuar,
   crescer,
   onEscolher,
   onPronto,
@@ -52,22 +50,15 @@ export default function HeroScene({
       ativo={ativo}
       eventSource={eventSource}
       sombras={!vertical}
-      camera={vertical ? { position: [0, 0.1, 6.6], fov: 32 } : { position: [0, 0, 10], fov: 32 }}
+      camera={vertical ? { position: [0, 0.3, 5.7], fov: 32 } : { position: [0, 0, 10], fov: 32 }}
       onPronto={vertical ? undefined : onPronto}
     >
       {vertical ? (
         produtos[0] && (
-          <CenaVertical
-            produto={produtos[0]}
-            entradas={entradas}
-            rolagem={rolagem}
-            flutuar={flutuar}
-            crescer={crescer}
-            onPronto={onPronto}
-          />
+          <CenaVertical produto={produtos[0]} entradas={entradas} crescer={crescer} onPronto={onPronto} />
         )
       ) : (
-        <CenaLeque produtos={produtos} entradas={entradas} rolagem={rolagem} flutuar={flutuar} onEscolher={onEscolher} />
+        <CenaLeque produtos={produtos} entradas={entradas} onEscolher={onEscolher} />
       )}
     </ProductScene>
   );
@@ -76,25 +67,19 @@ export default function HeroScene({
 function CenaVertical({
   produto,
   entradas,
-  rolagem,
-  flutuar,
   crescer,
   onPronto,
 }: {
   produto: ProdutoVitrine;
   entradas: Entradas;
-  rolagem: RefObject<number>;
-  flutuar: boolean;
   crescer: boolean;
   onPronto: () => void;
 }) {
   return (
     <>
-      <LuzesDinamicas entradas={entradas} centro={[0, 0.1]} />
-      <CameraController entradas={entradas} base={[0, 0.1, 6.6]} alvo={[0, 0.1, 0]} rolagem={rolagem} />
-      <group position={[0, 0.25, -2.2]}>
-        <HaloRing raio={1.85} />
-      </group>
+      <LuzesDinamicas entradas={entradas} centro={[0, 0.3]} />
+      {/* Enquadrada no conjunto cabide + peça: ocupa quase toda a altura do palco. */}
+      <CameraController entradas={entradas} base={[0, 0.3, 5.7]} alvo={[0, 0.3, 0]} />
       {/* `key`: trocar de produto remonta o objeto, que entra crescendo. */}
       <FloatingProduct
         key={produto.id}
@@ -102,11 +87,9 @@ function CenaVertical({
         entradas={entradas}
         cabide
         sombraNoChao
-        flutuar={flutuar}
         crescer={crescer}
         onCarregado={onPronto}
       />
-      <Particles entradas={entradas} densidade={0.7} />
     </>
   );
 }
@@ -130,14 +113,10 @@ function poses(qtd: number) {
 function CenaLeque({
   produtos,
   entradas,
-  rolagem,
-  flutuar,
   onEscolher,
 }: {
   produtos: ProdutoVitrine[];
   entradas: Entradas;
-  rolagem: RefObject<number>;
-  flutuar: boolean;
   onEscolher: (slug: string) => void;
 }) {
   const grupo = useRef<THREE.Group>(null);
@@ -155,26 +134,16 @@ function CenaLeque({
   useFrame((state, delta) => {
     const g = grupo.current;
     if (!g) return;
-    const t = state.clock.elapsedTime;
-    const p = rolagem.current ?? 0;
-    // Mouse inclina a vitrine inteira e ela balança sozinha bem de leve.
-    const alvoY = state.pointer.x * 0.3 + (flutuar ? Math.sin(t * 0.25) * 0.06 : 0);
-    const alvoX = -state.pointer.y * 0.14 + p * 0.5;
-    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, alvoY, 3.2, delta);
-    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, alvoX, 3.2, delta);
-    // Ao rolar, a vitrine sobe e recua — a transição de profundidade para a
-    // seção seguinte.
-    g.position.y = THREE.MathUtils.damp(g.position.y, centroY + p * 2.4, 6, delta);
-    g.position.z = THREE.MathUtils.damp(g.position.z, -p * 3, 6, delta);
+    // O mouse inclina a vitrine um pouco — o suficiente para a luz e a sombra
+    // responderem. Parado, ela fica parada.
+    g.rotation.y = THREE.MathUtils.damp(g.rotation.y, state.pointer.x * 0.22, 3.2, delta);
+    g.rotation.x = THREE.MathUtils.damp(g.rotation.x, -state.pointer.y * 0.1, 3.2, delta);
   });
 
   return (
     <>
       <LuzesDinamicas entradas={{ ...entradas, ponteiro: true }} centro={[centroX, centroY]} sombras={!economico} />
       <group ref={grupo} position={[centroX, centroY, 0]} scale={escala}>
-        <group position={[0.1, 0.25, -2.2]}>
-          <HaloRing />
-        </group>
         {itens.map((produto, i) => (
           <group key={produto.id} position={[leque[i].x, leque[i].y, leque[i].z]} scale={leque[i].escala}>
             <FloatingProduct
@@ -184,7 +153,6 @@ function CenaLeque({
               cabide={i === (itens.length >= 2 ? 1 : 0)}
               rotulo
               interativo
-              flutuar={flutuar}
               onEscolher={onEscolher}
             />
           </group>
@@ -199,7 +167,6 @@ function CenaLeque({
           <shadowMaterial transparent opacity={0.28} />
         </mesh>
       )}
-      <Particles entradas={entradas} />
     </>
   );
 }

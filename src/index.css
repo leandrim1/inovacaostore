@@ -20,21 +20,10 @@
 
   --color-neutral-25: #fbfbfa;
 
-  --animate-marquee: marquee 28s linear infinite;
-  --animate-marquee-reverse: marquee-reverse 34s linear infinite;
+  --animate-marquee: marquee 40s linear infinite;
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
-  --animate-bounce-slow: bounce-slow 2.2s ease-in-out infinite;
-  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-float: float 5s ease-in-out infinite;
-  --animate-shine-sweep: shine-sweep 4.5s ease-in-out infinite;
-  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
-  --animate-cta-pulse: cta-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  --animate-tick: tick 1s ease-out infinite;
-  --animate-poeira: poeira 10s ease-in-out infinite;
-  --animate-coracao: coracao 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  --animate-arraste: arraste 2.4s ease-in-out infinite;
-  --animate-rolar-numero: rolar-numero 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-  --animate-orbita: orbita 24s linear infinite;
+  --animate-coracao: coracao 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+  --animate-rolar-numero: rolar-numero 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes marquee {
@@ -43,15 +32,6 @@
   }
   to {
     transform: translateX(-16.6667%);
-  }
-}
-
-@keyframes marquee-reverse {
-  from {
-    transform: translateX(-16.6667%);
-  }
-  to {
-    transform: translateX(0);
   }
 }
 
@@ -66,38 +46,6 @@
   }
 }
 
-@keyframes bounce-slow {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(8px);
-  }
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.6;
-  }
-  70%,
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 @keyframes fill-bar {
   from {
     transform: scaleX(0);
@@ -107,123 +55,28 @@
   }
 }
 
-/* Faixa de brilho que atravessa o texto da promoção e depois descansa — o
-   trecho 55%→100% é a pausa, senão o efeito vira um estroboscópio. */
-@keyframes shine-sweep {
-  0% {
-    background-position: 190% center;
-  }
-  55%,
-  100% {
-    background-position: -90% center;
-  }
-}
-
-@keyframes glow-pulse {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 16px rgba(245, 196, 0, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 0 36px rgba(245, 196, 0, 0.6));
-  }
-}
-
-@keyframes cta-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(245, 196, 0, 0.55);
-  }
-  70%,
-  100% {
-    box-shadow: 0 0 0 16px rgba(245, 196, 0, 0);
-  }
-}
-
-/* Poeira luminosa do hero sem WebGL: sobe devagar, acende e apaga. */
-@keyframes poeira {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(0.6);
-    opacity: 0;
-  }
-  30%,
-  70% {
-    opacity: 0.85;
-  }
-  50% {
-    transform: translate3d(12px, -46px, 0) scale(1);
-  }
-}
-
-/* Coração do favorito: aperta, estoura e assenta. */
+/* Coração do favorito: um aperto curto ao marcar. */
 @keyframes coracao {
   0% {
     transform: scale(1);
   }
-  25% {
-    transform: scale(0.7);
-  }
-  55% {
-    transform: scale(1.35);
+  40% {
+    transform: scale(0.82);
   }
   100% {
     transform: scale(1);
   }
 }
 
-/* Faíscas que saem do coração ao favoritar. */
-@keyframes faisca {
-  from {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: translate(var(--fx), var(--fy)) scale(0.2);
-    opacity: 0;
-  }
-}
-
-/* Dica "arraste": a mão vai e volta de lado. */
-@keyframes arraste {
-  0%,
-  100% {
-    transform: translateX(-10px) rotate(-8deg);
-  }
-  50% {
-    transform: translateX(10px) rotate(8deg);
-  }
-}
-
-/* Número do contador que "rola" para cima ao mudar. */
+/* Número do contador que sobe ao mudar. */
 @keyframes rolar-numero {
   from {
-    transform: translateY(60%) rotateX(-70deg);
+    transform: translateY(50%);
     opacity: 0;
   }
   to {
-    transform: translateY(0) rotateX(0);
+    transform: translateY(0);
     opacity: 1;
-  }
-}
-
-/* Anéis e cubos que flutuam no fundo do menu. */
-@keyframes orbita {
-  from {
-    transform: rotateX(62deg) rotateZ(0deg);
-  }
-  to {
-    transform: rotateX(62deg) rotateZ(360deg);
-  }
-}
-
-@keyframes tick {
-  0%,
-  70%,
-  100% {
-    transform: scale(1);
-  }
-  12% {
-    transform: scale(1.14);
   }
 }
 
@@ -256,19 +109,6 @@
     color: var(--color-brand-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-  }
-
-  /* Textura sutil de grão em toda a página — dá profundidade tátil sem custo
-     de performance (SVG estático, sem animação, blend por cima do conteúdo). */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    pointer-events: none;
-    opacity: 0.035;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   h1,
@@ -321,26 +161,10 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
-  /* Texto de destaque da promoção: o próprio gradiente é recortado no formato
-     das letras e deslizado pela animação, o que produz o brilho atravessando a
-     palavra. `animate-none` (utilities) ainda vence isto, então
-     `motion-reduce:animate-none` na instância desliga o efeito. */
+  /* Destaque da promoção ("20% OFF"): amarelo chapado, como um adesivo de
+     preço — o contraste já faz o trabalho, sem brilho correndo pelas letras. */
   .promo-highlight {
-    background-image: linear-gradient(
-      100deg,
-      var(--color-brand-yellow) 0%,
-      var(--color-brand-yellow) 38%,
-      #fff6c2 46%,
-      #ffffff 50%,
-      #fff6c2 54%,
-      var(--color-brand-yellow) 62%,
-      var(--color-brand-yellow) 100%
-    );
-    background-size: 230% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    animation: var(--animate-shine-sweep);
+    color: var(--color-brand-yellow);
   }
 
   .btn-primary {
@@ -356,11 +180,16 @@
   }
 
   .section-title {
-    @apply font-display text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.92] tracking-wide text-brand-ink;
+    @apply font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.88] tracking-[0.01em] text-brand-ink;
+  }
+
+  /* Rótulo curto acima de títulos e campos: texto de apoio, não enfeite. */
+  .rotulo {
+    @apply font-sans text-xs font-medium uppercase tracking-[0.08em];
   }
 
   .section-eyebrow {
-    @apply flex items-center gap-2.5 font-display text-xs tracking-[0.35em];
+    @apply flex items-center gap-2 font-sans text-xs font-medium uppercase tracking-[0.08em];
   }
 
   .hairline {
@@ -387,116 +216,58 @@
   }
 
   /* ---------------------------------------------------------------------
-     Botões físicos (loja). Em repouso têm volume: gradiente, luz no topo,
-     uma "espessura" embaixo (a sombra sólida) e sombra projetada. No toque
-     afundam alguns pixels — a espessura some, a sombra encolhe — e, ao
-     soltar, voltam com um pequeno quique (a curva passa do alvo).
-     `.loja` é a raiz da vitrine (App.tsx): o painel admin mantém os botões
-     planos de sempre. Os `.btn-3d-*` servem para usar fora dessa raiz.
+     Botões da loja. Retângulos de canto curto (como uma etiqueta), cor
+     chapada e nenhuma sombra: a cor e o peso da fonte dizem a hierarquia.
+     No toque afundam 1 px — a confirmação física, sem quique.
+     `.loja` é a raiz da vitrine (App.tsx); o painel admin mantém os botões
+     de sempre. Os `.btn-3d-*` levam o mesmo visual para fora dessa raiz.
      --------------------------------------------------------------------- */
   .loja :is(.btn-primary, .btn-accent, .btn-outline),
   .btn-3d-primary,
   .btn-3d-accent,
   .btn-3d-outline {
     min-height: 44px;
+    border-radius: 3px;
+    box-shadow: none;
+    translate: none;
     transition:
-      transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-      box-shadow 0.3s ease,
-      background-color 0.3s ease,
-      color 0.3s ease,
-      translate 0.3s ease;
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease,
+      transform 0.1s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .loja .btn-accent,
-  .btn-3d-accent {
-    background-image: linear-gradient(180deg, #ffdb45 0%, #f5c400 52%, #e3b400 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.6),
-      inset 0 -2px 0 rgba(120, 90, 0, 0.18),
-      0 4px 0 #b08a00,
-      0 12px 24px -10px rgba(245, 196, 0, 0.75);
+  .loja :is(.btn-primary, .btn-accent, .btn-outline):hover,
+  .btn-3d-primary:hover,
+  .btn-3d-accent:hover,
+  .btn-3d-outline:hover {
+    box-shadow: none;
+    translate: none;
   }
 
-  .loja .btn-primary,
-  .btn-3d-primary {
-    background-image: linear-gradient(180deg, #2b2b2b 0%, #121212 55%, #050505 100%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.16),
-      0 4px 0 #000,
-      0 14px 26px -12px rgba(0, 0, 0, 0.7);
+  .loja .btn-accent:not(:disabled):hover,
+  .btn-3d-accent:not(:disabled):hover {
+    background-color: #ffd21a;
   }
 
-  .loja .btn-outline,
-  .btn-3d-outline {
-    background-image: linear-gradient(180deg, #ffffff 0%, #f4f3ef 100%);
-    box-shadow:
-      inset 0 1px 0 #fff,
-      0 3px 0 rgba(10, 10, 10, 0.16),
-      0 10px 20px -14px rgba(0, 0, 0, 0.45);
-  }
-
-  .loja .btn-outline:hover {
-    background-image: none;
+  .loja .btn-primary:not(:disabled):hover,
+  .btn-3d-primary:not(:disabled):hover {
+    background-color: #262626;
   }
 
   .loja :is(.btn-primary, .btn-accent, .btn-outline):not(:disabled):active,
   .btn-3d-primary:not(:disabled):active,
   .btn-3d-accent:not(:disabled):active,
   .btn-3d-outline:not(:disabled):active {
-    transform: translateY(3px) scale(0.975);
-    transition-duration: 0.08s;
-  }
-
-  .loja .btn-accent:not(:disabled):active,
-  .btn-3d-accent:not(:disabled):active {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 2px 6px rgba(120, 90, 0, 0.25),
-      0 1px 0 #b08a00,
-      0 4px 10px -6px rgba(245, 196, 0, 0.6);
-  }
-
-  .loja .btn-primary:not(:disabled):active,
-  .btn-3d-primary:not(:disabled):active {
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.6),
-      0 1px 0 #000,
-      0 4px 10px -6px rgba(0, 0, 0, 0.6);
-  }
-
-  .loja .btn-outline:not(:disabled):active,
-  .btn-3d-outline:not(:disabled):active {
-    box-shadow:
-      inset 0 2px 5px rgba(0, 0, 0, 0.12),
-      0 1px 0 rgba(10, 10, 10, 0.16);
-  }
-
-  /* Vidro: painéis flutuantes (barra inferior, avisos, folhas). */
-  .vidro-escuro {
-    background: linear-gradient(180deg, rgba(28, 28, 28, 0.82), rgba(10, 10, 10, 0.88));
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    backdrop-filter: blur(20px) saturate(160%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-      0 18px 40px -16px rgba(0, 0, 0, 0.7);
-  }
-
-  .vidro-claro {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(250, 249, 245, 0.78));
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    backdrop-filter: blur(18px) saturate(160%);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 0 0 1px rgba(10, 10, 10, 0.06),
-      0 16px 36px -18px rgba(0, 0, 0, 0.45);
+    transform: translateY(1px);
   }
 }
 
-/* Espaço da barra de navegação inferior do celular (e do iPhone sem botão). */
+/* Altura da barra de navegação inferior do celular (mais a área do gesto do
+   iPhone) — o conteúdo ganha esse respiro embaixo e nada fica escondido. */
 :root {
-  --barra-inferior: calc(4.25rem + 12px + env(safe-area-inset-bottom, 0px));
+  --barra-inferior: calc(3.5rem + 1px + env(safe-area-inset-bottom, 0px));
 }
 
 @layer utilities {

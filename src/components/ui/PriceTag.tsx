@@ -20,7 +20,7 @@ export function PriceTag({ price, compareAtPrice, size = "sm" }: PriceTagProps) 
           <span className="text-sm text-neutral-400 line-through">
             {formatBRL(compareAtPrice)}
           </span>
-          <span className="rounded-full bg-brand-yellow px-2 py-0.5 text-xs font-bold text-brand-ink">
+          <span className="rounded-[2px] bg-brand-yellow px-1.5 py-0.5 text-xs font-bold text-brand-ink">
             -{percent}%
           </span>
         </>

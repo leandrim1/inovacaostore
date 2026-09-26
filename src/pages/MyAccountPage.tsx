@@ -284,14 +284,11 @@ export default function MyAccountPage() {
     <>
       <Seo title="Minha conta" description="Gerencie os dados da sua conta na Inovação Store." />
       <div className="container-page py-10 sm:py-14">
-        <div className="mb-3 flex items-center gap-2.5">
-          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
-          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Área do cliente</span>
-        </div>
+        <p className="rotulo mb-2 text-neutral-500">Área do cliente</p>
         <h1 className="section-title mb-8">Minha conta</h1>
 
         {/* Cabeçalho: quem está logado, em qual e-mail e desde quando. */}
-        <section className="mb-8 overflow-hidden rounded-3xl bg-brand-ink p-6 text-white sm:p-8">
+        <section className="mb-8 overflow-hidden rounded-md bg-brand-ink p-6 text-white sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               {/* O próprio avatar é o botão: clicar abre o seletor de foto. */}

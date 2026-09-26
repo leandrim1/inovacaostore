@@ -9,10 +9,10 @@ import { AnimatedSection } from "../ui/AnimatedSection";
 import { MobileProductCarousel } from "../mobile/MobileProductCarousel";
 
 /**
- * "Em destaque" é o palco da loja: fundo escuro com luz de cima e um piso em
- * perspectiva, como a vitrine iluminada de um showroom. No celular os
- * produtos passam num carrossel em perspectiva; no computador viram a grade
- * de sempre, com inclinação sob o mouse.
+ * "Em destaque": as peças que a loja escolheu, sem palco nem efeito — aqui o
+ * produto é o assunto. No celular passam numa faixa que o dedo arrasta (com
+ * a próxima peça aparecendo na borda, o convite para deslizar); no
+ * computador, a grade de catálogo.
  */
 export function FeaturedProducts() {
   const { data: products = [] } = useProducts({ featured: true, limit: 8 });
@@ -20,25 +20,24 @@ export function FeaturedProducts() {
 
   if (products.length === 0) return null;
 
+  const verTudo = (
+    <Link
+      to="/destaques"
+      className="group flex min-h-11 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-brand-ink underline-offset-4 hover:underline"
+    >
+      Ver tudo
+      <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+    </Link>
+  );
+
   return (
-    <AnimatedSection tom="escuro" piso className="py-14 sm:py-24">
+    <AnimatedSection tom="claro" className="py-14 sm:py-20">
       <div className="container-page">
         <SectionHeading
-          index="02"
-          eyebrow="Selecionados"
           title="Em destaque"
-          tone="dark"
-          className="!mb-0 sm:!mb-10"
           description="As peças mais desejadas da temporada, escolhidas a dedo para você."
-          action={
-            <Link
-              to="/destaques"
-              className="group flex min-h-11 items-center gap-1.5 font-display text-sm tracking-widest text-white hover:text-brand-yellow"
-            >
-              Ver tudo
-              <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          }
+          action={verTudo}
+          className="!mb-6 sm:!mb-12"
         />
       </div>
 
@@ -46,9 +45,9 @@ export function FeaturedProducts() {
         <MobileProductCarousel produtos={products} />
       ) : (
         <div className="container-page">
-          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 lg:grid-cols-4">
             {products.map((product, i) => (
-              <Reveal key={product.id} delay={(i % 4) * 0.05}>
+              <Reveal key={product.id} delay={(i % 4) * 0.04}>
                 <ProductCard product={product} />
               </Reveal>
             ))}

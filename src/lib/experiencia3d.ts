@@ -2,26 +2,26 @@ import { useSyncExternalStore } from "react";
 
 /**
  * Quanto de 3D este aparelho aguenta — decidido num lugar só, para a cena
- * WebGL, os cards, o carrossel e as transições nunca discordarem entre si.
+ * WebGL (hero e "Ver em 3D") e o resto da loja nunca discordarem entre si.
  *
  * O ponto de partida é o celular (a loja é mobile first); o computador é uma
  * expansão do mesmo sistema.
  *
  * - `nivel`
- *   - "alto": cena WebGL completa — partículas, sombras reais (no computador),
- *     resolução cheia. Celular topo de linha e computador com folga.
- *   - "medio": a mesma cena reduzida — menos partículas, sem sombras reais,
- *     resolução contida. Celular intermediário e iPhone.
+ *   - "alto": cena WebGL completa — sombras reais (no computador), resolução
+ *     cheia. Celular topo de linha e computador com folga.
+ *   - "medio": a mesma cena reduzida — sem sombras reais, resolução contida.
+ *     Celular intermediário e iPhone.
  *   - "baixo": sem WebGL. O produto 3D vira camadas em CSS (perspectiva,
  *     arrasto, giroscópio) e nada de Three.js é baixado. Aparelho fraco,
  *     economia de dados, navegador sem WebGL, "reduzir movimento", ou quando a
  *     cena não aguentou o FPS em tempo real.
  * - `toque`: o aparelho não tem mouse de verdade. Nenhuma função depende de
  *   hover: tudo que o mouse faz passando por cima, o toque faz tocando.
- * - `inclinacao`: cards que acompanham o ponteiro (só com mouse).
- * - `profundidade`: entradas e transições com perspectiva (CSS).
- * - `reduzido`: `prefers-reduced-motion` — sem rotação automática, sem
- *   partículas, sem giroscópio, só as transições essenciais.
+ * - `inclinacao`: efeitos de ponteiro (a vitrine do hero e a troca de foto
+ *   dos cards acompanham o mouse) — só com mouse.
+ * - `reduzido`: `prefers-reduced-motion` — sem WebGL, sem giroscópio, só as
+ *   transições essenciais.
  */
 export type Nivel3D = "alto" | "medio" | "baixo";
 
@@ -30,7 +30,6 @@ export interface Experiencia3D {
   webgl: boolean;
   toque: boolean;
   inclinacao: boolean;
-  profundidade: boolean;
   reduzido: boolean;
 }
 
@@ -39,7 +38,6 @@ const PADRAO_SERVIDOR: Experiencia3D = {
   webgl: false,
   toque: false,
   inclinacao: false,
-  profundidade: false,
   reduzido: true,
 };
 
@@ -130,7 +128,6 @@ function calcular(): Experiencia3D {
     webgl: nivel !== "baixo",
     toque: !mouse,
     inclinacao: mouse && !reduzido,
-    profundidade: !reduzido,
     reduzido,
   };
 }
@@ -186,19 +183,7 @@ export function rebaixarNivel3D(para: Nivel3D) {
 }
 
 /**
- * `transformTemplate` do framer-motion que acrescenta perspectiva à rotação —
- * mas só enquanto existe alguma transformação. Parado, o elemento volta a
- * `transform: none`: um `perspective()` esquecido no estilo faria dele o bloco
- * de contenção de qualquer filho `position: fixed` (um modal dentro de um
- * card revelado passaria a ficar preso ao card em vez de cobrir a tela).
- */
-export function comPerspectiva(distancia: number) {
-  return (_: unknown, gerado: string) =>
-    gerado && gerado !== "none" ? `perspective(${distancia}px) ${gerado}` : "none";
-}
-
-/**
- * Disparado quando o hero da home monta ou desmonta: o header fica em vidro
+ * Disparado quando o hero da home monta ou desmonta: o header fica no tom
  * escuro enquanto está por cima dele e precisa saber quando o hero chegou
  * (a home é carregada sob demanda, depois do header).
  */

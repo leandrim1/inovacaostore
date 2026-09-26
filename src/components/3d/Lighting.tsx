@@ -3,13 +3,12 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Entradas } from "./qualidade";
 
-const AMARELO = "#f5c400";
 
 /**
- * Mapa de reflexo feito na hora: alguns planos luminosos (softbox em cima,
- * rebatedor amarelo na lateral, preenchimento à direita) renderizados uma
- * única vez para um PMREM. O vidro e o metal refletem luz de estúdio sem
- * baixar HDR nenhum.
+ * Mapa de reflexo feito na hora: um estúdio de fotografia de produto
+ * (softbox em cima, rebatedores neutros nas laterais, parede ao fundo)
+ * renderizado uma única vez para um PMREM. Luz branca, sem cor: quem dá cor
+ * à cena é a própria peça.
  */
 export function EstudioDeLuz() {
   const get = useThree((s) => s.get);
@@ -29,10 +28,10 @@ export function EstudioDeLuz() {
       m.lookAt(0, 0, 0);
       estudio.add(m);
     };
-    luz("#ffffff", 3.2, [0, 6, 2], [12, 3]);
-    luz(AMARELO, 2.6, [-7, 0.5, 0], [3, 9]);
-    luz("#ffffff", 1.6, [7, 1, 4], [3, 6]);
-    luz("#fff3c4", 0.5, [0, -1, -9], [18, 6]);
+    luz("#ffffff", 2.6, [0, 6, 2], [12, 3]);
+    luz("#f4f1ea", 1.1, [-7, 0.5, 0], [3, 9]);
+    luz("#ffffff", 1.2, [7, 1, 4], [3, 6]);
+    luz("#d9d6cf", 0.35, [0, -1, -9], [18, 6]);
 
     const alvo = pmrem.fromScene(estudio, 0.03);
     scene.environment = alvo.texture;
@@ -53,9 +52,9 @@ export function EstudioDeLuz() {
 
 /**
  * Luz-chave que acompanha o gesto: o mouse no computador, o arrasto do dedo e
- * a inclinação do celular no toque. Mover o produto muda o brilho no vidro e
- * a sombra — é o que faz o objeto parecer iluminado de verdade. Um contraluz
- * amarelo desenha a borda.
+ * a inclinação do celular no toque. Girar a peça faz a luz correr pela
+ * superfície e a sombra mudar — é o que faz o objeto parecer iluminado de
+ * verdade. Um preenchimento baixo do lado oposto evita o verso "morto".
  */
 export function LuzesDinamicas({
   entradas,
@@ -80,9 +79,6 @@ export function LuzesDinamicas({
     const fy = py * 3 - gy * 1.6;
     s.position.x = THREE.MathUtils.damp(s.position.x, centro[0] + fx, 4, delta);
     s.position.y = THREE.MathUtils.damp(s.position.y, 1.5 + fy, 4, delta);
-    // Enquanto o dedo arrasta, a luz "acende" um pouco — resposta ao toque.
-    const alvoForca = 70 + (entradas.arrastando?.get() ?? 0) * 35;
-    s.intensity = THREE.MathUtils.damp(s.intensity, alvoForca, 5, delta);
     // O alvo do spot não está na cena, então a matriz dele é atualizada à mão.
     s.target.position.set(centro[0] + px * 1.2, centro[1], -2);
     s.target.updateMatrixWorld();
@@ -90,20 +86,20 @@ export function LuzesDinamicas({
 
   return (
     <>
-      <ambientLight intensity={0.35} />
+      <ambientLight intensity={0.45} />
       <spotLight
         ref={spot}
         position={[centro[0], 1.5, 6.5]}
         angle={0.55}
         penumbra={1}
-        intensity={70}
+        intensity={64}
         decay={2}
-        color="#fff6dc"
+        color="#fffaf0"
         castShadow={sombras}
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0004}
       />
-      <pointLight position={[centro[0] - 4, -2.5, -2]} intensity={30} color={AMARELO} decay={2} />
+      <directionalLight position={[centro[0] - 5, 1, -3]} intensity={0.35} color="#ffffff" />
     </>
   );
 }

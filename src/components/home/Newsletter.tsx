@@ -26,23 +26,22 @@ export function Newsletter() {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover object-[38%_center] sm:object-[50%_40%]"
       />
-      <div className="absolute inset-0 bg-black/55" />
+      <div className="absolute inset-0 bg-black/65" />
 
       <div className="container-page relative z-10 grid gap-10 sm:grid-cols-2 sm:items-center sm:gap-16">
         <Reveal>
-          <div className="mb-4 flex items-center gap-2.5">
-            <span className="h-px w-8 bg-brand-yellow" aria-hidden />
-            <span className="font-display text-xs tracking-[0.4em] text-brand-yellow">Fique por dentro</span>
-          </div>
-          <h2 className="section-title text-white">Ofertas exclusivas no seu e-mail</h2>
-          <p className="mt-4 max-w-md text-white/60">
+          <p className="rotulo text-white/55">Fique por dentro</p>
+          <h2 className="mt-3 font-display text-[clamp(2.6rem,10vw,4.75rem)] leading-[0.86] text-white">
+            Ofertas exclusivas no seu e-mail
+          </h2>
+          <p className="mt-4 max-w-md text-white/65">
             Cadastre-se e receba lançamentos, promoções e cupons exclusivos em primeira mão.
           </p>
         </Reveal>
 
         <Reveal delay={0.1}>
           {submitted ? (
-            <p className="w-fit border border-brand-yellow bg-brand-yellow/10 px-6 py-4 font-display text-sm tracking-widest text-brand-yellow">
+            <p className="w-fit border border-white/25 px-5 py-4 text-sm font-medium text-white">
               Cadastro realizado com sucesso!
             </p>
           ) : (
@@ -53,7 +52,7 @@ export function Newsletter() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Seu melhor e-mail"
-                className="w-full flex-1 border border-white/20 bg-black/30 px-5 py-3.5 text-sm text-white outline-none placeholder:text-white/50 focus:border-brand-yellow"
+                className="min-h-12 w-full flex-1 rounded-[3px] border border-white/25 bg-black/40 px-4 text-[15px] text-white outline-none placeholder:text-white/50 focus:border-white"
               />
               <button type="submit" className="btn-accent shrink-0">
                 Quero receber

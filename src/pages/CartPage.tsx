@@ -61,10 +61,7 @@ export default function CartPage() {
     <>
       <Seo title="Carrinho" description="Revise os itens do seu carrinho na Inovação Store." />
       <div className="container-page py-10 sm:py-14">
-        <div className="mb-3 flex items-center gap-2.5">
-          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
-          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Sua sacola</span>
-        </div>
+        <p className="rotulo mb-2 text-neutral-500">Sua sacola</p>
         <h1 className="section-title mb-8">Meu carrinho</h1>
 
         {items.length === 0 ? (
