@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSiteSettings, type Banner } from "../../hooks/useSiteSettings";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { PositionedImage } from "../ui/PositionedImage";
+import { Tilt3D } from "../ui/Tilt3D";
 import { isDefaultImageSettings } from "../../lib/imageSettings";
 
 /**
@@ -119,7 +120,9 @@ export function Banners() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <BannerSlide banner={atual} />
+              <Tilt3D className="rounded-2xl" max={2} sombra>
+                <BannerSlide banner={atual} />
+              </Tilt3D>
             </motion.div>
           </AnimatePresence>
 

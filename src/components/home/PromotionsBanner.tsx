@@ -5,6 +5,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, Flame, Zap } from "lucide-react"
 import { usePromotions, type Promotion } from "../../hooks/usePromotions";
 import { useCountdown } from "../../hooks/useCountdown";
 import { PositionedImage } from "../ui/PositionedImage";
+import { Tilt3D } from "../ui/Tilt3D";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { isDefaultImageSettings } from "../../lib/imageSettings";
 
@@ -310,7 +311,11 @@ export function PromotionsBanner() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <PromotionSlide promotion={current} />
+              {/* Inclinação discreta: é uma peça grande, 2° bastam para o
+                  banner parecer uma placa iluminada na parede da loja. */}
+              <Tilt3D className="rounded-2xl" max={2} sombra>
+                <PromotionSlide promotion={current} />
+              </Tilt3D>
             </motion.div>
           </AnimatePresence>
 

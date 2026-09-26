@@ -30,6 +30,7 @@
   --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
   --animate-cta-pulse: cta-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-tick: tick 1s ease-out infinite;
+  --animate-poeira: poeira 10s ease-in-out infinite;
 }
 
 @keyframes marquee {
@@ -131,6 +132,22 @@
   70%,
   100% {
     box-shadow: 0 0 0 16px rgba(245, 196, 0, 0);
+  }
+}
+
+/* Poeira luminosa do hero sem WebGL: sobe devagar, acende e apaga. */
+@keyframes poeira {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  30%,
+  70% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate3d(12px, -46px, 0) scale(1);
   }
 }
 

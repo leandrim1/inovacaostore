@@ -9,7 +9,8 @@ E-commerce completo para loja de roupas masculinas: frontend em **React + TypeSc
 - React Router (rotas amigáveis: `/categoria/:slug`, `/produto/:slug`, etc.)
 - TanStack React Query (consumo da API, cache e invalidação)
 - Tailwind CSS v4
-- Framer Motion (animações sutis)
+- Framer Motion (animações sutis, inclinação 3D e entradas com profundidade)
+- Three.js + React Three Fiber + Drei (vitrine 3D do hero, carregada sob demanda)
 - Lucide React (ícones)
 
 **Backend**
@@ -139,6 +140,15 @@ src/
   pages/                   # páginas da loja (Home, categoria, produto, carrinho, checkout, login,
                             # cadastro, verificar-email, esqueci/redefinir senha, minha conta, meus pedidos…)
 ```
+
+## Experiência 3D
+
+A camada 3D complementa a loja e nunca é necessária para comprar: sem ela, tudo continua funcionando igual.
+
+- **Vitrine do hero** (`src/components/three/VitrineHero.tsx`): até 3 produtos em destaque flutuam em painéis de vidro, com anel de luz, cabide, partículas e um spot que segue o mouse (luz e sombras mudam com ele). Clicar num painel abre o produto. É o único módulo que importa Three.js e vira um chunk separado, baixado só depois que a página carrega e o navegador fica ocioso (`src/components/home/VitrineHero3D.tsx`); para de renderizar quando o hero sai da tela.
+- **Nível de cada aparelho** (`src/lib/experiencia3d.ts`): `full` em computador com mouse (≥ 1280 px), `lite` em telas ≥ 1024 px ou hardware intermediário (menos partículas, sem sombras, resolução menor) e `off` em celular, tablet em pé, "reduzir movimento", economia de dados, aparelho fraco ou sem WebGL — nesses casos o Three.js nem é baixado. Para testar um nível, rode no console do navegador `localStorage.setItem("inovacao:3d", "full" | "lite" | "off")` e recarregue.
+- **Profundidade em CSS** (sem WebGL): `Tilt3D` inclina cards de produto, categorias, banners, a foto da página de produto e o feed do Instagram sob o mouse, com reflexo e sombra dinâmica; `Reveal` faz as seções entrarem com perspectiva; o hero recua ao rolar; o header é de vidro (escuro sobre o hero, claro no resto).
+- Tudo respeita `prefers-reduced-motion`. Nada disso carrega arquivo externo (compatível com a CSP do `vercel.json`).
 
 ## Como funciona o catálogo (sem dados fixos no frontend)
 

@@ -10,6 +10,7 @@ import { StarRating } from "../components/ui/StarRating";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
 import { PlaceholderImage } from "../components/ui/PlaceholderImage";
 import { PositionedImage } from "../components/ui/PositionedImage";
+import { Tilt3D } from "../components/ui/Tilt3D";
 import { ProductCard } from "../components/product/ProductCard";
 import { Reveal } from "../components/ui/Reveal";
 import { useCart } from "../context/CartContext";
@@ -108,18 +109,21 @@ export default function ProductPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
-            <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-brand-ink/10 bg-neutral-100">
-              {product.imageDetails[activeImage] ? (
-                <PositionedImage
-                  src={product.imageDetails[activeImage].url}
-                  alt={product.name}
-                  desktopSettings={product.imageDetails[activeImage].desktopSettings}
-                  mobileSettings={product.imageDetails[activeImage].mobileSettings}
-                />
-              ) : (
-                <PlaceholderImage label="Em breve" />
-              )}
-            </div>
+            {/* A foto principal inclina sob o mouse como uma peça na mão. */}
+            <Tilt3D className="rounded-2xl" max={4} sombra>
+              <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-brand-ink/10 bg-neutral-100">
+                {product.imageDetails[activeImage] ? (
+                  <PositionedImage
+                    src={product.imageDetails[activeImage].url}
+                    alt={product.name}
+                    desktopSettings={product.imageDetails[activeImage].desktopSettings}
+                    mobileSettings={product.imageDetails[activeImage].mobileSettings}
+                  />
+                ) : (
+                  <PlaceholderImage label="Em breve" />
+                )}
+              </div>
+            </Tilt3D>
             {product.imageDetails.length > 1 && (
               <div className="flex gap-2">
                 {product.imageDetails.map((img, i) => (

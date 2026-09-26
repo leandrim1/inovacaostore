@@ -28,9 +28,13 @@ export function Benefits() {
           const Icon = benefitIcon(b.icon);
           return (
             <Reveal key={i} delay={i * 0.05} className="min-w-0">
-              <div className="flex flex-col items-center gap-2.5 text-center lg:items-start lg:px-6 lg:text-left lg:first:pl-0">
-                <div className="flex items-center gap-2.5">
-                  <Icon size={20} strokeWidth={1.75} className="text-brand-yellow-dark" />
+              <div className="group flex flex-col items-center gap-2.5 text-center lg:items-start lg:px-6 lg:text-left lg:first:pl-0">
+                <div className="flex items-center gap-3">
+                  {/* Ícone em "tecla" de relevo: luz de cima, sombra embaixo — e
+                      no hover ela gira em perspectiva e sobe da superfície. */}
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-white to-neutral-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.95),inset_0_-2px_0_rgba(10,10,10,0.06),0_12px_20px_-12px_rgba(10,10,10,0.45),0_2px_4px_-2px_rgba(10,10,10,0.18)] ring-1 ring-brand-ink/10 transition-transform duration-500 ease-out group-hover:[transform:perspective(420px)_rotateX(14deg)_rotateY(-14deg)_translateY(-3px)] motion-reduce:transition-none motion-reduce:group-hover:[transform:none]">
+                    <Icon size={20} strokeWidth={1.75} className="text-brand-yellow-dark drop-shadow-[0_1px_0_rgba(255,255,255,0.9)]" />
+                  </span>
                   <span className="font-mono text-[11px] tabular-nums text-neutral-400">
                     {String(i + 1).padStart(2, "0")}
                   </span>

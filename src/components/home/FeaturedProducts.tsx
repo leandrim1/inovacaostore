@@ -11,7 +11,8 @@ export function FeaturedProducts() {
   if (products.length === 0) return null;
 
   return (
-    <section className="bg-white py-16 sm:py-24">
+    // Um spot amarelo bem suave vindo de cima: a vitrine iluminada da loja.
+    <section className="bg-white bg-[radial-gradient(ellipse_65%_40%_at_50%_0%,rgba(245,196,0,0.09),transparent_70%)] py-16 sm:py-24">
       <div className="container-page">
         <SectionHeading
           index="02"
