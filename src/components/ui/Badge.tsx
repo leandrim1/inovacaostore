@@ -19,7 +19,7 @@ const STYLES: Record<BadgeProps["tag"], string> = {
 export function Badge({ tag }: BadgeProps) {
   return (
     <span
-      className={`rounded-[2px] px-2 py-1 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] ${STYLES[tag]}`}
+      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${STYLES[tag]}`}
     >
       {LABELS[tag]}
     </span>

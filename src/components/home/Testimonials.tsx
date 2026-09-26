@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { Link } from "react-router-dom";
-import { BadgeCheck, ChevronLeft, ChevronRight, PenLine } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Heart, PenLine } from "lucide-react";
 import {
   useTestimonials,
   useTestimonialEligibility,
@@ -10,8 +10,6 @@ import { useDragToScroll } from "../../hooks/useDragToScroll";
 import { StarRating } from "../ui/StarRating";
 import { Reveal } from "../ui/Reveal";
 import { TestimonialFormModal } from "./TestimonialFormModal";
-import { AnimatedSection } from "../ui/AnimatedSection";
-import { SectionHeading } from "../ui/SectionHeading";
 
 /** Explica ao cliente o que falta para ele poder avaliar a loja. */
 function SubmitArea({ onOpen }: { onOpen: () => void }) {
@@ -48,6 +46,15 @@ function SubmitArea({ onOpen }: { onOpen: () => void }) {
   );
 }
 
+/** "Lucas Almeida" → "LA"; "Lucas" → "L". */
+function iniciais(nome: string) {
+  const partes = nome.trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return "?";
+  const primeira = partes[0][0];
+  const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
+  return (primeira + ultima).toUpperCase();
+}
+
 const MES_ANO = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
 
 /** "setembro de 2026" → "Setembro de 2026". */
@@ -63,11 +70,11 @@ function mesAno(iso: string) {
  * e o 7º abre a próxima "página" à direita. No tablet a página é 2×2 e no
  * celular é uma fileira só.
  *
- * Exatamente 4 no computador viram uma fileira só de 4: em 3 + 1, o quarto
- * cartão ficava sozinho num canto.
+ * Exatamente 4 no computador viram um bloco 2×2 centralizado: em 3 + 1, o
+ * quarto cartão ficava sozinho num canto.
  */
 function posicao(i: number, total: number): CSSProperties {
-  const colunasLg = total === 4 ? 4 : 3;
+  const colunasLg = total === 4 ? 2 : 3;
   const sm = { pagina: Math.floor(i / 4), k: i % 4 };
   const lg = { pagina: Math.floor(i / (colunasLg * 2)), k: i % (colunasLg * 2) };
   return {
@@ -95,7 +102,7 @@ function Citacao({ texto }: { texto: string }) {
   }, [aberto, texto]);
 
   return (
-    <div className="mb-5 mt-4">
+    <div className="mt-5">
       <blockquote
         ref={ref}
         className={`break-words text-[17px] leading-snug text-brand-ink sm:text-lg ${aberto ? "" : "line-clamp-5"}`}
@@ -118,25 +125,37 @@ function Citacao({ texto }: { texto: string }) {
 
 function CartaoDepoimento({ t }: { t: Testimonial }) {
   return (
-    <figure className="flex w-full flex-col rounded-[3px] border border-brand-ink/10 bg-white p-5 sm:p-6">
-      <StarRating rating={t.rating} size={12} />
+    <figure className="flex w-full flex-col rounded-2xl bg-white p-5 shadow-[0_12px_32px_-14px_rgba(10,10,10,0.22)] ring-1 ring-black/[0.05] sm:p-6">
+      <figcaption className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-ink font-display text-sm tracking-wide text-brand-yellow"
+        >
+          {iniciais(t.name)}
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-semibold text-brand-ink">{t.name}</span>
+          {t.city && <span className="block truncate text-xs text-neutral-500">{t.city}</span>}
+          <span className="mt-1 block">
+            <StarRating rating={t.rating} size={12} />
+          </span>
+        </span>
+      </figcaption>
 
       <Citacao texto={t.quote} />
 
-      <figcaption className="mt-auto flex items-end justify-between gap-3 border-t border-brand-ink/10 pt-4 text-xs">
-        <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-brand-ink">{t.name}</span>
-          <span className="block truncate text-neutral-500">
-            {[t.city, mesAno(t.createdAt)].filter(Boolean).join(" · ")}
-          </span>
+      {t.verified && (
+        <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-brand-ink/80">
+          <BadgeCheck size={14} className="shrink-0 text-brand-yellow-dark" aria-hidden />
+          Compra verificada
+        </p>
+      )}
+
+      <p className="mt-auto pt-5">
+        <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium text-neutral-600">
+          {mesAno(t.createdAt)}
         </span>
-        {t.verified && (
-          <span className="flex shrink-0 items-center gap-1 font-medium text-brand-ink/80">
-            <BadgeCheck size={14} className="text-brand-yellow-dark" aria-hidden />
-            Compra verificada
-          </span>
-        )}
-      </figcaption>
+      </p>
     </figure>
   );
 }
@@ -228,14 +247,18 @@ function CarrosselDepoimentos({ items }: { items: Testimonial[] }) {
 
   return (
     <div className="relative">
+      {/* Brilho amarelo por trás dos cartões (o lilás da referência, na cor da loja). */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-[12%] inset-y-[18%] rounded-full bg-brand-yellow/20 blur-3xl"
+      />
+
       <ul
         ref={trilhaRef}
         id={trilhaId}
         aria-label="Depoimentos de clientes"
         tabIndex={sobra ? 0 : undefined}
-        className={`relative -mx-4 -my-6 grid auto-cols-[85%] grid-flow-col justify-center-safe gap-4 overflow-x-auto overscroll-x-contain px-4 py-6 [scrollbar-width:none] snap-x snap-mandatory scroll-px-4 focus-visible:outline-offset-[-4px] data-[dragging=true]:cursor-grabbing data-[dragging=true]:snap-none sm:-mx-3 sm:auto-cols-[calc((100%_-_1rem)/2)] sm:px-3 sm:scroll-px-3 [&::-webkit-scrollbar]:hidden ${
-          items.length === 4 ? "lg:auto-cols-[calc((100%_-_3rem)/4)]" : "lg:auto-cols-[calc((100%_-_2rem)/3)]"
-        } ${
+        className={`relative -mx-4 -my-6 grid auto-cols-[85%] grid-flow-col justify-center-safe gap-4 overflow-x-auto overscroll-x-contain px-4 py-6 [scrollbar-width:none] snap-x snap-mandatory scroll-px-4 focus-visible:outline-offset-[-4px] data-[dragging=true]:cursor-grabbing data-[dragging=true]:snap-none sm:-mx-3 sm:auto-cols-[calc((100%_-_1rem)/2)] sm:px-3 sm:scroll-px-3 lg:auto-cols-[calc((100%_-_2rem)/3)] [&::-webkit-scrollbar]:hidden ${
           sobra ? "cursor-grab select-none" : ""
         }`}
       >
@@ -251,35 +274,33 @@ function CarrosselDepoimentos({ items }: { items: Testimonial[] }) {
       </ul>
 
       {sobra && (
-        <div className="mt-6 flex items-center gap-4">
-          <div aria-hidden="true" className="relative h-0.5 flex-1 overflow-hidden bg-brand-ink/10">
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => andar(-1)}
+            disabled={noInicio}
+            aria-controls={trilhaId}
+            aria-label="Depoimentos anteriores"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-ink shadow-sm ring-1 ring-brand-ink/10 transition-colors hover:bg-brand-ink hover:text-white disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <div aria-hidden="true" className="relative h-1 w-24 overflow-hidden rounded-full bg-brand-ink/10 sm:w-32">
             <div
-              className="absolute inset-y-0 bg-brand-ink"
+              className="absolute inset-y-0 rounded-full bg-brand-ink"
               style={{ width: `${visivel * 100}%`, left: `${progresso * (1 - visivel) * 100}%` }}
             />
           </div>
-          <div className="flex">
-            <button
-              type="button"
-              onClick={() => andar(-1)}
-              disabled={noInicio}
-              aria-controls={trilhaId}
-              aria-label="Depoimentos anteriores"
-              className="flex h-11 w-11 items-center justify-center border border-brand-ink/20 text-brand-ink transition-colors hover:bg-brand-ink hover:text-white disabled:pointer-events-none disabled:opacity-30"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => andar(1)}
-              disabled={noFim}
-              aria-controls={trilhaId}
-              aria-label="Próximos depoimentos"
-              className="-ml-px flex h-11 w-11 items-center justify-center border border-brand-ink/20 text-brand-ink transition-colors hover:bg-brand-ink hover:text-white disabled:pointer-events-none disabled:opacity-30"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => andar(1)}
+            disabled={noFim}
+            aria-controls={trilhaId}
+            aria-label="Próximos depoimentos"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-ink shadow-sm ring-1 ring-brand-ink/10 transition-colors hover:bg-brand-ink hover:text-white disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       )}
     </div>
@@ -297,33 +318,36 @@ export function Testimonials() {
   if (testimonials.length === 0) return null;
 
   return (
-    <AnimatedSection tom="creme" className="py-14 sm:py-20">
+    <section className="bg-white py-16 sm:py-24">
       <div className="container-page">
-        <SectionHeading
-          title="O que dizem nossos clientes"
-          description="Histórias reais de quem já veste Inovação Store."
-          action={
-            averageRating !== null && (
-              <div className="text-right">
-                <p className="font-display text-5xl leading-[0.8] text-brand-ink sm:text-6xl">
+        <Reveal className="mx-auto mb-10 flex max-w-2xl flex-col items-center text-center sm:mb-14">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-brand-ink shadow-sm ring-1 ring-black/5">
+            <Heart size={13} className="fill-brand-yellow text-brand-yellow" aria-hidden />
+            <span className="font-mono text-[11px] tabular-nums text-neutral-400">03</span>
+            Depoimentos
+          </span>
+          <h2 className="section-title mt-4">O que dizem nossos clientes</h2>
+          <p className="mt-4 text-sm text-neutral-500 sm:text-base">
+            Histórias reais de quem já veste Inovação Store.
+          </p>
+          {averageRating !== null && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-sm text-neutral-500">
+              <StarRating rating={averageRating} size={14} />
+              <span>
+                <strong className="font-display text-base text-brand-ink">
                   {averageRating.toFixed(1).replace(".", ",")}
-                </p>
-                <div className="mt-2 flex flex-col items-end gap-1 text-xs text-neutral-500">
-                  <StarRating rating={averageRating} size={12} />
-                  <span>
-                    de média · {testimonials.length} {testimonials.length === 1 ? "avaliação" : "avaliações"}
-                  </span>
-                </div>
-              </div>
-            )
-          }
-        />
+                </strong>{" "}
+                de média · {testimonials.length} {testimonials.length === 1 ? "avaliação" : "avaliações"}
+              </span>
+            </div>
+          )}
+        </Reveal>
 
         <Reveal>
           <CarrosselDepoimentos items={testimonials} />
         </Reveal>
 
-        <div className="mt-8">
+        <div className="mt-10 flex justify-center text-center">
           <SubmitArea onOpen={() => setIsFormOpen(true)} />
         </div>
       </div>
@@ -333,6 +357,6 @@ export function Testimonials() {
         onClose={() => setIsFormOpen(false)}
         suggestedName={eligibility?.suggestedName ?? null}
       />
-    </AnimatedSection>
+    </section>
   );
 }

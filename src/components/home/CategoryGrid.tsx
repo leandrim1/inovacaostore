@@ -1,98 +1,75 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useCategories } from "../../hooks/useCategories";
+import { PlaceholderImage } from "../ui/PlaceholderImage";
+import { Reveal } from "../ui/Reveal";
 import { SectionHeading } from "../ui/SectionHeading";
-import { AnimatedSection } from "../ui/AnimatedSection";
 
-/**
- * Categorias como um índice de revista: o nome de cada linha em letra grande,
- * uma régua entre elas e a foto de capa pequena ao lado. Tipografia no lugar
- * de mais uma grade de cartões — e nenhuma categoria sem foto vira um bloco
- * vazio.
- *
- * No computador a foto sai da linha e vai para um quadro grande à direita,
- * que troca conforme o mouse passa pelos nomes (e pelo foco do teclado).
- */
 export function CategoryGrid() {
   // A capa de cada categoria vem pronta de /api/categories. Antes daqui saía
   // um `useProducts()` SEM filtro: a home baixava o catálogo inteiro — com
   // imagens, variações e categoria de cada produto — só para achar uma foto
   // por categoria.
   const { data: categories = [] } = useCategories();
-  const primeiraComFoto = categories.find((c) => c.coverImage)?.slug ?? null;
-  const [apontada, setApontada] = useState<string | null>(null);
-  const emFoco = categories.find((c) => c.slug === (apontada ?? primeiraComFoto));
 
   return (
-    <AnimatedSection id="categorias" tom="creme" className="py-14 sm:py-20">
-      <div className="container-page">
-        <SectionHeading
-          title="Categorias"
-          description="Nossa seleção completa de peças masculinas nacionais e importadas, organizada por estilo."
-        />
+    <section id="categorias" className="container-page py-16 sm:py-24">
+      <SectionHeading
+        index="01"
+        eyebrow="Explore"
+        title="Categorias"
+        description="Nossa seleção completa de peças masculinas nacionais e importadas, organizada por estilo."
+      />
 
-        <div className="grid gap-10 lg:grid-cols-12">
-          <ul className="border-t border-brand-ink/15 lg:col-span-7" onMouseLeave={() => setApontada(null)}>
-            {categories.map((cat) => (
-              <li key={cat.slug} className="border-b border-brand-ink/15">
-                <Link
-                  to={`/categoria/${cat.slug}`}
-                  onMouseEnter={() => setApontada(cat.slug)}
-                  onFocus={() => setApontada(cat.slug)}
-                  className="group flex min-h-[84px] items-center gap-4 py-2.5 [-webkit-tap-highlight-color:transparent] active:bg-brand-ink/[0.03] sm:min-h-[104px]"
-                >
-                  <span className="min-w-0 flex-1 font-display text-[clamp(2.4rem,11vw,4.75rem)] leading-none text-brand-ink transition-transform duration-300 ease-out lg:group-hover:translate-x-3">
-                    {cat.name}
-                  </span>
-                  {cat.coverImage && (
-                    <img
-                      src={cat.coverImage}
-                      alt=""
-                      loading="lazy"
-                      className="h-16 w-12 shrink-0 rounded-[2px] object-cover sm:h-20 sm:w-16 lg:hidden"
-                    />
-                  )}
-                  <ArrowUpRight
-                    size={22}
-                    strokeWidth={1.6}
-                    aria-hidden
-                    className="shrink-0 text-brand-ink/40 transition-colors group-hover:text-brand-ink"
-                  />
-                </Link>
-              </li>
-            ))}
-          </ul>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:auto-rows-[230px]">
+        {categories.map((cat, i) => {
+          const featured = i === 0;
+          const image = cat.coverImage;
 
-          {/* Quadro do computador: a capa da categoria apontada, com a mesma
-              altura da lista ao lado. */}
-          <div className="relative hidden min-h-[360px] lg:col-span-5 lg:block">
-            <div className="absolute inset-0 overflow-hidden rounded-[3px] bg-neutral-200">
-              <AnimatePresence initial={false}>
-                {emFoco?.coverImage && (
-                  <motion.img
-                    key={emFoco.slug}
-                    src={emFoco.coverImage}
-                    alt={emFoco.name}
+          return (
+            <Reveal key={cat.slug} delay={i * 0.05} className={featured ? "col-span-2 lg:row-span-2" : ""}>
+              <Link
+                to={`/categoria/${cat.slug}`}
+                className={`group relative flex h-full w-full flex-col justify-end overflow-hidden rounded-2xl bg-neutral-900 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-brand-yellow after:transition-transform after:duration-300 hover:after:scale-x-100 ${
+                  featured ? "aspect-[16/11] sm:aspect-[21/9] lg:aspect-auto" : "aspect-[4/5]"
+                }`}
+              >
+                {image ? (
+                  <img
+                    src={image}
+                    alt={cat.name}
                     loading="lazy"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                   />
+                ) : (
+                  <div className="absolute inset-0">
+                    <PlaceholderImage />
+                  </div>
                 )}
-              </AnimatePresence>
-              {emFoco && (
-                <span className="absolute bottom-0 left-0 bg-brand-ink px-3 py-2 font-display text-lg tracking-[0.04em] text-white">
-                  {emFoco.name}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+
+                <div className="relative flex items-end justify-between gap-3 p-4 sm:p-6">
+                  <div>
+                    <span className="font-mono text-[11px] tabular-nums text-white/45">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3
+                      className={`font-display leading-none text-white ${
+                        featured ? "mt-1.5 text-3xl sm:text-4xl lg:text-5xl" : "mt-1 text-xl sm:text-2xl"
+                      }`}
+                    >
+                      {cat.name}
+                    </h3>
+                  </div>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/25 text-white transition-all duration-300 group-hover:border-brand-yellow group-hover:bg-brand-yellow group-hover:text-brand-ink">
+                    <ArrowUpRight size={16} />
+                  </span>
+                </div>
+              </Link>
+            </Reveal>
+          );
+        })}
       </div>
-    </AnimatedSection>
+    </section>
   );
 }

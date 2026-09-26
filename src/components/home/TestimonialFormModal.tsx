@@ -48,7 +48,7 @@ export function TestimonialFormModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-brand-ink/60 p-4 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

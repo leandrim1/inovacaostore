@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Menu, Search, User, UserPlus, ShoppingBag, ChevronDown, PackageSearch, LogOut } from "lucide-react";
 import { Logo } from "../ui/Logo";
 import { useCategories } from "../../hooks/useCategories";
@@ -9,19 +9,13 @@ import { useAuth } from "../../context/AuthContext";
 import { MobileMenu } from "./MobileMenu";
 import { SearchOverlay } from "./SearchOverlay";
 import { UserAvatar } from "../account/UserAvatar";
-import { EVENTO_HERO } from "../../lib/experiencia3d";
-import { abrirPainel, fecharPainel, usePainel } from "../../lib/paineis";
-import { useQuiqueDoCarrinho } from "../../hooks/useQuiqueDoCarrinho";
 
 const CATEGORIES_PER_PAGE = 5;
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [sobreHero, setSobreHero] = useState(false);
-  const { pathname } = useLocation();
-  const painel = usePainel();
-  const carrinhoRef = useRef<HTMLSpanElement>(null);
-  useQuiqueDoCarrinho(carrinhoRef);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [categoryPage, setCategoryPage] = useState(0);
   const { itemCount, openCart } = useCart();
@@ -30,10 +24,10 @@ export function Header() {
   const navigate = useNavigate();
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
-  // Fecha o menu da conta ao clicar fora ou apertar Esc — ouvindo o documento
-  // em vez de pôr um `fixed inset-0` invisível atrás do menu: qualquer filtro
-  // no header (como o desfoque que ele já teve) faz dele o bloco de contenção
-  // dos filhos `fixed`, e esse fundo passaria a cobrir só a faixa do topo.
+  // Fecha o menu da conta ao clicar fora ou apertar Esc. O padrão anterior era
+  // um `fixed inset-0` invisível atrás do menu, mas o `backdrop-blur-md` do
+  // header faz dele o bloco de contenção dos filhos `fixed` — esse fundo
+  // cobria só a faixa do cabeçalho, então clicar na página não fechava nada.
   useEffect(() => {
     if (!isAccountMenuOpen) return;
     function onPointerDown(e: PointerEvent) {
@@ -69,48 +63,20 @@ export function Header() {
     navigate("/");
   }
 
-  // Sobre o hero e as seções escuras (a faixa de benefícios, a newsletter),
-  // o header troca para o tom escuro com texto claro. As seções escuras se
-  // marcam com `data-cabecalho-escuro`.
   useEffect(() => {
     function onScroll() {
       setIsScrolled(window.scrollY > 12);
-      const linha = 72;
-      let escura = false;
-      document.querySelectorAll("[data-cabecalho-escuro]").forEach((el) => {
-        const caixa = el.getBoundingClientRect();
-        if (caixa.top < linha && caixa.bottom > linha) escura = true;
-      });
-      setSobreHero(escura);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    window.addEventListener(EVENTO_HERO, onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      window.removeEventListener(EVENTO_HERO, onScroll);
-    };
-  }, [pathname]);
-
-  const escuro = sobreHero;
-  const hoverFundo = escuro ? "hover:bg-white/10" : "hover:bg-neutral-100";
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <>
-      {/* Chapado, sem vidro: no topo do hero ele é transparente sobre a foto;
-          rolando por cima de uma seção escura vira preto; no resto, creme com
-          uma régua fina embaixo. */}
       <header
-        className={`sticky top-0 z-50 border-b transition-[background-color,border-color,color] duration-300 ${
-          escuro
-            ? isScrolled
-              ? "border-white/10 bg-brand-ink text-white"
-              : "border-white/10 bg-transparent text-white"
-            : isScrolled
-              ? "border-brand-ink/10 bg-brand-cream text-brand-ink"
-              : "border-transparent bg-brand-cream text-brand-ink"
+        className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur-md transition-shadow duration-300 ${
+          isScrolled ? "border-brand-ink/10 shadow-[0_1px_0_rgba(0,0,0,0.04),0_12px_24px_-20px_rgba(0,0,0,0.35)]" : "border-transparent"
         }`}
       >
         {/* No desktop o header solta a largura máxima do container e vai de
@@ -120,15 +86,15 @@ export function Header() {
         <div className="container-page relative flex h-16 items-center justify-between gap-4 sm:h-20 lg:max-w-none lg:px-10">
           <button
             type="button"
-            onClick={() => abrirPainel("menu")}
+            onClick={() => setIsMenuOpen(true)}
             aria-label="Abrir menu"
-            className={`grid h-11 w-11 place-items-center rounded-full transition-colors lg:hidden ${hoverFundo}`}
+            className="rounded-full p-2 hover:bg-neutral-100 lg:hidden"
           >
             <Menu size={22} />
           </button>
 
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:static lg:translate-x-0 lg:translate-y-0">
-            <Logo size={40} tone={escuro ? "dark" : "light"} />
+            <Logo size={40} />
           </div>
 
           {/* Centralizado no meio da PÁGINA, não no vão entre a logo e as
@@ -153,14 +119,10 @@ export function Header() {
                     key={cat.slug}
                     to={`/categoria/${cat.slug}`}
                     className={({ isActive }) =>
-                      `relative shrink-0 whitespace-nowrap py-2 font-display text-sm tracking-widest transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:transition-all after:duration-300 ${
-                        escuro ? "after:bg-brand-yellow" : "after:bg-brand-yellow-dark"
-                      } ${
+                      `relative shrink-0 whitespace-nowrap py-2 font-display text-sm tracking-widest transition-colors duration-300 after:absolute after:-bottom-0.5 after:left-0 after:h-px after:bg-brand-yellow-dark after:transition-all after:duration-300 ${
                         isActive
-                          ? `${escuro ? "text-white" : "text-brand-ink"} after:w-full`
-                          : escuro
-                            ? "text-white/70 after:w-0 hover:text-white hover:after:w-full"
-                            : "text-brand-ink/60 after:w-0 hover:text-brand-ink hover:after:w-full"
+                          ? "text-brand-ink after:w-full"
+                          : "text-brand-ink/60 after:w-0 hover:text-brand-ink hover:after:w-full"
                       }`
                     }
                   >
@@ -172,29 +134,11 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* No celular busca e carrinho moram na barra inferior (alcance do
-                polegar); aqui em cima fica só a conta. */}
-            <Link
-              to={isAuthenticated ? "/minha-conta" : "/login"}
-              aria-label={isAuthenticated ? "Minha conta" : "Entrar na conta"}
-              className={`grid h-11 w-11 place-items-center rounded-full transition-colors lg:hidden ${hoverFundo}`}
-            >
-              {isAuthenticated && user ? (
-                <UserAvatar
-                  name={user.name}
-                  avatarUrl={user.avatarUrl}
-                  letras={1}
-                  className="h-8 w-8 bg-brand-yellow text-xs font-bold text-brand-ink"
-                />
-              ) : (
-                <User size={21} />
-              )}
-            </Link>
             <button
               type="button"
-              onClick={() => abrirPainel("busca")}
+              onClick={() => setIsSearchOpen(true)}
               aria-label="Buscar"
-              className={`hidden rounded-full p-2.5 transition-colors lg:block ${hoverFundo}`}
+              className="rounded-full p-2.5 hover:bg-neutral-100"
             >
               <Search size={20} />
             </button>
@@ -205,7 +149,7 @@ export function Header() {
                   onClick={() => setIsAccountMenuOpen((v) => !v)}
                   aria-label="Conta do cliente"
                   aria-expanded={isAccountMenuOpen}
-                  className={`flex items-center gap-1.5 rounded-full p-1.5 transition-colors xl:py-1.5 xl:pl-1.5 xl:pr-2.5 ${hoverFundo}`}
+                  className="flex items-center gap-1.5 rounded-full p-1.5 hover:bg-neutral-100 xl:py-1.5 xl:pl-1.5 xl:pr-2.5"
                 >
                   <UserAvatar
                     name={user.name}
@@ -223,7 +167,7 @@ export function Header() {
                 </button>
 
                 {isAccountMenuOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-52 rounded-xl bg-white p-1.5 text-brand-ink shadow-lg ring-1 ring-black/5">
+                  <div className="absolute right-0 z-50 mt-2 w-52 rounded-xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
                     <Link
                       to="/minha-conta"
                       onClick={() => setIsAccountMenuOpen(false)}
@@ -260,13 +204,13 @@ export function Header() {
                     onClick={() => setIsAccountMenuOpen((v) => !v)}
                     aria-label="Entrar ou criar conta"
                     aria-expanded={isAccountMenuOpen}
-                    className={`rounded-full p-2.5 transition-colors ${hoverFundo}`}
+                    className="rounded-full p-2.5 hover:bg-neutral-100"
                   >
                     <User size={20} />
                   </button>
 
                   {isAccountMenuOpen && (
-                    <div className="absolute right-0 z-50 mt-2 w-48 rounded-xl bg-white p-1.5 text-brand-ink shadow-lg ring-1 ring-black/5">
+                    <div className="absolute right-0 z-50 mt-2 w-48 rounded-xl bg-white p-1.5 shadow-lg ring-1 ring-black/5">
                       <Link
                         to="/login"
                         onClick={() => setIsAccountMenuOpen(false)}
@@ -288,31 +232,24 @@ export function Header() {
                 <div className="hidden items-center gap-1 xl:flex">
                   <Link
                     to="/login"
-                    className={`rounded-full px-3.5 py-2 font-display text-xs tracking-widest transition-colors ${
-                      escuro
-                        ? "text-white/80 hover:bg-white/10 hover:text-white"
-                        : "text-brand-ink/70 hover:bg-neutral-100 hover:text-brand-ink"
-                    }`}
+                    className="rounded-full px-3.5 py-2 font-display text-xs tracking-widest text-brand-ink/70 transition-colors hover:bg-neutral-100 hover:text-brand-ink"
                   >
                     Entrar
                   </Link>
-                  <Link to="/cadastro" className={`${escuro ? "btn-accent" : "btn-primary"} px-4 py-2 text-xs`}>
+                  <Link to="/cadastro" className="btn-primary px-4 py-2 text-xs">
                     Criar conta
                   </Link>
                 </div>
               </>
             )}
-            <span className={`mx-1 hidden h-6 w-px lg:block ${escuro ? "bg-white/15" : "bg-brand-ink/10"}`} aria-hidden />
+            <span className="mx-1 hidden h-6 w-px bg-brand-ink/10 lg:block" aria-hidden />
             <button
               type="button"
               onClick={openCart}
               aria-label="Abrir carrinho"
-              data-alvo-carrinho=""
-              className={`relative hidden rounded-full p-2.5 transition-colors lg:block ${hoverFundo}`}
+              className="relative rounded-full p-2.5 hover:bg-neutral-100"
             >
-              <span ref={carrinhoRef} className="block">
-                <ShoppingBag size={20} />
-              </span>
+              <ShoppingBag size={20} />
               {itemCount > 0 && (
                 <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-yellow px-1 text-[10px] font-bold text-brand-ink">
                   {itemCount}
@@ -323,8 +260,8 @@ export function Header() {
         </div>
       </header>
 
-      <MobileMenu isOpen={painel === "menu"} onClose={fecharPainel} />
-      <SearchOverlay isOpen={painel === "busca"} onClose={fecharPainel} />
+      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 }

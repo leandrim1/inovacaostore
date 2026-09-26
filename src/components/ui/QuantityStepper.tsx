@@ -14,26 +14,23 @@ export function QuantityStepper({
   max = 99,
 }: QuantityStepperProps) {
   return (
-    <div className="inline-flex items-center rounded-[3px] border border-brand-ink/20 bg-white">
+    <div className="inline-flex items-center rounded-full border border-brand-ink/15">
       <button
         type="button"
         aria-label="Diminuir quantidade"
-        className="flex h-11 w-11 items-center justify-center transition-colors hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-30"
+        className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 disabled:opacity-30"
         onClick={() => onChange(Math.max(min, quantity - 1))}
         disabled={quantity <= min}
       >
         <Minus size={16} />
       </button>
-      {/* O número sobe ao mudar — a confirmação de que o toque contou. */}
-      <span className="w-8 overflow-hidden text-center text-sm font-semibold tabular-nums" aria-live="polite">
-        <span key={quantity} className="inline-block animate-rolar-numero motion-reduce:animate-none">
-          {quantity}
-        </span>
+      <span className="w-8 text-center text-sm font-semibold tabular-nums">
+        {quantity}
       </span>
       <button
         type="button"
         aria-label="Aumentar quantidade"
-        className="flex h-11 w-11 items-center justify-center transition-colors hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-30"
+        className="flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 disabled:opacity-30"
         onClick={() => onChange(Math.min(max, quantity + 1))}
         disabled={quantity >= max}
       >

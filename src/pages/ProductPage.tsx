@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronRight, MessageCircle, RefreshCw, ShieldCheck, Tag, Truck } from "lucide-react";
 import { Seo } from "../components/seo/Seo";
@@ -8,12 +8,8 @@ import { useCategories } from "../hooks/useCategories";
 import { PriceTag } from "../components/ui/PriceTag";
 import { StarRating } from "../components/ui/StarRating";
 import { QuantityStepper } from "../components/ui/QuantityStepper";
-import { GaleriaProduto } from "../components/product/GaleriaProduto";
-import { BarraDeCompra } from "../components/mobile/BarraDeCompra";
-import { Mobile3DViewer } from "../components/mobile/Mobile3DViewer";
-import { BotaoFavorito } from "../components/ui/BotaoFavorito";
-import { formatBRL } from "../lib/format";
-import { celebrarAdicao } from "../lib/vooAoCarrinho";
+import { PlaceholderImage } from "../components/ui/PlaceholderImage";
+import { PositionedImage } from "../components/ui/PositionedImage";
 import { ProductCard } from "../components/product/ProductCard";
 import { Reveal } from "../components/ui/Reveal";
 import { useCart } from "../context/CartContext";
@@ -35,10 +31,6 @@ export default function ProductPage() {
   const [size, setSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const [ver3d, setVer3d] = useState(false);
-  const fotoAtualRef = useRef<HTMLDivElement>(null);
-  const tamanhosRef = useRef<HTMLDivElement>(null);
-  const trocarImagem = useCallback((i: number) => setActiveImage(i), []);
 
   useEffect(() => {
     if (!product) return;
@@ -89,42 +81,11 @@ export default function ProductPage() {
   const clampedQuantity = Math.min(quantity, Math.max(1, variantStock));
 
   const handleAddToCart = () => {
-    if (!selectedVariant || selectedVariant.stock <= 0) {
-      // Barra de compra sem tamanho disponível: leva até a escolha e chama a atenção.
-      tamanhosRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      tamanhosRef.current?.animate(
-        [{ transform: "translateX(0)" }, { transform: "translateX(-6px)" }, { transform: "translateX(6px)" }, { transform: "translateX(0)" }],
-        { duration: 320, easing: "ease-in-out" },
-      );
-      return;
-    }
-    addItem(product, { variantId: selectedVariant.id, color, size, quantity: clampedQuantity, abrirCarrinho: false });
-    celebrarAdicao(fotoAtualRef.current, {
-      nome: product.name,
-      imagem: product.imageDetails[activeImage]?.url ?? product.imageDetails[0]?.url,
-      detalhe: [size, product.colors.length > 1 ? color : "", clampedQuantity > 1 ? `${clampedQuantity} un.` : ""]
-        .filter(Boolean)
-        .join(" · "),
-    });
+    if (!selectedVariant || selectedVariant.stock <= 0) return;
+    addItem(product, { variantId: selectedVariant.id, color, size, quantity: clampedQuantity });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
-
-  // Frente = foto escolhida; costas = a seguinte (ou a etiqueta da loja).
-  const fotoFrente = product.imageDetails[activeImage] ?? product.imageDetails[0];
-  const fotoCostas = product.imageDetails.length > 1 ? product.imageDetails[(activeImage + 1) % product.imageDetails.length] : undefined;
-  const produto3d = fotoFrente
-    ? {
-        id: product.id,
-        slug: product.slug,
-        nome: product.name,
-        preco: formatBRL(product.price),
-        imagem: fotoFrente.url,
-        verso: fotoCostas?.url,
-        focoX: fotoFrente.desktopSettings?.positionX ?? 50,
-        focoY: fotoFrente.desktopSettings?.positionY ?? 50,
-      }
-    : null;
 
   return (
     <>
@@ -147,24 +108,48 @@ export default function ProductPage() {
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="flex flex-col gap-3 lg:sticky lg:top-24 lg:self-start">
-            {/* Desliza, amplia e abre o "Ver em 3D" — o único 3D da página, que
-                existe para mostrar as costas da peça. */}
-            <GaleriaProduto
-              imagens={product.imageDetails}
-              nome={product.name}
-              ativa={activeImage}
-              onTrocar={trocarImagem}
-              onVer3D={() => setVer3d(true)}
-              fotoAtualRef={fotoAtualRef}
-            />
+            <div className="aspect-[4/5] overflow-hidden rounded-2xl border border-brand-ink/10 bg-neutral-100">
+              {product.imageDetails[activeImage] ? (
+                <PositionedImage
+                  src={product.imageDetails[activeImage].url}
+                  alt={product.name}
+                  desktopSettings={product.imageDetails[activeImage].desktopSettings}
+                  mobileSettings={product.imageDetails[activeImage].mobileSettings}
+                />
+              ) : (
+                <PlaceholderImage label="Em breve" />
+              )}
+            </div>
+            {product.imageDetails.length > 1 && (
+              <div className="flex gap-2">
+                {product.imageDetails.map((img, i) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setActiveImage(i)}
+                    className={`h-20 w-16 shrink-0 overflow-hidden rounded-lg border transition-all ${
+                      activeImage === i ? "border-brand-ink" : "border-transparent hover:border-brand-ink/30"
+                    }`}
+                  >
+                    <PositionedImage
+                      src={img.url}
+                      alt=""
+                      desktopSettings={img.desktopSettings}
+                      mobileSettings={img.mobileSettings}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div>
-            <span className="rotulo text-neutral-500">{category?.name}</span>
-            <div className="mt-1.5 flex items-start justify-between gap-3">
-              <h1 className="font-display text-[2.5rem] leading-[0.9] text-brand-ink sm:text-5xl">{product.name}</h1>
-              <BotaoFavorito produtoId={product.id} nome={product.name} tom="solido" className="-mr-1 -mt-1 hidden lg:grid" />
-            </div>
+            <span className="text-xs uppercase tracking-wide text-neutral-400">
+              {category?.name}
+            </span>
+            <h1 className="mt-1 font-display text-3xl tracking-wide text-brand-ink sm:text-4xl">
+              {product.name}
+            </h1>
 
             <div className="mt-3 flex items-center gap-3">
               <StarRating rating={product.rating} reviewCount={product.reviewCount} />
@@ -179,7 +164,7 @@ export default function ProductPage() {
                   promoção está valendo e até quando — a informação que decide
                   a compra por impulso. */}
               {product.promotion && (
-                <p className="mt-3 inline-flex flex-wrap items-center gap-2 border-l-2 border-brand-yellow bg-brand-yellow/10 px-3 py-2 text-sm text-brand-ink">
+                <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl bg-brand-yellow/15 px-3 py-2 text-sm text-brand-ink ring-1 ring-brand-yellow/40">
                   <Tag size={14} className="text-brand-yellow-dark" aria-hidden />
                   <span className="font-medium">{product.promotion.title || "Promoção"}</span>
                   {product.promotion.endsAt && (
@@ -196,7 +181,7 @@ export default function ProductPage() {
             </div>
 
             {product.comingSoon ? (
-              <div className="mt-6 rounded-[3px] bg-neutral-100 p-4 text-sm text-neutral-600">
+              <div className="mt-6 rounded-xl bg-neutral-100 p-4 text-sm text-neutral-600">
                 Esta peça chega em breve à loja. Fale conosco pelo WhatsApp para
                 ser avisado assim que estiver disponível.
               </div>
@@ -214,9 +199,8 @@ export default function ProductPage() {
                         onClick={() => setColor(c.name)}
                         title={c.name}
                         aria-pressed={color === c.name}
-                        aria-label={`Cor ${c.name}`}
-                        className={`h-10 w-10 rounded-full border border-black/10 ring-1 ring-offset-[3px] transition-shadow ${
-                          color === c.name ? "ring-brand-ink" : "ring-transparent hover:ring-black/25"
+                        className={`h-9 w-9 rounded-full ring-2 ring-offset-2 transition-all ${
+                          color === c.name ? "ring-brand-ink" : "ring-transparent hover:ring-black/20"
                         }`}
                         style={{ backgroundColor: c.hex }}
                       />
@@ -224,7 +208,7 @@ export default function ProductPage() {
                   </div>
                 </div>
 
-                <div className="mt-6" ref={tamanhosRef}>
+                <div className="mt-6">
                   <p className="mb-2.5 text-sm font-medium text-brand-ink">Tamanho</p>
                   <div className="flex flex-wrap gap-2">
                     {product.sizes.map((s) => {
@@ -236,12 +220,12 @@ export default function ProductPage() {
                           onClick={() => setSize(s)}
                           aria-pressed={size === s}
                           disabled={sizeStock <= 0}
-                          className={`flex h-12 min-w-12 items-center justify-center rounded-[3px] border px-3 text-sm font-semibold transition-colors duration-150 ${
+                          className={`flex h-11 min-w-11 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors ${
                             size === s
                               ? "border-brand-ink bg-brand-ink text-white"
                               : sizeStock <= 0
                                 ? "border-black/10 text-neutral-300 line-through"
-                                : "border-black/20 bg-white text-neutral-700 hover:border-brand-ink"
+                                : "border-black/15 text-neutral-600 hover:border-brand-ink"
                           }`}
                         >
                           {s}
@@ -292,7 +276,7 @@ export default function ProductPage() {
               Tirar dúvidas pelo WhatsApp
             </a>
 
-            <div className="mt-8 grid grid-cols-1 gap-3 border-y border-brand-ink/10 py-4 text-xs text-neutral-600 sm:grid-cols-3 sm:divide-x sm:divide-brand-ink/10 sm:gap-0">
+            <div className="mt-8 grid grid-cols-1 gap-3 rounded-2xl border border-brand-ink/10 bg-brand-cream p-4 text-xs text-neutral-600 sm:grid-cols-3 sm:divide-x sm:divide-brand-ink/10 sm:gap-0">
               <div className="flex items-center gap-2 sm:px-4 sm:first:pl-0">
                 <Truck size={16} className="text-brand-yellow-dark" /> Frete grátis acima de R$ 299
               </div>
@@ -319,28 +303,16 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {!product.comingSoon && (
-          <BarraDeCompra
-            produtoId={product.id}
-            nome={product.name}
-            preco={product.price}
-            rotulo={variantStock <= 0 ? "Escolher tamanho" : added ? "Adicionado!" : "Adicionar"}
-            detalhe={variantStock > 0 ? size : undefined}
-            desabilitado={!hasAnyStock}
-            onAdicionar={handleAddToCart}
-          />
-        )}
-        <Mobile3DViewer aberto={ver3d} produto={produto3d} onFechar={() => setVer3d(false)} />
-
         {related.length > 0 && (
           <section className="mt-20">
             <Reveal>
-              <div className="mb-8 border-t border-brand-ink/15 pt-5">
-                <p className="rotulo text-neutral-500">Combine com</p>
-                <h2 className="section-title mt-2">Você também pode gostar</h2>
+              <div className="mb-3 flex items-center gap-2.5">
+                <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+                <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Combine com</span>
               </div>
+              <h2 className="section-title mb-6">Você também pode gostar</h2>
             </Reveal>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

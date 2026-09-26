@@ -1,215 +1,211 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ChevronDown } from "lucide-react";
+import heroImageFallback from "../../assets/images/otimizadas/hero-friends.webp";
 import { useParallax } from "../../hooks/useParallax";
+import { useSiteSettings, type HeroImage } from "../../hooks/useSiteSettings";
 import { useIsMobileViewport } from "../../hooks/useIsMobileViewport";
 import { useElementAspectRatio } from "../../hooks/useElementAspectRatio";
-import { useProducts } from "../../hooks/useProducts";
-import { SLIDE_DURATION, useDadosDoHero, type DadosDoHero } from "../../hooks/useDadosDoHero";
 import { DEFAULT_IMAGE_SETTINGS, totalScale } from "../../lib/imageSettings";
 import { StarRating } from "../ui/StarRating";
-import { EVENTO_HERO, useExperiencia3D } from "../../lib/experiencia3d";
-import { CenaDoHero } from "../3d/CenaDoHero";
-import { paraVitrine, type ProdutoVitrine } from "../3d/qualidade";
-import { MobileHero } from "../mobile/MobileHero";
+import { useTestimonials } from "../../hooks/useTestimonials";
 
+const FALLBACK_SLIDE: HeroImage[] = [
+  { id: "fallback", url: heroImageFallback, desktopSettings: null, mobileSettings: null },
+];
+const SLIDE_DURATION = 6000;
 
-/**
- * Hero da home. O celular é o desenho principal (`MobileHero`: composição
- * vertical com o produto pendurado no centro); a partir de 1024 px ele se
- * expande para a vitrine larga — texto grande à esquerda, as peças em
- * destaque à direita, foto do painel de ponta a ponta. Os dois leem os
- * mesmos dados (`useDadosDoHero`), então textos, imagens e CTA do painel
- * valem igual.
- */
 export function Hero() {
-  const movel = useIsMobileViewport();
-  const dados = useDadosDoHero();
-
-  // O header fica em vidro escuro por cima do hero: avisa quando ele (re)monta.
-  useEffect(() => {
-    window.dispatchEvent(new Event(EVENTO_HERO));
-    return () => {
-      window.dispatchEvent(new Event(EVENTO_HERO));
-    };
-  }, [movel]);
-
-  return movel ? <MobileHero dados={dados} /> : <HeroDesktop dados={dados} />;
-}
-
-function HeroDesktop({ dados }: { dados: DadosDoHero }) {
-  const { settings, carregando, slides, count, safeIndex, setIndex, currentSlide, isExternalCta, titleLines, averageRating } =
-    dados;
   const { ref, offset } = useParallax(0.15);
   const aspect = useElementAspectRatio(ref, 16 / 9);
+  /**
+   * `isPlaceholderData`: as configurações ainda não chegaram e `settings` são
+   * os valores padrão de código. Nesse intervalo a lista de imagens é vazia,
+   * e antes o hero concluía "nenhuma imagem cadastrada" e pintava a foto
+   * padrão — trocando pela do painel só quando a API respondia. Com a função
+   * fria da Vercel isso durava segundos: parecia que a imagem cadastrada era
+   * ignorada. Agora o hero espera; a foto padrão só aparece quando o painel
+   * realmente não tem imagem, ou quando a API falhou de vez (aí o hook
+   * devolve os padrões com `isPlaceholderData` falso).
+   */
+  const { data: settings, isPlaceholderData: carregando } = useSiteSettings();
+  const { data: testimonials } = useTestimonials();
+  const averageRating = testimonials?.averageRating ?? null;
+  const [index, setIndex] = useState(0);
   const [prefersReducedMotion] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-  const secaoRef = useRef<HTMLElement>(null);
-  const navigate = useNavigate();
-  const { nivel } = useExperiencia3D();
-  const [cenaPronta, setCenaPronta] = useState(false);
+  const isMobile = useIsMobileViewport();
 
-  const { data: destaques = [] } = useProducts({ featured: true, limit: 8 });
-  const produtos = useMemo(
-    () => destaques.map(paraVitrine).filter((p): p is ProdutoVitrine => p !== null).slice(0, 3),
-    [destaques],
-  );
+  const slides = settings.heroImages.length > 0 ? settings.heroImages : FALLBACK_SLIDE;
+  const count = slides.length;
+  const safeIndex = index < count ? index : 0;
+  const isExternalCta = /^https?:\/\//.test(settings.heroCtaUrl);
+  const titleLines = settings.heroTitle.split("\n");
 
-  const customSettings = currentSlide.desktopSettings;
+  const currentSlide = slides[safeIndex];
+  const customSettings = isMobile ? currentSlide.mobileSettings : currentSlide.desktopSettings;
   const effectiveSettings = customSettings ?? DEFAULT_IMAGE_SETTINGS;
   const zoomFactor = totalScale(effectiveSettings, aspect);
   const imgClassName = customSettings
     ? "absolute inset-0 h-full w-full object-cover"
-    : "absolute inset-0 h-[120%] w-full object-cover object-[center_82%]";
+    : isMobile
+      ? "absolute inset-0 h-full w-full object-contain object-top"
+      : "absolute inset-0 h-[120%] w-full object-cover object-[center_82%]";
 
-  const cta = (
-    <>
-      {settings.heroCtaLabel}
-      <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
-    </>
-  );
+  useEffect(() => {
+    if (count < 2) return;
+    const timer = setInterval(() => setIndex((i) => (i + 1) % count), SLIDE_DURATION);
+    return () => clearInterval(timer);
+  }, [count]);
 
   return (
-    // Sobe por baixo do header (-mt): no topo ele fica transparente sobre a
-    // foto. As alturas mínimas somam a altura do header, para a área visível
-    // da foto continuar a mesma de antes.
-    <section ref={secaoRef} data-hero data-cabecalho-escuro className="relative -mt-20">
-      <div className="relative flex min-h-[calc(90vh+5rem)] items-end overflow-hidden bg-brand-ink">
-        <div ref={ref} className="absolute inset-0" aria-hidden>
-          <AnimatePresence>
-            {!carregando && (
-              <motion.img
-                key={currentSlide.id}
-                src={currentSlide.url}
-                alt="Amigos vestindo peças da Inovação Store"
-                initial={{ opacity: 0, scale: zoomFactor, rotate: effectiveSettings.rotation }}
-                animate={{
-                  opacity: 1,
-                  scale: (prefersReducedMotion ? 1 : 1.04) * zoomFactor,
-                  rotate: effectiveSettings.rotation,
-                }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  opacity: { duration: 0.9, ease: "easeInOut" },
-                  scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
-                }}
-                className={imgClassName}
-                style={{
-                  y: offset,
-                  ...(customSettings
-                    ? { objectPosition: `${customSettings.positionX}% ${customSettings.positionY}%` }
-                    : {}),
-                }}
-                fetchPriority={safeIndex === 0 ? "high" : undefined}
-              />
-            )}
-          </AnimatePresence>
-          {/* Escurece de baixo para cima (onde fica o texto) e um pouco no
-              topo (onde fica o header) — a foto continua a protagonista. */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/30" />
-          <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-black/55 to-transparent" />
-        </div>
-
-        {/* Vitrine 3D na metade direita: as peças em destaque penduradas, que
-            o mouse traz para frente (com nome e preço) e o clique abre. */}
-        {nivel !== "baixo" && (
-          <>
-            <div
-              className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-black/55 to-transparent"
-              aria-hidden
-            />
-            <div
-              aria-hidden
-              className={`pointer-events-none absolute inset-0 z-[5] transition-opacity duration-700 ease-out ${
-                cenaPronta ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <CenaDoHero
-                layout="leque"
-                area={secaoRef}
-                eventSource={secaoRef}
-                produtos={produtos}
-                entradas={{}}
-                onEscolher={(slug) => navigate(`/produto/${slug}`)}
-                onPronto={() => setCenaPronta(true)}
-              />
-            </div>
-          </>
-        )}
-
-        <div className="container-page relative z-10 pb-20 pt-40">
-          {/* O texto espera junto com a imagem: título e descrição padrão de
-              código também não são os que o lojista escreveu. A altura mínima da
-              seção segura o layout, então nada pula quando o conteúdo entra. */}
+    <section className="relative flex min-h-[92svh] items-end overflow-hidden bg-brand-ink sm:min-h-[95svh] lg:min-h-[90vh]">
+      <div ref={ref} className="absolute inset-0" aria-hidden>
+        <AnimatePresence>
           {!carregando && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-3xl"
-            >
-              <p className="text-xs font-medium uppercase tracking-[0.1em] text-white/60">{settings.heroEyebrow}</p>
-              <h1 className="mt-3 font-display text-[clamp(3.5rem,8.5vw,8rem)] leading-[0.84] text-white">
-                {titleLines.map((line, i) => (
-                  <span key={i} className="block">
-                    {line}
-                  </span>
-                ))}
-              </h1>
-              <p className="mt-6 max-w-md text-lg leading-snug text-white/75">{settings.heroDescription}</p>
-              <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
-                {isExternalCta ? (
-                  <a href={settings.heroCtaUrl} target="_blank" rel="noreferrer" className="btn-accent group">
-                    {cta}
-                  </a>
-                ) : (
-                  <Link to={settings.heroCtaUrl} className="btn-accent group">
-                    {cta}
-                  </Link>
-                )}
-                {/* Prova social em texto corrido, ao lado do CTA — só quando existe
-                    algum depoimento aprovado para sustentar a nota. */}
-                {averageRating !== null && (
-                  <div className="flex items-center gap-2.5 text-sm text-white/70">
-                    <StarRating rating={averageRating} size={13} />
-                    <span>
-                      <strong className="font-semibold text-white">{averageRating.toFixed(1).replace(".", ",")}</strong> de 5 na
-                      avaliação dos clientes
-                    </span>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+          <motion.img
+            key={currentSlide.id}
+            src={currentSlide.url}
+            alt="Amigos vestindo peças da Inovação Store"
+            initial={{ opacity: 0, scale: (isMobile ? 1 : 1.02) * zoomFactor, rotate: effectiveSettings.rotation }}
+            animate={{
+              opacity: 0.95,
+              scale: (prefersReducedMotion || isMobile ? 1 : 1.18) * zoomFactor,
+              rotate: effectiveSettings.rotation,
+            }}
+            exit={{ opacity: 0 }}
+            transition={{
+              opacity: { duration: 0.9, ease: "easeInOut" },
+              scale: { duration: SLIDE_DURATION / 1000 + 1.5, ease: "linear" },
+            }}
+            className={imgClassName}
+            style={{
+              y: offset,
+              ...(customSettings
+                ? { objectPosition: `${customSettings.positionX}% ${customSettings.positionY}%` }
+                : {}),
+            }}
+            fetchPriority={safeIndex === 0 ? "high" : undefined}
+          />
           )}
-        </div>
+        </AnimatePresence>
+        {/* Duotone + vinheta no lugar do degradê plano — dá profundidade e mantém o texto legível */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_55%_at_15%_100%,rgba(245,196,0,0.16),transparent_70%)]" />
+        <div className="absolute inset-0 [box-shadow:inset_0_0_180px_60px_rgba(0,0,0,0.5)]" />
+      </div>
 
-        {count > 1 && (
-          <div className="absolute bottom-8 right-10 z-10 flex w-40 items-center gap-1">
-            {slides.map((slide, i) => (
-              <button
-                key={slide.id}
-                type="button"
-                onClick={() => setIndex(i)}
-                aria-label={`Ver imagem ${i + 1}`}
-                className="flex h-6 flex-1 items-center"
-              >
-                <span className="block h-0.5 w-full overflow-hidden bg-white/25">
-                  {i === safeIndex ? (
-                    <span
-                      key={safeIndex}
-                      className="block h-full w-full origin-left animate-[fill-bar_6s_linear] bg-white motion-reduce:animate-none"
-                    />
-                  ) : i < safeIndex ? (
-                    <span className="block h-full w-full bg-white/70" />
-                  ) : null}
-                </span>
-              </button>
+      <div className="container-page relative z-10 pb-16 pt-36 sm:pb-24 sm:pt-40">
+        {/* O texto espera junto com a imagem: título e descrição padrão de
+            código também não são os que o lojista escreveu. A altura mínima da
+            seção segura o layout, então nada pula quando o conteúdo entra. */}
+        {!carregando && (
+        <div className="max-w-3xl border-l-2 border-brand-yellow pl-5 sm:pl-7">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mb-4 flex items-center gap-2.5"
+          >
+            <span className="h-px w-8 bg-brand-yellow" aria-hidden />
+            <span className="font-display text-xs tracking-[0.4em] text-brand-yellow">
+              {settings.heroEyebrow}
+            </span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+            className="font-display text-[clamp(2.75rem,8vw,6.5rem)] leading-[0.86] text-white"
+          >
+            {titleLines.map((line, i) => (
+              <span key={i} className="block">
+                {line}
+              </span>
             ))}
-          </div>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mt-6 max-w-md text-base text-white/75 sm:text-lg"
+          >
+            {settings.heroDescription}
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mt-9 flex flex-wrap items-center gap-5"
+          >
+            {isExternalCta ? (
+              <a href={settings.heroCtaUrl} target="_blank" rel="noreferrer" className="btn-accent group">
+                {settings.heroCtaLabel}
+                <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </a>
+            ) : (
+              <Link to={settings.heroCtaUrl} className="btn-accent group">
+                {settings.heroCtaLabel}
+                <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            )}
+          </motion.div>
+        </div>
         )}
       </div>
+
+      {/* Cartão flutuante de prova social — quebra o limite da foto para dar profundidade.
+          Só aparece quando existe algum depoimento aprovado para sustentar a nota. */}
+      {averageRating !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="absolute bottom-28 right-4 z-10 hidden animate-float items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 shadow-2xl backdrop-blur-md sm:right-6 sm:flex"
+        >
+          <StarRating rating={averageRating} size={13} />
+          <div className="h-8 w-px bg-white/20" aria-hidden />
+          <div className="leading-tight">
+            <p className="font-display text-sm text-white">
+              {averageRating.toFixed(1).replace(".", ",")} / 5
+            </p>
+            <p className="text-[11px] text-white/60">Avaliação dos clientes</p>
+          </div>
+        </motion.div>
+      )}
+
+      {count > 1 && (
+        <div className="absolute bottom-9 left-1/2 z-10 flex w-40 -translate-x-1/2 items-center gap-1.5 sm:bottom-14 sm:left-7 sm:translate-x-0">
+          {slides.map((slide, i) => (
+            <button
+              key={slide.id}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Ver imagem ${i + 1}`}
+              className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
+            >
+              {i === safeIndex ? (
+                <span
+                  key={safeIndex}
+                  className="block h-full w-full origin-left animate-[fill-bar_6s_linear] bg-brand-yellow motion-reduce:animate-none"
+                />
+              ) : i < safeIndex ? (
+                <span className="block h-full w-full bg-brand-yellow/70" />
+              ) : null}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <a
+        href="#categorias"
+        aria-label="Rolar para baixo"
+        className="absolute inset-x-0 bottom-5 z-10 mx-auto hidden w-fit place-items-center text-white/60 transition-colors hover:text-brand-yellow sm:grid"
+      >
+        <ChevronDown size={20} className="animate-bounce-slow motion-reduce:animate-none" aria-hidden />
+      </a>
     </section>
   );
 }

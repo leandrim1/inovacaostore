@@ -88,18 +88,7 @@ interface CartContextValue {
   closeCart: () => void;
   addItem: (
     product: Product,
-    options: {
-      variantId: string;
-      color: string;
-      size: string;
-      quantity?: number;
-      /**
-       * Abre a gaveta do carrinho depois de adicionar (padrão). Quem mostra a
-       * microinteração de "voo" até o ícone passa `false`: aí o retorno é o
-       * ícone quicando e o aviso de sucesso, sem interromper a navegação.
-       */
-      abrirCarrinho?: boolean;
-    },
+    options: { variantId: string; color: string; size: string; quantity?: number },
   ) => void;
   removeItem: (key: string) => void;
   updateQuantity: (key: string, quantity: number) => void;
@@ -129,7 +118,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const addItem: CartContextValue["addItem"] = useCallback(
-    (product, { variantId, color, size, quantity = 1, abrirCarrinho = true }) => {
+    (product, { variantId, color, size, quantity = 1 }) => {
       const stock = product.variants.find((v) => v.id === variantId)?.stock ?? 0;
       setState((prev) => {
         const existing = prev.items.find((i) => i.key === variantId);
@@ -160,7 +149,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         };
         return { ...prev, items: [...prev.items, newItem] };
       });
-      if (abrirCarrinho) setIsOpen(true);
+      setIsOpen(true);
     },
     [],
   );

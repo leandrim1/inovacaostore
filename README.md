@@ -9,8 +9,7 @@ E-commerce completo para loja de roupas masculinas: frontend em **React + TypeSc
 - React Router (rotas amigáveis: `/categoria/:slug`, `/produto/:slug`, etc.)
 - TanStack React Query (consumo da API, cache e invalidação)
 - Tailwind CSS v4
-- Framer Motion (animações sutis, inclinação 3D e entradas com profundidade)
-- Three.js + React Three Fiber + Drei (vitrine 3D do hero, carregada sob demanda)
+- Framer Motion (animações sutis)
 - Lucide React (ícones)
 
 **Backend**
@@ -140,46 +139,6 @@ src/
   pages/                   # páginas da loja (Home, categoria, produto, carrinho, checkout, login,
                             # cadastro, verificar-email, esqueci/redefinir senha, minha conta, meus pedidos…)
 ```
-
-## Direção visual e 3D (mobile first)
-
-O desenho parte do celular (320–430 px); tablet e computador são expansões do mesmo sistema.
-
-**Direção de arte:** preto, creme e o amarelo da marca usado como sinal (preço, CTA, item ativo, cabide). Títulos grandes em Bebas Neue alinhados à esquerda, com uma régua fina abrindo cada seção; fotos com cantos retos; botões retangulares de cor chapada; sombra só onde existe um objeto de verdade (a peça pendurada, um painel sobre a página). Nada de vidro fosco, brilhos, partículas ou animações em loop.
-
-**Onde há 3D, e por quê:** só onde ele ajuda a vender — mostrar a peça de frente e de costas.
-- Hero: o produto em destaque pendurado no cabide amarelo da loja, impresso em papel-cartão fosco; o dedo gira de lado para ver as costas (com inércia e limite), tocar abre o produto. No computador, as peças em destaque ficam à direita e o mouse traz a apontada para frente, com nome e preço.
-- Página de produto: "Ver em 3D" em tela cheia (girar 360°, pinça, toque duplo, Frente/Costas).
-- O resto da loja é plano de propósito: é isso que dá peso aos dois pontos acima.
-
-**Níveis por aparelho** (`src/lib/experiencia3d.ts`)
-- `alto`: cena WebGL completa (celular topo de linha, computador com folga).
-- `medio`: a mesma cena sem sombras reais e com resolução menor (celular intermediário, iPhone).
-- `baixo`: sem WebGL e sem baixar Three.js — a peça vira camadas em CSS (aparelho fraco, economia de dados, sem WebGL, "reduzir movimento").
-- Em tempo real, se o FPS cair duas vezes seguidas abaixo de ~28 (ou o WebGL cair), o aparelho passa para `baixo` até recarregar.
-- Para testar um nível: `localStorage.setItem("inovacao:3d", "alto" | "medio" | "baixo")` no console e recarregar.
-
-**Estrutura**
-```
-src/components/3d/       ProductScene (Canvas + regras de custo), FloatingProduct, Lighting,
-                         CameraController, HeroScene, ProductViewer, ProdutoCSS (versão CSS),
-                         CenaDoHero (carrega a cena sob demanda), texturas, qualidade
-src/components/mobile/   MobileHero, MobileProductCarousel, MobileBottomNav, CategoriasSheet,
-                         Mobile3DViewer, BarraDeCompra
-src/components/ui/       SectionHeading, Button3D, AnimatedSection, Reveal, BotaoFavorito, AvisoCarrinho
-src/hooks/               useArrastoInercial (arrasto com inércia), useZoomDeImagem (pinça/toque duplo)
-src/lib/                 sensorInclinacao (giroscópio), vooAoCarrinho, favoritos, paineis
-```
-
-**O resto da experiência no celular**
-- Barra de abas encaixada embaixo (Início, Categorias, Buscar, Favoritos, Carrinho); na página de produto ela dá lugar à barra de compra.
-- Categorias como índice tipográfico (nome grande + capa pequena), na home, no menu e na folha de categorias.
-- Cards de produto sem caixa em volta: tocar na foto destaca a peça e mostra "Ver produto | + Sacola"; no computador, o hover troca para a outra foto.
-- "Em destaque": faixa com snap e a próxima peça aparecendo na borda.
-- Adicionar ao carrinho: a foto voa até o ícone do carrinho e aparece o aviso "Adicionado", com atalho para o carrinho.
-- Favoritos ficam no próprio aparelho (como o carrinho); `/favoritos` busca os produtos na API por `?ids=`.
-
-Tudo respeita `prefers-reduced-motion`, a cena para de desenhar fora da tela e nada é baixado de fora (compatível com a CSP do `vercel.json`). Não há modelos GLB das roupas: o volume vem das fotos do produto (frente e costas), da luz e da sombra.
 
 ## Como funciona o catálogo (sem dados fixos no frontend)
 

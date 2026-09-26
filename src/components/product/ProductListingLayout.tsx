@@ -36,7 +36,10 @@ export function ProductListingLayout({
   return (
     <div className="container-page py-10 sm:py-14">
       <div className="mb-8">
-        <p className="rotulo mb-2 text-neutral-500">Catálogo</p>
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="h-px w-8 bg-brand-ink/20" aria-hidden />
+          <span className="font-display text-xs tracking-[0.35em] text-brand-yellow-dark">Catálogo</span>
+        </div>
         <h1 className="section-title">{title}</h1>
         {subtitle && <p className="mt-3 max-w-xl text-neutral-500">{subtitle}</p>}
       </div>
@@ -115,7 +118,7 @@ export function ProductListingLayout({
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
               {filters.filtered.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

@@ -101,11 +101,10 @@ export function FiltersPanel({
                 key={size}
                 type="button"
                 onClick={() => toggleSize(size)}
-                aria-pressed={active}
-                className={`flex h-10 min-w-10 items-center justify-center rounded-[3px] border px-2 text-xs font-semibold transition-colors duration-150 ${
+                className={`flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-xs font-semibold transition-colors ${
                   active
                     ? "border-brand-ink bg-brand-ink text-white"
-                    : "border-brand-ink/20 bg-white text-neutral-700 hover:border-brand-ink"
+                    : "border-brand-ink/15 text-neutral-600 hover:border-brand-ink"
                 }`}
               >
                 {size}
@@ -130,8 +129,8 @@ export function FiltersPanel({
                 title={color.name}
                 aria-pressed={active}
                 aria-label={color.name}
-                className={`h-9 w-9 rounded-full border border-black/10 ring-1 ring-offset-[3px] transition-shadow ${
-                  active ? "ring-brand-ink" : "ring-transparent hover:ring-brand-ink/25"
+                className={`h-8 w-8 rounded-full ring-2 ring-offset-2 transition-all ${
+                  active ? "ring-brand-ink" : "ring-transparent hover:ring-brand-ink/20"
                 }`}
                 style={{ backgroundColor: color.hex }}
               />

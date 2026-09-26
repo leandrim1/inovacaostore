@@ -20,10 +20,16 @@
 
   --color-neutral-25: #fbfbfa;
 
-  --animate-marquee: marquee 40s linear infinite;
+  --animate-marquee: marquee 28s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 34s linear infinite;
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
-  --animate-coracao: coracao 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
-  --animate-rolar-numero: rolar-numero 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-bounce-slow: bounce-slow 2.2s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-shine-sweep: shine-sweep 4.5s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-cta-pulse: cta-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-tick: tick 1s ease-out infinite;
 }
 
 @keyframes marquee {
@@ -32,6 +38,15 @@
   }
   to {
     transform: translateX(-16.6667%);
+  }
+}
+
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(-16.6667%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 
@@ -46,6 +61,38 @@
   }
 }
 
+@keyframes bounce-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 @keyframes fill-bar {
   from {
     transform: scaleX(0);
@@ -55,28 +102,46 @@
   }
 }
 
-/* Coração do favorito: um aperto curto ao marcar. */
-@keyframes coracao {
+/* Faixa de brilho que atravessa o texto da promoção e depois descansa — o
+   trecho 55%→100% é a pausa, senão o efeito vira um estroboscópio. */
+@keyframes shine-sweep {
   0% {
-    transform: scale(1);
+    background-position: 190% center;
   }
-  40% {
-    transform: scale(0.82);
-  }
+  55%,
   100% {
-    transform: scale(1);
+    background-position: -90% center;
   }
 }
 
-/* Número do contador que sobe ao mudar. */
-@keyframes rolar-numero {
-  from {
-    transform: translateY(50%);
-    opacity: 0;
+@keyframes glow-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 16px rgba(245, 196, 0, 0.3));
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+  50% {
+    filter: drop-shadow(0 0 36px rgba(245, 196, 0, 0.6));
+  }
+}
+
+@keyframes cta-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 196, 0, 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 16px rgba(245, 196, 0, 0);
+  }
+}
+
+@keyframes tick {
+  0%,
+  70%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.14);
   }
 }
 
@@ -109,6 +174,19 @@
     color: var(--color-brand-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Textura sutil de grão em toda a página — dá profundidade tátil sem custo
+     de performance (SVG estático, sem animação, blend por cima do conteúdo). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   h1,
@@ -161,10 +239,26 @@
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
-  /* Destaque da promoção ("20% OFF"): amarelo chapado, como um adesivo de
-     preço — o contraste já faz o trabalho, sem brilho correndo pelas letras. */
+  /* Texto de destaque da promoção: o próprio gradiente é recortado no formato
+     das letras e deslizado pela animação, o que produz o brilho atravessando a
+     palavra. `animate-none` (utilities) ainda vence isto, então
+     `motion-reduce:animate-none` na instância desliga o efeito. */
   .promo-highlight {
-    color: var(--color-brand-yellow);
+    background-image: linear-gradient(
+      100deg,
+      var(--color-brand-yellow) 0%,
+      var(--color-brand-yellow) 38%,
+      #fff6c2 46%,
+      #ffffff 50%,
+      #fff6c2 54%,
+      var(--color-brand-yellow) 62%,
+      var(--color-brand-yellow) 100%
+    );
+    background-size: 230% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: var(--animate-shine-sweep);
   }
 
   .btn-primary {
@@ -180,16 +274,11 @@
   }
 
   .section-title {
-    @apply font-display text-[clamp(2.4rem,5vw,4rem)] leading-[0.88] tracking-[0.01em] text-brand-ink;
-  }
-
-  /* Rótulo curto acima de títulos e campos: texto de apoio, não enfeite. */
-  .rotulo {
-    @apply font-sans text-xs font-medium uppercase tracking-[0.08em];
+    @apply font-display text-[clamp(2.25rem,4.5vw,3.75rem)] leading-[0.92] tracking-wide text-brand-ink;
   }
 
   .section-eyebrow {
-    @apply flex items-center gap-2 font-sans text-xs font-medium uppercase tracking-[0.08em];
+    @apply flex items-center gap-2.5 font-display text-xs tracking-[0.35em];
   }
 
   .hairline {
@@ -214,60 +303,6 @@
   .admin-input {
     @apply rounded-lg border border-black/10 text-sm text-brand-ink outline-none transition-colors placeholder:text-neutral-400 focus:border-brand-ink focus:ring-4 focus:ring-brand-ink/5;
   }
-
-  /* ---------------------------------------------------------------------
-     Botões da loja. Retângulos de canto curto (como uma etiqueta), cor
-     chapada e nenhuma sombra: a cor e o peso da fonte dizem a hierarquia.
-     No toque afundam 1 px — a confirmação física, sem quique.
-     `.loja` é a raiz da vitrine (App.tsx); o painel admin mantém os botões
-     de sempre. Os `.btn-3d-*` levam o mesmo visual para fora dessa raiz.
-     --------------------------------------------------------------------- */
-  .loja :is(.btn-primary, .btn-accent, .btn-outline),
-  .btn-3d-primary,
-  .btn-3d-accent,
-  .btn-3d-outline {
-    min-height: 44px;
-    border-radius: 3px;
-    box-shadow: none;
-    translate: none;
-    transition:
-      background-color 0.18s ease,
-      color 0.18s ease,
-      border-color 0.18s ease,
-      transform 0.1s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .loja :is(.btn-primary, .btn-accent, .btn-outline):hover,
-  .btn-3d-primary:hover,
-  .btn-3d-accent:hover,
-  .btn-3d-outline:hover {
-    box-shadow: none;
-    translate: none;
-  }
-
-  .loja .btn-accent:not(:disabled):hover,
-  .btn-3d-accent:not(:disabled):hover {
-    background-color: #ffd21a;
-  }
-
-  .loja .btn-primary:not(:disabled):hover,
-  .btn-3d-primary:not(:disabled):hover {
-    background-color: #262626;
-  }
-
-  .loja :is(.btn-primary, .btn-accent, .btn-outline):not(:disabled):active,
-  .btn-3d-primary:not(:disabled):active,
-  .btn-3d-accent:not(:disabled):active,
-  .btn-3d-outline:not(:disabled):active {
-    transform: translateY(1px);
-  }
-}
-
-/* Altura da barra de navegação inferior do celular (mais a área do gesto do
-   iPhone) — o conteúdo ganha esse respiro embaixo e nada fica escondido. */
-:root {
-  --barra-inferior: calc(3.5rem + 1px + env(safe-area-inset-bottom, 0px));
 }
 
 @layer utilities {

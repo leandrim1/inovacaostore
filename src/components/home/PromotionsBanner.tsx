@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Flame, Zap } from "lucide-react";
 import { usePromotions, type Promotion } from "../../hooks/usePromotions";
 import { useCountdown } from "../../hooks/useCountdown";
 import { PositionedImage } from "../ui/PositionedImage";
@@ -14,17 +14,26 @@ const group: Variants = {
 };
 
 const rise: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.25, 0.1, 0.25, 1] } },
 };
 
-function TimeBlock({ value, label }: { value: number; label: string }) {
+const punch: Variants = {
+  hidden: { opacity: 0, y: 24, scale: 0.88 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 260, damping: 18 } },
+};
+
+function TimeBlock({ value, label, pulse = false }: { value: number; label: string; pulse?: boolean }) {
   return (
-    <div className="flex min-w-11 flex-col items-center gap-1 px-2 py-1.5 sm:min-w-12">
-      <span className="font-display text-2xl leading-none tabular-nums text-white sm:text-3xl">
+    <div className="flex flex-col items-center gap-1">
+      <span
+        className={`flex min-w-11 justify-center rounded-lg border border-brand-yellow/30 bg-black/70 px-2 py-1.5 font-display text-xl tabular-nums text-brand-yellow shadow-[0_0_20px_-6px_rgba(245,196,0,0.7)] sm:min-w-12 sm:text-2xl ${
+          pulse ? "animate-tick motion-reduce:animate-none" : ""
+        }`}
+      >
         {String(value).padStart(2, "0")}
       </span>
-      <span className="text-[10px] uppercase tracking-[0.08em] text-white/50">{label}</span>
+      <span className="text-[9px] uppercase tracking-[0.18em] text-white/50">{label}</span>
     </div>
   );
 }
@@ -34,13 +43,19 @@ function CountdownBadge({ endsAt }: { endsAt: string | null }) {
   if (!parts || parts.expired) return null;
 
   return (
-    <div className="flex w-fit flex-col gap-1.5">
-      <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-white/60">Termina em</span>
-      <div className="flex items-stretch divide-x divide-white/15 border border-white/15 bg-black/60">
+    <div className="flex w-fit flex-col items-center gap-2 rounded-xl border border-white/10 bg-black/50 p-3 backdrop-blur-md">
+      <span className="flex items-center gap-1.5 font-display text-[10px] tracking-[0.3em] text-white/70">
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75 motion-reduce:hidden" />
+          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+        </span>
+        Termina em
+      </span>
+      <div className="flex items-end gap-1.5">
         {parts.days > 0 && <TimeBlock value={parts.days} label="dias" />}
         <TimeBlock value={parts.hours} label="horas" />
         <TimeBlock value={parts.minutes} label="min" />
-        <TimeBlock value={parts.seconds} label="seg" />
+        <TimeBlock value={parts.seconds} label="seg" pulse />
       </div>
     </div>
   );
@@ -72,6 +87,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
   const arteMandaNaCaixa = soArte;
   const cta = (
     <>
+      <Zap size={16} className="fill-brand-ink" aria-hidden />
       {promotion.ctaLabel}
       <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
     </>
@@ -79,7 +95,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-[3px] ${
+      className={`relative overflow-hidden rounded-2xl ${
         arteMandaNaCaixa
           ? "block w-full bg-brand-ink"
           : "flex min-h-[420px] items-center sm:min-h-[480px]"
@@ -124,11 +140,16 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
           />
         </>
       ) : (
-        <div className="absolute inset-0 bg-brand-ink" />
+        <div className="absolute inset-0 bg-brand-ink">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_100%_0%,rgba(245,196,0,0.35),transparent_65%)]" />
+        </div>
       )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/10" />
       {/* Escurece o lado do texto para o destaque ganhar contraste sem depender
           da foto que o admin subir. */}
-      {!soArte && <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/5" />}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
+      {/* Halo amarelo atrás do bloco de texto, dando profundidade ao brilho. */}
+      <div className="pointer-events-none absolute -left-32 top-1/2 h-[420px] w-[520px] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(245,196,0,0.22),transparent_70%)] blur-2xl" />
 
       {/* Quando existe uma arte, o banner inteiro leva ao mesmo destino do
           botão — é o que a pessoa espera ao clicar numa peça publicitária,
@@ -180,25 +201,37 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
         )}
 
         <motion.div variants={rise} className="w-fit">
-          <span className="block bg-brand-yellow px-2 py-1 text-[11px] font-bold uppercase leading-none tracking-[0.08em] text-brand-ink">
+          <span className="flex items-center gap-2 rounded-full border border-brand-yellow/40 bg-brand-yellow/10 px-3.5 py-1.5 font-display text-xs tracking-[0.3em] text-brand-yellow backdrop-blur-sm">
+            {/* pulse em opacidade, não em translate: um ícone de 13px dentro de
+                uma pílula sai do lugar com qualquer deslocamento perceptível. */}
+            <Flame size={13} className="animate-pulse motion-reduce:animate-none" aria-hidden />
             Oferta
           </span>
         </motion.div>
 
+        {/* O título é o que chama a atenção primeiro, então ganha corpo, letras
+            espaçadas e um traço amarelo embaixo, como numa arte de banner.
+            `w-fit max-w-full` deixa o traço com a largura exata do texto sem
+            deixar um título longo vazar da tela no celular. */}
         {promotion.title && (
-          <motion.div variants={rise} className="w-fit max-w-full">
-            <p className="break-words font-display text-4xl leading-[0.92] text-white sm:text-5xl md:text-[3.5rem]">
-              {promotion.title}
-            </p>
-          </motion.div>
+        <motion.div variants={rise} className="w-fit max-w-full">
+          <p className="font-display text-4xl leading-[0.95] tracking-[0.06em] text-white break-words [text-shadow:0_2px_0_rgba(0,0,0,0.35),0_6px_24px_rgba(0,0,0,0.75)] sm:text-5xl md:text-[3.25rem]">
+            {promotion.title}
+          </p>
+          <span
+            className="mt-2.5 block h-[3px] rounded-full bg-gradient-to-r from-brand-yellow via-brand-yellow to-transparent shadow-[0_0_14px_-2px_rgba(245,196,0,0.9)]"
+            aria-hidden
+          />
+        </motion.div>
         )}
 
         {/* Sem `w-fit` aqui: `fit-content` deixa o parágrafo com a largura do
             texto inteiro e um destaque longo ("20% DESCONTO") vaza da borda no
-            celular. */}
+            celular. O brilho é `drop-shadow`, que segue as letras e não a
+            caixa, então a largura total não atrapalha. */}
         {promotion.highlight && (
-          <motion.p variants={rise}>
-            <span className="promo-highlight block break-words font-display text-6xl leading-[0.85] sm:text-8xl md:text-9xl">
+          <motion.p variants={punch} className="animate-glow-pulse motion-reduce:animate-none">
+            <span className="promo-highlight block font-display text-5xl leading-none break-words motion-reduce:animate-none sm:text-7xl md:text-8xl">
               {promotion.highlight}
             </span>
           </motion.p>
@@ -207,7 +240,7 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
         {promotion.description && (
           <motion.p
             variants={rise}
-            className="max-w-md text-sm text-white/80 sm:text-base"
+            className="max-w-md border-l-2 border-brand-yellow pl-3 text-sm text-white/90 sm:text-base"
           >
             {promotion.description}
           </motion.p>
@@ -219,12 +252,12 @@ function PromotionSlide({ promotion }: { promotion: Promotion }) {
               href={promotion.ctaUrl}
               target="_blank"
               rel="noreferrer"
-              className="btn-accent group"
+              className="btn-accent group animate-cta-pulse motion-reduce:animate-none"
             >
               {cta}
             </a>
           ) : (
-            <Link to={promotion.ctaUrl} className="btn-accent group">
+            <Link to={promotion.ctaUrl} className="btn-accent group animate-cta-pulse motion-reduce:animate-none">
               {cta}
             </Link>
           )}
@@ -282,12 +315,12 @@ export function PromotionsBanner() {
           </AnimatePresence>
 
           {count > 1 && (
-            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-3">
+            <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-4">
               <button
                 type="button"
                 onClick={() => setIndex((i) => (i - 1 + count) % count)}
                 aria-label="Promoção anterior"
-                className="flex h-11 w-11 shrink-0 items-center justify-center bg-white text-brand-ink transition-colors hover:bg-neutral-200"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/90 text-brand-ink shadow-md transition-transform hover:scale-105"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -299,15 +332,15 @@ export function PromotionsBanner() {
                     type="button"
                     onClick={() => setIndex(i)}
                     aria-label={`Ver promoção ${i + 1}`}
-                    className="h-0.5 flex-1 overflow-hidden bg-white/25"
+                    className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
                   >
                     {i === safeIndex ? (
                       <span
                         key={safeIndex}
-                        className="block h-full w-full origin-left animate-[fill-bar_7s_linear] bg-white motion-reduce:animate-none"
+                        className="block h-full w-full origin-left animate-[fill-bar_7s_linear] bg-brand-yellow motion-reduce:animate-none"
                       />
                     ) : i < safeIndex ? (
-                      <span className="block h-full w-full bg-white/70" />
+                      <span className="block h-full w-full bg-brand-yellow/70" />
                     ) : null}
                   </button>
                 ))}
@@ -317,7 +350,7 @@ export function PromotionsBanner() {
                 type="button"
                 onClick={() => setIndex((i) => (i + 1) % count)}
                 aria-label="Próxima promoção"
-                className="flex h-11 w-11 shrink-0 items-center justify-center bg-white text-brand-ink transition-colors hover:bg-neutral-200"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/90 text-brand-ink shadow-md transition-transform hover:scale-105"
               >
                 <ChevronRight size={18} />
               </button>

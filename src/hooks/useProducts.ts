@@ -7,8 +7,6 @@ export interface ProductQuery {
   featured?: boolean;
   limit?: number;
   q?: string;
-  /** Busca exatamente estes produtos (favoritos). */
-  ids?: string[];
 }
 
 export function useProducts(query: ProductQuery = {}) {
@@ -17,13 +15,10 @@ export function useProducts(query: ProductQuery = {}) {
     featured: query.featured,
     limit: query.limit,
     q: query.q,
-    ids: query.ids?.join(","),
   });
 
   return useQuery({
     queryKey: ["products", query],
-    // Lista de favoritos vazia: nada a buscar (sem ids a rota devolveria o catálogo).
-    enabled: query.ids === undefined || query.ids.length > 0,
     queryFn: async () => {
       const res = await api.get<{ items: ProductDTO[] }>(`/api/products${qs}`);
       return res.items.map(adaptProduct);

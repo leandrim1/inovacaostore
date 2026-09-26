@@ -1,3 +1,4 @@
+import { Reveal } from "../ui/Reveal";
 import { useSiteSettings } from "../../hooks/useSiteSettings";
 import { benefitIcon } from "../../lib/benefitIcons";
 
@@ -16,29 +17,28 @@ export function Benefits() {
     { icon: settings.benefit4Icon, title: settings.benefit4Title, description: settings.benefit4Text },
   ];
 
-  // Faixa escura e compacta, como a ficha de serviço da loja: ícone pequeno
-  // ao lado do título, texto curto embaixo, réguas separando. Informação de
-  // apoio — não disputa atenção com os produtos logo acima.
   return (
-    <section data-cabecalho-escuro className="bg-brand-ink text-white">
+    <section className="border-y border-brand-ink/10 bg-brand-cream py-12 sm:py-16">
       <div
-        className={`container-page grid grid-cols-2 lg:grid-cols-4 ${carregando ? "invisible" : ""}`}
+        className={`container-page grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:divide-x lg:divide-brand-ink/10 ${
+          carregando ? "invisible" : ""
+        }`}
       >
         {benefits.map((b, i) => {
           const Icon = benefitIcon(b.icon);
           return (
-            <div
-              key={i}
-              className={`min-w-0 border-white/10 py-6 sm:py-8 ${i % 2 === 1 ? "border-l pl-4 sm:pl-6" : "pr-4 sm:pr-6"} ${
-                i >= 2 ? "border-t lg:border-t-0" : ""
-              } lg:border-l lg:px-6 lg:first:border-l-0 lg:first:pl-0`}
-            >
-              <h3 className="flex items-center gap-2 break-words font-display text-lg leading-none tracking-[0.02em]">
-                <Icon size={17} strokeWidth={1.75} className="shrink-0 text-brand-yellow" aria-hidden />
-                {b.title}
-              </h3>
-              <p className="mt-2 break-words text-[13px] leading-snug text-white/60">{b.description}</p>
-            </div>
+            <Reveal key={i} delay={i * 0.05} className="min-w-0">
+              <div className="flex flex-col items-center gap-2.5 text-center lg:items-start lg:px-6 lg:text-left lg:first:pl-0">
+                <div className="flex items-center gap-2.5">
+                  <Icon size={20} strokeWidth={1.75} className="text-brand-yellow-dark" />
+                  <span className="font-mono text-[11px] tabular-nums text-neutral-400">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3 className="break-words font-display text-base tracking-wide text-brand-ink">{b.title}</h3>
+                <p className="break-words text-sm leading-relaxed text-neutral-500">{b.description}</p>
+              </div>
+            </Reveal>
           );
         })}
       </div>
